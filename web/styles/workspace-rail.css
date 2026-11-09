@@ -1,0 +1,109 @@
+/* One icon rail shared by storage, SSH and the VNC workspace controls. */
+.workspace-rail {
+  position: relative;
+  z-index: 10;
+  width: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+  border-right: 0;
+  background: var(--sidebar);
+  overflow: visible;
+}
+.workspace-rail-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: inherit;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+.workspace-rail button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  min-width: 28px;
+  height: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--semi-color-text-nav);
+  font-size: 21px;
+  font-weight: 400;
+}
+.workspace-rail button svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+.workspace-rail button:hover {
+  color: var(--blue);
+  background: var(--soft);
+}
+.workspace-rail button.selected,
+.workspace-rail button.selected:hover,
+.workspace-rail button[aria-selected='true'],
+.workspace-rail button[aria-selected='true']:hover {
+  color: var(--blue);
+  background: var(--semi-color-bg-1);
+  font-weight: 500;
+}
+.workspace-rail button.danger {
+  color: var(--semi-color-danger);
+}
+.workspace-rail-tooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  z-index: 1100;
+  pointer-events: none;
+
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--semi-color-text-0);
+  color: var(--bg);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+@media (max-width: 620px) {
+  .workspace-rail {
+    width: 56px;
+    flex-basis: 56px;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .workspace-rail button {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+}
+@media (max-height: 620px) {
+  .workspace-rail {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+}

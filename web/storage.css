@@ -1,0 +1,7 @@
+/* Storage components retain their cascade order after the shared native surfaces. */
+@import './styles/storage-workspace.css';
+@import './styles/storage-scan-and-batch.css';
+@import './styles/storage-entry-and-toolbar.css';
+@import './styles/storage-history.css';
+@import './styles/storage-duplicates.css';
+@import './styles/storage-artwork.css';

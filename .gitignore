@@ -1,0 +1,24 @@
+node_modules/
+dist/
+data/
+build/
+*.fpk
+.DS_Store
+
+# Generated TypeScript backend output
+/server/
+
+/.web-test/
+
+# Local editor and agent workspace state
+/.idea/
+/.superpowers/
+
+# Generated documentation share archives
+/docs/*.zip
+
+# Generated native RDP bundles (rebuild with third-party/rdp/Dockerfile)
+/tools/rdp/
+
+# Generated architecture-specific ADB runtimes
+/tools/adb/

@@ -1,0 +1,59 @@
+.ai-markdown {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.ai-markdown > :first-child {
+  margin-top: 0;
+}
+.ai-markdown > :last-child {
+  margin-bottom: 0;
+}
+.ai-markdown :is(p, ul, ol, pre, blockquote, table) {
+  margin: 8px 0;
+}
+.ai-markdown :is(h1, h2, h3, h4, h5, h6) {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+.ai-markdown :is(ul, ol) {
+  padding-left: 20px;
+}
+.ai-markdown blockquote {
+  margin-left: 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--line);
+  color: var(--muted);
+}
+.ai-markdown code {
+  font-family: monospace;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: var(--soft);
+}
+.ai-markdown pre {
+  padding: 10px;
+  background: var(--soft);
+  border-radius: 6px;
+  overflow: auto;
+}
+.ai-markdown pre code {
+  padding: 0;
+  white-space: pre;
+}
+.ai-markdown table {
+  display: block;
+  max-width: 100%;
+  overflow: auto;
+  border-collapse: collapse;
+}
+.ai-markdown :is(th, td) {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-align: left;
+}
+.ai-markdown a {
+  color: var(--blue);
+}

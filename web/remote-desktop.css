@@ -1,0 +1,173 @@
+.remote-desktop-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg);
+}
+.terminal-vnc-tools {
+  display: contents;
+}
+.terminal-vnc-tools[hidden] {
+  display: none;
+}
+.remote-desktop-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.vnc-floating-toolbar.terminal-workspace-rail {
+  position: absolute;
+  top: 16px;
+  left: max(8px, env(safe-area-inset-left, 0px));
+  z-index: 3;
+  width: auto;
+  max-height: calc(100% - 32px);
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--semi-color-bg-0);
+}
+.vnc-floating-handle {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.vnc-floating-handle:active {
+  cursor: grabbing;
+}
+.vnc-floating-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.vnc-fullscreen-panel.terminal-assets {
+  position: absolute;
+  z-index: 4;
+  inset: 56px 12px 12px auto;
+  width: min(var(--terminal-panel-width, 360px), calc(100% - 80px));
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (max-width: 620px) {
+  .vnc-fullscreen-panel.terminal-assets {
+    inset: auto 8px 8px calc(max(8px, env(safe-area-inset-left, 0px)) + 58px);
+    width: auto;
+  }
+}
+.remote-desktop-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #202124;
+  outline: none;
+  touch-action: none;
+}
+.remote-desktop-stage > div {
+  flex-shrink: 0;
+}
+.remote-desktop-stage canvas {
+  flex: none;
+}
+.remote-desktop-viewport:fullscreen {
+  width: 100%;
+  height: 100%;
+  background: #202124;
+}
+.remote-desktop-status {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  max-width: min(440px, calc(100% - 32px));
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--semi-color-bg-0);
+  color: var(--text);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.remote-desktop-status .inline-loading {
+  padding: 0;
+}
+.remote-desktop-input {
+  padding: 8px 16px;
+}
+.vnc-clipboard-body {
+  padding: 16px;
+  display: flex;
+}
+.vnc-clipboard-body textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 80px;
+  resize: none;
+}
+.vnc-clipboard-footer {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.vnc-log-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px;
+}
+.vnc-log-list ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.vnc-log-entry {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.vnc-log-entry:first-child {
+  padding-top: 0;
+}
+.vnc-log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.vnc-log-entry p {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+.vnc-log-entry.error p {
+  color: var(--semi-color-danger);
+}
+.vnc-log-entry.success p {
+  color: var(--semi-color-success);
+}
+.terminal-session-view.desktop-active [data-workspace-scope='commands'],
+.terminal-session-view.desktop-active #terminal-ai-toggle,
+.terminal-session-view.desktop-active #terminal-transfers-toggle,
+.terminal-session-view.desktop-active #terminal-library-toggle,
+.terminal-session-view.desktop-active #terminal-monitor-toggle,
+.terminal-session-view.desktop-active .terminal-monitor-summary {
+  display: none;
+}

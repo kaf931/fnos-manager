@@ -1,0 +1,18 @@
+.terminal-ai-progress {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-top: 1px solid var(--semi-color-border);
+}
+.terminal-ai-progress p {
+  margin: 0;
+}
+.terminal-ai-progress summary {
+  cursor: pointer;
+  margin-top: 4px;
+}
+.terminal-ai-progress ol {
+  margin: 6px 0;
+  padding-left: 22px;
+  max-height: 180px;
+  overflow: auto;
+}

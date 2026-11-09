@@ -1,0 +1,50 @@
+/* Shared accent palettes keep neutral surfaces and semantic status colors unchanged. */
+body[data-palette='classic'] {
+  --semi-brand-0: 240, 243, 255;
+  --semi-brand-1: 225, 232, 255;
+  --semi-brand-2: 205, 215, 252;
+  --semi-brand-3: 173, 189, 248;
+  --semi-brand-4: 129, 153, 240;
+  --semi-brand-5: 62, 99, 221;
+  --semi-brand-6: 51, 82, 191;
+  --semi-brand-7: 42, 67, 157;
+  --semi-brand-8: 34, 53, 123;
+  --semi-brand-9: 25, 39, 89;
+}
+body[data-palette='mist'] {
+  --semi-brand-0: 246, 243, 255;
+  --semi-brand-1: 236, 231, 251;
+  --semi-brand-2: 221, 213, 243;
+  --semi-brand-3: 200, 188, 232;
+  --semi-brand-4: 166, 149, 216;
+  --semi-brand-5: 101, 84, 192;
+  --semi-brand-6: 85, 68, 169;
+  --semi-brand-7: 69, 54, 140;
+  --semi-brand-8: 53, 40, 109;
+  --semi-brand-9: 38, 28, 79;
+}
+body[data-palette='teal'] {
+  --semi-brand-0: 237, 249, 247;
+  --semi-brand-1: 215, 240, 235;
+  --semi-brand-2: 182, 225, 217;
+  --semi-brand-3: 137, 204, 193;
+  --semi-brand-4: 82, 174, 162;
+  --semi-brand-5: 13, 128, 120;
+  --semi-brand-6: 10, 109, 102;
+  --semi-brand-7: 8, 89, 84;
+  --semi-brand-8: 6, 69, 65;
+  --semi-brand-9: 4, 49, 46;
+}
+body {
+  --terminal-bg: #fff;
+  --terminal-row-alt: #f4f5f7;
+  --terminal-foreground: #252525;
+}
+body.dark {
+  --terminal-bg: #191919;
+  --terminal-row-alt: #242424;
+  --terminal-foreground: #e8e8e8;
+}
+body[data-terminal-background='solid'] {
+  --terminal-row-alt: var(--terminal-bg);
+}

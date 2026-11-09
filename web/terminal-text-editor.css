@@ -1,0 +1,69 @@
+.remote-text-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.remote-text-dialog .dialog-header h2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.remote-text-dialog .dialog-footer {
+  flex-wrap: wrap;
+}
+.remote-text-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  flex-wrap: wrap;
+}
+.remote-text-toolbar .native-select {
+  width: 160px;
+}
+.remote-text-content {
+  flex: 1;
+  min-height: min(48svh, 400px);
+  overflow: hidden;
+  margin: 0 var(--dialog-content-inset, 24px);
+}
+.remote-text-dialog > .notice {
+  margin: 0 var(--dialog-content-inset, 24px) 8px;
+}
+.remote-text-content .cm-editor {
+  font-size: 14px;
+}
+.remote-text-content .cm-editor .cm-panel {
+  background: var(--semi-color-bg-1);
+  color: var(--text);
+}
+.remote-text-content .cm-editor .cm-textfield {
+  background: var(--semi-color-input-DefaultBg);
+  color: var(--text);
+}
+
+.remote-text-content[hidden] {
+  display: none;
+}
+.remote-text-history {
+  margin: 0 var(--dialog-content-inset, 24px) 12px;
+  overflow: auto;
+  max-height: 200px;
+}
+.remote-text-history-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.remote-text-history-row > button:first-child {
+  flex: 1;
+  text-align: left;
+  white-space: normal;
+}
+.remote-text-history-row > button[aria-pressed='true'] {
+  border-color: var(--semi-color-primary);
+  background: var(--semi-color-primary-light-default);
+}
+.remote-text-diff {
+  min-height: 180px;
+}

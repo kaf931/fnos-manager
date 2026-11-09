@@ -1,0 +1,9 @@
+node_modules/
+server/
+build/
+dist/
+data/
+tools/
+package-lock.json
+
+.web-test/

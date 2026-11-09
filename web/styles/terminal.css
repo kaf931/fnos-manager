@@ -1,0 +1,749 @@
+/* SSH shares navigation, toolbar, card and form geometry with the existing tools. */
+.terminal-list-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+:is(#terminal-connections, .connection-cards) {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  scrollbar-gutter: stable;
+}
+.terminal-card {
+  position: relative;
+}
+.card-main img {
+  width: 48px;
+  height: 48px;
+}
+.terminal-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.terminal-card-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.terminal-card-more {
+  display: none;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+.terminal-card-more .mobile-more-button {
+  display: flex;
+}
+.terminal-dialog {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.terminal-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.terminal-dialog > .dialog-header {
+  flex-shrink: 0;
+}
+.terminal-dialog > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+.dialog-scroll-surface > .dialog-header {
+  flex-shrink: 0;
+}
+.terminal-dialog .task-form-body {
+  overflow: auto;
+  min-height: 0;
+  padding: 0 var(--dialog-content-inset, 24px) 16px;
+}
+.terminal-dialog label:not(.checkbox-label) {
+  display: block;
+}
+.terminal-dialog .task-form-body > label:first-child,
+.terminal-dialog .task-form-body > :first-child > label:first-child {
+  margin-top: 0;
+}
+.terminal-dialog input:not([type='file']):not([type='checkbox']):not([type='radio']),
+.terminal-dialog textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.terminal-dialog .dialog-footer {
+  flex-shrink: 0;
+}
+.terminal-dialog .dialog-footer > span {
+  flex: 1;
+}
+.terminal-dialog .task-form-control {
+  margin-bottom: 14px;
+}
+.terminal-fingerprint {
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--semi-color-fill-0);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  user-select: text;
+}
+.terminal-key-upload {
+  display: flex;
+  margin: 8px 0 16px;
+}
+.terminal-key-upload button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.terminal-key-upload svg {
+  width: 16px;
+  height: 16px;
+}
+.terminal-key-upload input[hidden] {
+  display: none !important;
+}
+.terminal-session-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.terminal-session-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--semi-color-border);
+  flex-shrink: 0;
+}
+.terminal-session-heading {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.terminal-session-heading strong,
+.terminal-session-heading span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.terminal-session-heading span,
+#terminal-session-state {
+  font-size: 12px;
+  color: var(--muted);
+}
+.terminal-session-actions {
+  display: flex;
+  gap: 8px;
+}
+[data-terminal-id='terminal-viewport'] {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+  background: var(--bg);
+}
+[data-terminal-id='terminal-viewport'] .xterm {
+  height: 100%;
+}
+.terminal-aux {
+  display: none;
+}
+@media (max-width: 620px) {
+  .sidebar nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .terminal-list-view {
+    overflow: hidden;
+  }
+  :is(#terminal-connections, .connection-cards) {
+    gap: 12px;
+    scrollbar-gutter: auto;
+  }
+  .terminal-session-toolbar {
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+  .terminal-session-heading strong {
+    font-size: 16px;
+  }
+  .terminal-session-heading span {
+    font-size: 11px;
+  }
+  .terminal-session-actions {
+    margin-left: auto;
+  }
+  .terminal-session-actions button {
+    min-height: 32px;
+    padding: 4px 10px;
+  }
+  #terminal-session-state {
+    font-size: 11px;
+  }
+  [data-terminal-id='terminal-viewport'] {
+    padding: 8px;
+  }
+  .terminal-aux {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 8px;
+    overflow: auto;
+    border-top: 1px solid var(--semi-color-border);
+  }
+  .terminal-aux button {
+    flex: 1;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 4px;
+    border-radius: 6px;
+    background: var(--semi-color-fill-0);
+    color: var(--text);
+    border: 0;
+  }
+  .terminal-aux button[aria-pressed='true'] {
+    color: var(--blue);
+    background: var(--blue-soft);
+  }
+  .terminal-dialog {
+    border-radius: 16px;
+  }
+  .terminal-dialog .task-form-body {
+    padding: 0 var(--dialog-content-inset, 16px) 16px;
+  }
+  .terminal-dialog .dialog-footer {
+    flex-wrap: wrap;
+  }
+  .terminal-dialog .dialog-footer > span {
+    flex-basis: 100%;
+    font-size: 12px;
+  }
+}
+@media (max-width: 620px) {
+  .terminal-dialog input:not([type='file']):not([type='checkbox']):not([type='radio']) {
+    height: 40px;
+    min-height: 40px;
+    font-size: 16px;
+  }
+  .terminal-dialog .form-grid {
+    gap: 14px;
+    margin-top: 14px;
+  }
+}
+
+/* Full application terminal: return to the connection list restores navigation. */
+.terminal-focused .sidebar {
+  display: none !important;
+}
+.terminal-focused .layout main {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  min-height: 0;
+  border-radius: 0;
+}
+.terminal-focused #terminal-session-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding-bottom: var(--safe-bottom, 0px);
+}
+/* Color the renderer's actual rows so line height, resize and scrolling stay aligned. */
+[data-terminal-id='terminal-viewport'] .xterm-rows > div:nth-child(odd) {
+  background-color: var(--terminal-bg);
+}
+[data-terminal-id='terminal-viewport'] .xterm-rows > div:nth-child(even) {
+  background-color: var(--terminal-row-alt);
+}
+/* Match desktop-icon open-mode radio cards for SSH type and authentication. */
+.terminal-dialog .terminal-choice-field {
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.terminal-choice-field > legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+.terminal-dialog .terminal-choice > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  min-height: 60px;
+  padding: 12px;
+  border: 1px solid var(--semi-color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.terminal-dialog .terminal-choice input[type='radio'] {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  padding: 0;
+  margin: 0;
+  flex: 0 0 16px;
+  border-radius: 50% !important;
+  accent-color: var(--blue);
+}
+.terminal-dialog .terminal-choice svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: var(--muted);
+}
+.terminal-dialog .terminal-choice label > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 400;
+  font-size: 14px;
+}
+.terminal-dialog .terminal-choice small {
+  display: block;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.terminal-dialog .terminal-choice label:has(input:checked) {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.terminal-dialog .terminal-choice label:has(input:checked) > svg {
+  color: var(--blue);
+}
+@media (max-width: 620px) {
+  .terminal-dialog .terminal-choice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .terminal-dialog .terminal-choice > label {
+    gap: 6px;
+    padding: 10px;
+    min-height: 68px;
+  }
+  .terminal-dialog .terminal-choice small {
+    font-size: 11px;
+  }
+}
+/* SSH file workspace: terminal geometry is controlled by its existing ResizeObserver. */
+.terminal-workspace {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.terminal-workspace [data-terminal-id='terminal-viewport'] {
+  min-width: 0;
+  width: 0;
+}
+[data-terminal-id='terminal-files-root'] {
+  display: contents;
+}
+.terminal-files-panel {
+  width: 360px;
+  flex: 0 0 360px;
+  max-width: 55%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  border-left: 1px solid var(--line);
+  position: relative;
+}
+.terminal-files-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 56px;
+  min-width: 24px;
+  width: 24px;
+  padding: 4px;
+  z-index: 2;
+  border-radius: 6px 0 0 6px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-right: 0;
+  box-shadow: -2px 0 6px #00000008;
+}
+.terminal-files-toggle.expanded {
+  right: min(360px, 55%);
+}
+.terminal-files-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  min-height: 44px;
+}
+.terminal-files-heading strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.terminal-files-heading button {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+}
+.terminal-files-path {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 10px 6px;
+}
+.terminal-files-path button {
+  height: 30px;
+  width: 28px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.terminal-files-path input {
+  width: 0;
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+.terminal-files-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 10px;
+}
+.terminal-files-tools > span {
+  font-size: 11px;
+  color: var(--muted);
+  margin-right: auto;
+  min-width: 0;
+}
+.terminal-files-tools > button {
+  font-size: 12px;
+  padding: 4px 7px;
+  height: 28px;
+}
+.terminal-files-tools svg {
+  width: 14px;
+  height: 14px;
+}
+.terminal-files-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  -webkit-touch-callout: none;
+}
+.terminal-files-table {
+  --file-mtime-width: 35%;
+  --file-size-width: 17%;
+  --file-type-width: 12%;
+  --file-name-width: 36%;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+.terminal-files-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  height: 34px;
+  font-weight: 400;
+  color: var(--muted);
+  z-index: 1;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.terminal-files-table th > button {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  border: 0;
+  border-radius: 0;
+  padding: 4px 2px;
+  background: transparent;
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.terminal-files-table td {
+  height: 38px;
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.terminal-files-table tbody tr:hover {
+  background: var(--soft);
+}
+.terminal-files-table .file-col-name {
+  width: var(--file-name-width);
+  padding-left: 10px;
+}
+.terminal-files-table .file-col-mtime {
+  width: var(--file-mtime-width);
+  font-size: 11px;
+  padding-left: 8px;
+}
+.terminal-files-table .file-col-type {
+  width: var(--file-type-width);
+  font-size: 11px;
+}
+.terminal-files-table .file-col-size {
+  width: var(--file-size-width);
+  text-align: right;
+  font-size: 11px;
+}
+.terminal-files-table .file-col-more {
+  width: 36px;
+  text-align: center;
+  padding: 0 4px;
+}
+.file-entry-name {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 3px 0;
+  font-size: 12px;
+  justify-content: flex-start;
+  border-radius: 4px;
+  color: var(--text);
+}
+.file-entry-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-entry-name svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.file-entry-name:has(svg path[d^='M3 6']) svg {
+  color: #e9b52b;
+  fill: #f7d26455;
+}
+.file-col-more .icon-button {
+  height: 28px;
+  width: 28px;
+  min-width: 28px;
+  padding: 3px;
+}
+.terminal-files-error {
+  margin: 4px 10px 8px;
+  color: var(--semi-color-danger);
+  background: var(--semi-color-danger-light-default);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.terminal-files-message,
+.terminal-files-loading {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.terminal-file-progress {
+  padding: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.terminal-file-progress > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.terminal-file-progress span:first-child {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.terminal-file-progress button {
+  font-size: 12px;
+  padding: 3px 7px;
+}
+.terminal-file-progress progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--blue);
+  margin-top: 8px;
+}
+.file-name-dialog .task-form-body {
+  padding-bottom: 12px;
+}
+.file-name-dialog input {
+  width: 100%;
+}
+@media (max-width: 620px) {
+  .terminal-files-panel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    z-index: 3;
+    border-left: 0;
+    flex-basis: auto;
+  }
+  .terminal-files-toggle.expanded {
+    right: 0;
+    z-index: 4;
+  }
+  .terminal-files-table td {
+    height: 48px;
+  }
+  .terminal-files-heading {
+    padding-right: 12px;
+  }
+  .terminal-files-table-wrap {
+    padding-right: 20px;
+  }
+  .terminal-files-tools > button {
+    height: 32px;
+  }
+  .terminal-files-message {
+    background: var(--bg);
+  }
+}
+/* File browser navigation and contextual operations. */
+.terminal-files-tools {
+  min-height: 26px;
+  padding-top: 2px;
+  padding-bottom: 6px;
+}
+.terminal-files-path button[aria-label='后退'] svg,
+.terminal-files-path button[aria-label='前进'] svg {
+  width: 14px;
+  height: 14px;
+}
+.terminal-files-table tr.file-context-selected {
+  background: var(--blue-soft);
+}
+.terminal-file-context-menu {
+  min-width: 160px;
+}
+.file-col-size .file-size-calculate {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  padding: 4px;
+  color: var(--muted);
+}
+.file-size-calculate svg {
+  width: 15px;
+  height: 15px;
+}
+.file-size-calculate.calculating svg {
+  animation: file-size-spin 1s linear infinite;
+}
+@keyframes file-size-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 620px) {
+  .terminal-files-table-wrap {
+    padding-right: 20px;
+  }
+  .terminal-file-context-menu .semi-dropdown-item {
+    min-height: 40px;
+  }
+}
+.terminal-files-panel {
+  min-width: 0;
+  width: var(--terminal-files-width, 360px);
+  flex-basis: var(--terminal-files-width, 360px);
+  max-width: none;
+}
+.terminal-files-toggle.expanded {
+  right: var(--terminal-files-width, 360px);
+}
+.terminal-files-resizer {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  z-index: 2;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.terminal-files-resizing,
+.terminal-files-resizing *,
+.terminal-panel-resizing,
+.terminal-panel-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+@media (max-width: 620px) {
+  .terminal-files-panel {
+    width: 100%;
+    flex-basis: auto;
+  }
+  .terminal-files-toggle.expanded {
+    right: 0;
+  }
+  .terminal-files-resizer {
+    display: none;
+  }
+}
+
+/* Narrow file browsers preserve metadata and scroll the table as one surface. */
+@media (max-width: 620px) {
+  .terminal-files-table {
+    min-width: 480px;
+    --file-name-width: auto;
+    --file-type-width: 52px;
+    --file-size-width: 80px;
+    --file-mtime-width: 124px;
+  }
+}

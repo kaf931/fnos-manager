@@ -1,0 +1,427 @@
+/* Shared toolbar controls: base geometry, desktop sizing, then mobile layout and touch faces. Keep feature-specific content out of this component. */
+.toolbar {
+  margin-bottom: 20px;
+  align-items: center;
+}
+.toolbar p {
+  display: none;
+}
+.toolbar-actions {
+  gap: 8px;
+}
+.task-toolbar {
+  min-height: 32px;
+  margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.task-toolbar-filters {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 20px;
+}
+.task-status-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--semi-color-text-1);
+}
+.task-status-field select {
+  width: 120px;
+  min-height: 32px;
+  padding: 4px 12px;
+}
+.task-toolbar .search {
+  height: 32px;
+  width: 220px;
+}
+.task-toolbar .toolbar-actions {
+  margin-left: auto;
+  gap: 8px;
+}
+.task-toolbar .toolbar-actions button {
+  height: 32px;
+}
+.task-toolbar .search input {
+  font-size: 12px;
+}
+.task-toolbar .toolbar-refresh {
+  height: 32px;
+  border: 1px solid var(--semi-color-border);
+  border-radius: 6px;
+  color: var(--semi-color-text-1);
+  width: auto;
+  min-width: 72px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.task-toolbar .toolbar-refresh:hover {
+  background: var(--semi-color-fill-0);
+}
+.toolbar-select {
+  display: flex;
+  flex-shrink: 0;
+}
+.toolbar-select .semi-select {
+  width: 120px;
+}
+#icons-page > .toolbar {
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  padding-bottom: 12px;
+  position: static;
+  padding: 0;
+  margin-bottom: 16px;
+}
+.task-toolbar-filters .task-status-field {
+  gap: 8px;
+}
+.task-toolbar-filters > .search {
+  width: 220px;
+  flex: 0 0 220px;
+  min-width: 0;
+}
+.task-toolbar-filters > .task-status-field {
+  width: 156px;
+  flex: 0 0 156px;
+}
+.task-toolbar-filters .task-status-field .semi-select {
+  width: 120px;
+  min-width: 120px;
+}
+.mobile-toolbar-filter {
+  display: none;
+}
+.mobile-auth-icon {
+  display: inline-flex;
+}
+.task-toolbar .toolbar-manage {
+  height: 32px;
+  min-height: 32px;
+  gap: 6px;
+  border-radius: 6px;
+}
+@media (max-width: 1100px) {
+  .task-toolbar-filters {
+    gap: 16px;
+    width: 100%;
+    flex: 0 0 100%;
+  }
+  .task-toolbar .search {
+    width: 180px;
+  }
+  .task-toolbar-filters > .search {
+    width: auto;
+    flex: 1 1 0;
+  }
+}
+/* Desktop keeps search, select and actions on one row. */
+@media (min-width: 621px) {
+  .task-toolbar .task-toolbar-filters {
+    width: auto;
+    flex: 1 1 auto;
+    gap: 12px;
+    min-width: 0;
+  }
+  .task-toolbar .task-toolbar-filters > .search {
+    width: 180px;
+    max-width: 180px;
+    min-width: 80px;
+    flex: 1 1 180px;
+  }
+  .task-toolbar .toolbar-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}
+@media (min-width: 721px) {
+  .task-toolbar {
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+}
+@media (min-width: 621px) and (max-width: 900px) {
+  .task-toolbar .task-toolbar-filters > .task-status-field {
+    width: 124px;
+    flex-basis: 124px;
+  }
+  .task-toolbar .task-status-field .native-select {
+    width: 88px;
+    min-width: 88px;
+  }
+  .task-toolbar .toolbar-actions button {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .task-toolbar .toolbar-refresh {
+    min-width: 64px;
+  }
+}
+/* Mobile uses a search row and a filter/action row; 32px faces keep 40px touch targets. */
+@media (max-width: 620px) {
+  .toolbar-actions button {
+    font-size: 12px;
+  }
+  .toolbar {
+    gap: 8px;
+  }
+  .toolbar h1 {
+    white-space: nowrap;
+  }
+  .task-toolbar {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .task-toolbar-filters {
+    width: 100%;
+    gap: 12px;
+  }
+  .task-toolbar .search {
+    flex: 1;
+    width: auto;
+  }
+  .task-status-field select {
+    width: 88px;
+  }
+  .task-toolbar .toolbar-actions {
+    margin-left: auto;
+    display: flex;
+    margin: 0;
+    grid-column: 2;
+    grid-row: 2;
+    order: 0;
+    width: auto;
+    gap: 4px;
+  }
+  .toolbar-select .semi-select {
+    width: 100px;
+  }
+  #icons-page > .toolbar,
+  .task-toolbar {
+    margin-bottom: 12px;
+    background: transparent;
+  }
+  .task-toolbar .toolbar-refresh {
+    font-size: 12px;
+    padding: 0 10px;
+    min-width: 80px;
+    background: var(--bg);
+  }
+  .task-toolbar-filters > .task-status-field {
+    width: 136px;
+    flex-basis: 136px;
+  }
+  .task-toolbar-filters .task-status-field .semi-select {
+    width: 100px;
+    min-width: 100px;
+  }
+  #icons-page > .task-toolbar,
+  #tasks-page > .task-toolbar,
+  .terminal-list-view > .task-toolbar {
+    flex-direction: column;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px 8px;
+  }
+  .task-toolbar .task-toolbar-filters {
+    display: contents;
+  }
+  .task-toolbar .task-toolbar-filters > .search {
+    order: 0;
+    flex: none;
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    background: var(--bg);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    grid-column: 1/-1;
+    grid-row: 1;
+  }
+  .task-toolbar .search:focus-within {
+    border-color: var(--blue);
+  }
+  .task-toolbar .search input {
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .task-toolbar .toolbar-actions button {
+    height: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .task-toolbar .toolbar-actions .primary {
+    flex: none;
+    color: var(--blue);
+  }
+  .task-toolbar .task-toolbar-filters > .task-status-field {
+    order: 2;
+    flex: none;
+    width: 100%;
+    gap: 0;
+    min-height: 40px;
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+  }
+  .task-toolbar .task-status-field > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #task-status,
+  #icon-source-filter {
+    width: 100%;
+    display: block;
+  }
+  .desktop-toolbar-filter {
+    display: none;
+  }
+  .mobile-toolbar-filter {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .mobile-toolbar-filter button {
+    height: 40px;
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    line-height: 20px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--semi-color-fill-0);
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .mobile-toolbar-filter button[aria-pressed='true'] {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .mobile-toolbar-filter button:active {
+    opacity: 0.75;
+  }
+  .task-toolbar > h1.sr-only {
+    display: none;
+  }
+  .task-toolbar .toolbar-actions .primary:active {
+    background: var(--blue-soft);
+  }
+  .task-toolbar .toolbar-actions .toolbar-refresh {
+    display: none;
+  }
+  .task-toolbar .toolbar-action-label {
+    display: none;
+  }
+  .task-toolbar .mobile-auth-icon {
+    display: inline-flex;
+  }
+  .task-toolbar .toolbar-actions button:not(.toolbar-refresh) {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    gap: 0;
+    position: relative;
+    isolation: isolate;
+  }
+  .task-toolbar .toolbar-actions svg {
+    width: 20px;
+    height: 20px;
+  }
+  .task-toolbar .mobile-toolbar-filter {
+    gap: 8px;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* A reserved horizontal track must not increase the filter-to-card gap. */
+    margin-bottom: calc(0px - var(--app-scrollbar-horizontal-gutter, 0px));
+  }
+  .task-toolbar .mobile-toolbar-filter button {
+    padding: 0 10px;
+    flex-shrink: 0;
+  }
+  .task-toolbar .mobile-toolbar-filter button,
+  .task-toolbar .mobile-toolbar-filter button[aria-pressed='true'] {
+    position: relative;
+    isolation: isolate;
+    background: transparent;
+    border-radius: 6px;
+  }
+  .task-toolbar .mobile-toolbar-filter button::before {
+    content: '';
+    position: absolute;
+    inset: 4px 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--semi-color-fill-0);
+    border-radius: 6px;
+  }
+  .task-toolbar .mobile-toolbar-filter button[aria-pressed='true']::before {
+    background: var(--text);
+  }
+  .task-toolbar .toolbar-actions button:not(.toolbar-refresh)::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    inset: 4px 0;
+    border-radius: 6px;
+    background: var(--semi-color-fill-0);
+  }
+  .task-toolbar .toolbar-actions button:not(.toolbar-refresh),
+  .task-toolbar .toolbar-actions .primary:active {
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+  }
+  .task-toolbar .task-status-field > div {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Adjacent filter selects stay together in page and dialog toolbars. */
+.toolbar-select-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 1 252px;
+}
+.toolbar-select-group > .toolbar-select {
+  flex: 1;
+  min-width: 0;
+}
+.toolbar-select-group .toolbar-select .semi-select {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .task-toolbar .toolbar-select-group {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+}

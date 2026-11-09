@@ -1,0 +1,74 @@
+/* One appearance and one activity class for native, Semi and terminal scrollbars. */
+:root {
+  --app-scrollbar-size: 2px;
+  --app-scrollbar-inset: 2px;
+  --app-scrollbar-fade: 350ms;
+}
+/* Animate a typed property on the host: native scrollbar pseudo-elements do not
+   reliably interpolate their own background transitions in embedded Chromium. */
+@property --app-scrollbar-thumb {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+:where(*) {
+  --app-scrollbar-thumb: transparent;
+  transition: --app-scrollbar-thumb var(--app-scrollbar-fade) ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-scrollbar-thumb) transparent;
+}
+.scrollbar-scrolling {
+  --app-scrollbar-thumb: var(--semi-color-fill-2);
+  transition-duration: 60ms;
+}
+/* Use the pixel width in Chromium/WebKit; other engines retain their native thin width. */
+@supports selector(::-webkit-scrollbar) {
+  :where(*),
+  .scrollbar-scrolling {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
+:where(*)::-webkit-scrollbar,
+.semi-light-scrollbar::-webkit-scrollbar,
+.semi-light-scrollbar *::-webkit-scrollbar {
+  width: calc(var(--app-scrollbar-size) + 2 * var(--app-scrollbar-inset));
+  height: calc(var(--app-scrollbar-size) + 2 * var(--app-scrollbar-inset));
+}
+:where(*)::-webkit-scrollbar-track,
+.semi-light-scrollbar::-webkit-scrollbar-track,
+.semi-light-scrollbar *::-webkit-scrollbar-track,
+:where(*)::-webkit-scrollbar-corner {
+  background: transparent;
+}
+:where(*)::-webkit-scrollbar-thumb,
+.semi-light-scrollbar::-webkit-scrollbar-thumb,
+.semi-light-scrollbar *::-webkit-scrollbar-thumb {
+  background: var(--app-scrollbar-thumb) !important;
+  background-clip: padding-box !important;
+  border: var(--app-scrollbar-inset) solid transparent;
+  border-radius: 999px;
+}
+/* xterm renders a DOM slider: share its look while retaining the wider hit area. */
+.xterm .xterm-scrollable-element > .scrollbar.vertical {
+  opacity: 1 !important;
+  background: transparent !important;
+}
+.xterm .xterm-scrollable-element > .scrollbar.vertical > .slider {
+  width: var(--app-scrollbar-size) !important;
+  left: auto !important;
+  right: var(--app-scrollbar-inset);
+  border-radius: 999px;
+  background: var(--semi-color-fill-2) !important;
+  opacity: 0 !important;
+  transition: opacity var(--app-scrollbar-fade) ease-out;
+}
+.xterm.scrollbar-scrolling .xterm-scrollable-element > .scrollbar.vertical > .slider {
+  opacity: 1 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(*),
+  .xterm .xterm-scrollable-element > .scrollbar.vertical > .slider {
+    transition: none;
+  }
+}

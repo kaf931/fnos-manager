@@ -1,0 +1,640 @@
+/* Keep container logos in a fixed box, and reserve validation space to avoid modal recentering. */
+.container-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  position: relative;
+}
+.container-icon > svg {
+  width: 20px;
+  height: 20px;
+}
+.container-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  border-radius: 6px;
+}
+.container-icon.has-image > svg {
+  display: none;
+}
+.container-item {
+  min-height: 56px;
+}
+.container-item:has(img[src]) {
+  align-items: center;
+}
+#entry-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+#editor > .dialog-header,
+#entry-form > .tabs,
+#entry-form > .dialog-footer {
+  flex-shrink: 0;
+}
+#entry-form .editor-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+#entry-form .form-panel {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+#entry-form #docker-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#entry-form .container-list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+#form-error,
+#form-error[hidden] {
+  display: block !important;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  margin: 0;
+  padding-top: 12px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+#form-error[hidden] {
+  visibility: hidden;
+}
+@media (max-width: 620px) {
+  #entry-form #docker-panel {
+    flex: 0 0 180px;
+    max-height: 180px;
+  }
+  #entry-form .form-panel {
+    flex: 1;
+  }
+}
+/* Keep modal actions visible while long task fields scroll inside the dialog. */
+#task-editor {
+  overflow: hidden;
+}
+#task-form {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 0;
+}
+#task-editor > .dialog-header,
+#task-form > .dialog-footer {
+  flex: 0 0 auto;
+}
+#task-form > .task-form-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+/* Popups live directly in the native dialog top layer, outside the scrolling form. */
+#task-editor {
+  overflow: visible;
+}
+#task-form {
+  overflow: hidden;
+  border-radius: inherit;
+}
+.task-form-control {
+  width: 100%;
+  min-width: 0;
+}
+.task-form-control .semi-select,
+.task-form-control .semi-timepicker,
+.task-form-control .semi-datepicker {
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--semi-color-input-DefaultBg);
+  border: 1px solid var(--semi-color-border);
+}
+.task-form-control .semi-select:hover,
+.task-form-control .semi-timepicker:hover,
+.task-form-control .semi-datepicker:hover {
+  border-color: var(--semi-color-border-hover);
+}
+#task-form .task-form-control input {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  min-height: 0;
+  font-size: 14px;
+}
+.task-form-dropdown {
+  max-height: 240px;
+}
+.task-form-dropdown .semi-select-option-list {
+  max-height: 240px;
+}
+.task-form-dropdown .semi-select-option {
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 32px;
+}
+#task-editor .semi-portal {
+  pointer-events: auto;
+}
+/* Component input wrappers own their focus ring; never outline the inner input. */
+.task-form-control .semi-timepicker,
+.task-form-control .semi-datepicker {
+  border: 0;
+  background: transparent;
+}
+.task-form-control .semi-input-wrapper {
+  height: 32px;
+  border: 1px solid var(--semi-color-border);
+  border-radius: 6px;
+  background: var(--semi-color-input-DefaultBg);
+}
+.task-form-control .semi-input-wrapper:hover {
+  border-color: var(--semi-color-border-hover);
+}
+.task-form-control .semi-input-wrapper-focus,
+.task-form-control .semi-select-focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
+}
+.task-form-control input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.task-form-control .semi-input-wrapper .semi-input {
+  padding: 0 12px !important;
+  height: 30px;
+  line-height: 30px;
+  background: transparent;
+}
+.task-form-dropdown .semi-select-option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.task-form-dropdown,
+.task-form-time-popup,
+.task-form-date-popup {
+  border-radius: 6px;
+  box-shadow: var(--semi-shadow-elevated);
+  background: var(--bg);
+  color: var(--text);
+}
+.task-form-dropdown .semi-select-option-list,
+.task-form-dropdown .semi-select-option-list-wrapper,
+.task-form-time-popup .semi-scrolllist-item,
+.task-form-date-popup .semi-scrolllist-item {
+  overscroll-behavior: contain;
+}
+#editor {
+  overflow: visible;
+}
+#entry-form {
+  overflow: hidden;
+  border-radius: inherit;
+}
+input[type='checkbox']:not(.semi-switch-native-control),
+input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 2px 0;
+  border: 1px solid var(--semi-color-border);
+  background: var(--bg);
+  border-radius: 3px;
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+input[type='checkbox']:not(.semi-switch-native-control):checked {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+input[type='checkbox']:not(.semi-switch-native-control):checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type='radio'] {
+  border-radius: 50%;
+}
+input[type='radio']:checked {
+  border-color: var(--blue);
+}
+input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+input[type='checkbox']:not(.semi-switch-native-control):hover,
+input[type='radio']:hover {
+  border-color: var(--blue);
+}
+input[type='checkbox']:not(.semi-switch-native-control):disabled,
+input[type='radio']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+button.danger {
+  color: var(--semi-color-danger);
+  border-color: var(--semi-color-danger);
+  background: transparent;
+}
+button.danger:hover {
+  background: var(--semi-color-danger-light-default);
+  color: var(--semi-color-danger-hover);
+}
+button.danger:active {
+  background: var(--semi-color-danger-light-active);
+}
+/* Semi sets a 270px inline list limit; keep it inside the 244px popup including padding. */
+.task-form-dropdown .semi-select-option-list {
+  max-height: 236px !important;
+}
+.form-error {
+  color: var(--semi-color-danger);
+}
+.task-form-control .semi-input-wrapper.semi-input-wrapper-focus,
+.task-form-control .semi-select.semi-select-focus {
+  border-color: var(--blue);
+}
+.task-history-sheet .semi-sidesheet-inner {
+  background: var(--bg);
+  color: var(--text);
+}
+.task-history-sheet .semi-sidesheet-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.task-history-sheet .semi-sidesheet-title {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.history-task-name {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--muted);
+  margin: 4px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: calc(100vw - 100px);
+}
+.task-history-sheet .semi-sidesheet-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.history-sheet-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.history-sheet-toolbar button {
+  height: 32px;
+  min-width: 64px;
+}
+.history-sheet-table {
+  padding: 0 24px;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+.history-sheet-table .semi-table {
+  font-size: 12px;
+}
+.history-sheet-table .semi-table-thead > tr > th {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  background: var(--soft);
+}
+.history-sheet-table .semi-table-row-cell {
+  font-size: 12px;
+  height: 44px;
+}
+.history-sheet-table .text-button {
+  padding: 0;
+  min-height: 24px;
+  font-size: 12px;
+}
+.history-row-selected > td {
+  background: var(--blue-soft) !important;
+}
+.history-sheet-table .semi-table-pagination-outer {
+  padding: 12px 0;
+}
+.history-run-detail {
+  flex: 0 0 auto;
+  margin: 16px 24px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  min-height: 0;
+}
+.history-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.history-detail-heading strong {
+  font-weight: 500;
+  margin-right: auto;
+}
+.history-detail-heading button {
+  font-size: 12px;
+  padding: 4px 8px;
+  min-height: 28px;
+}
+.history-run-output {
+  max-height: 28dvh;
+  min-height: 80px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  font:
+    12px/20px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  color: var(--text);
+  margin: 12px 0 0;
+}
+.history-sheet-footnote {
+  padding: 12px 24px 16px;
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.history-sheet-error {
+  margin: 0 24px 12px;
+}
+@media (max-width: 620px) {
+  .task-history-sheet .semi-sidesheet-header {
+    padding: 16px;
+  }
+  .history-sheet-toolbar {
+    padding: 12px 16px;
+  }
+  .history-sheet-table {
+    padding: 0 16px;
+  }
+  .history-run-detail {
+    margin: 12px 16px 0;
+  }
+  .history-sheet-footnote {
+    padding: 12px 16px;
+  }
+  .history-run-output {
+    max-height: 24dvh;
+  }
+}
+.history-sheet-table {
+  overflow: hidden;
+}
+.history-sheet-table .semi-table-body {
+  overscroll-behavior: contain;
+}
+.history-sheet-table .semi-table-header {
+  overflow-y: hidden !important;
+}
+/* Match the native inset content surface and keep a single focus border. */
+.layout {
+  background: var(--sidebar);
+}
+.layout main {
+  margin: 8px 8px 8px 180px;
+  height: calc(100dvh - 16px);
+  min-height: 0;
+  max-width: calc(100% - 188px);
+  border-radius: 12px;
+  background: var(--bg);
+}
+@media (max-width: 850px) {
+  .layout main {
+    margin-left: 160px;
+    max-width: calc(100% - 168px);
+  }
+}
+@media (max-width: 620px) {
+  .layout main {
+    margin: 56px 8px 8px;
+    max-width: calc(100% - 16px);
+    height: calc(100dvh - 64px);
+    border-radius: 10px;
+  }
+}
+.task-form-body
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([hidden]):focus,
+.task-form-body textarea:focus,
+.form-textarea:focus,
+.form-input:focus,
+.form-panel > input:focus {
+  outline: none;
+  outline-offset: 0;
+  border-color: var(--blue);
+  box-shadow: none;
+}
+.task-form-control .semi-input-wrapper-focus,
+.task-form-control .semi-select-focus {
+  box-shadow: none;
+}
+.task-history-sheet .semi-sidesheet-inner {
+  inset: 8px;
+  height: calc(100% - 16px);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.task-history-sheet .semi-sidesheet-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+  background: var(--bg);
+}
+#task-history-pagination {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+.task-history-sheet .history-sheet-table {
+  overflow: hidden;
+}
+@media (max-width: 620px) {
+  .task-history-sheet .semi-sidesheet-inner {
+    inset: 6px;
+    height: calc(100% - 12px);
+    max-width: calc(100vw - 12px);
+  }
+  .task-history-sheet .semi-sidesheet-footer {
+    padding: 12px 16px;
+  }
+  #task-history-pagination .task-pagination-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #task-history-pagination .semi-page {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+}
+.task-history-sheet .semi-sidesheet-inner {
+  left: auto;
+  right: 8px;
+  top: 8px;
+  bottom: 8px;
+  height: calc(100% - 16px) !important;
+}
+@media (max-width: 620px) {
+  .task-history-sheet .semi-sidesheet-inner {
+    left: auto;
+    right: 8px;
+    top: 8px;
+    bottom: 8px;
+    height: calc(100% - 16px) !important;
+    max-width: calc(100vw - 16px);
+  }
+}
+.search:focus-within {
+  border-color: var(--blue);
+}
+.search input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+@media (max-width: 620px) {
+  .sidebar {
+    display: flex !important;
+    position: fixed;
+    inset: auto 12px 8px;
+    width: auto;
+    height: 64px;
+    padding: 8px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: 0 2px 10px rgb(0 0 0 / 5%);
+    overflow: hidden;
+    z-index: 20;
+  }
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--line);
+    border-radius: inherit;
+    clip-path: inset(0 0 50% 0);
+    pointer-events: none;
+  }
+  .sidebar .sidebar-bottom {
+    display: none;
+  }
+  .sidebar nav {
+    display: flex;
+    width: 100%;
+    height: 48px;
+    gap: 4px;
+  }
+  .sidebar .nav-item {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 48px;
+    min-height: 48px;
+    padding: 4px;
+    gap: 2px;
+    font-size: 12px;
+    line-height: 16px;
+    border-radius: 6px;
+  }
+  .sidebar .nav-item + .nav-item {
+    margin: 0;
+  }
+  .sidebar .nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+  .layout main {
+    margin: 8px 8px 64px;
+    height: calc(100dvh - 72px);
+    max-width: calc(100% - 16px);
+  }
+}
+.task-table .col-actions {
+  width: 164px;
+}
+
+/* Compact batch dialogs grow with their content instead of reserving empty space. */
+.terminal-dialog.content-sized-dialog > .task-form-body {
+  flex: 0 1 auto;
+}
+
+/* React owns the shared header; the editor form fills only the remaining body. */
+#editor[open] {
+  display: flex;
+  flex-direction: column;
+}
+#editor > #entry-form {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}

@@ -1,0 +1,26 @@
+.config-backup-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.task-table.config-backup-table {
+  min-width: 520px;
+}
+.config-backup-table th:first-child {
+  width: 100px;
+}
+.config-backup-table th:last-child {
+  width: 180px;
+}
+.config-backup-table .native-select {
+  width: 100%;
+}
+.config-backup-table input,
+.config-backup-table .native-select + .native-select {
+  margin-top: 8px;
+}
+.config-backup-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

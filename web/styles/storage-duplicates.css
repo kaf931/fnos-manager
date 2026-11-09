@@ -1,0 +1,484 @@
+.storage-duplicate-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.storage-duplicate-dialog > .task-form-body {
+  min-height: 0;
+  overflow: auto;
+}
+.storage-duplicate-dialog .terminal-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.storage-duplicate-preview {
+  margin-top: 16px;
+  max-height: 280px;
+  overflow: auto;
+}
+.storage-duplicate-preview .task-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+.storage-duplicate-preview td {
+  overflow-wrap: anywhere;
+}
+.storage-duplicate-dialog [data-directory] {
+  width: 100%;
+  max-width: 100%;
+}
+@media (max-width: 620px) {
+  .storage-duplicate-dialog .terminal-choice {
+    grid-template-columns: 1fr;
+  }
+}
+.storage-duplicate-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 400px !important;
+}
+.storage-duplicate-table th.col-selection {
+  width: 40px;
+}
+.storage-duplicate-table th:nth-child(3) {
+  width: 120px;
+}
+.storage-duplicate-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+.storage-duplicate-table [data-group-details] {
+  cursor: pointer;
+}
+.storage-group-name {
+  font-weight: 400 !important;
+  text-align: left;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.storage-duplicate-path-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.storage-duplicate-path-table th:first-child {
+  width: auto;
+}
+.storage-duplicate-path-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.storage-duplicate-keepers {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+.storage-duplicate-keepers fieldset {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+}
+.storage-duplicate-keepers legend {
+  font-size: 13px;
+  padding: 0 4px;
+}
+.storage-duplicate-keepers label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 12px;
+  margin: 0;
+}
+.storage-duplicate-keepers label span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.storage-duplicate-keepers input {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.storage-duplicate-keepers small {
+  color: var(--muted);
+}
+.storage-duplicate-dialog > .dialog-header,
+.storage-duplicate-dialog > .dialog-footer {
+  flex-shrink: 0;
+}
+.storage-duplicate-dialog > .task-form-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+}
+.storage-duplicate-action-panel {
+  min-height: 108px;
+}
+.storage-duplicate-dialog [data-error] {
+  min-height: 32px;
+  margin-top: 12px;
+}
+.storage-duplicate-dialog [data-error][hidden] {
+  display: block !important;
+  visibility: hidden;
+}
+.storage-duplicate-keepers input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  flex: 0 0 16px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+}
+.storage-duplicate-auto-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+.storage-duplicate-auto-preview article {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+}
+.storage-duplicate-auto-preview span {
+  overflow-wrap: anywhere;
+}
+.storage-duplicate-auto-preview small {
+  color: var(--muted);
+}
+.storage-duplicate-table th:nth-child(4) {
+  width: 120px;
+}
+@media (max-width: 620px) {
+}
+.duplicate-file-picker {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  height: 280px;
+  min-height: 220px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.duplicate-group-list {
+  overflow: auto;
+  background: var(--soft);
+  padding: 8px;
+  border-right: 1px solid var(--line);
+}
+.duplicate-group-list .container-item {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 56px;
+  white-space: normal;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.duplicate-group-list .container-item > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.duplicate-group-list strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.duplicate-group-list small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.duplicate-group-list .container-item.selected {
+  border-color: var(--blue);
+  background: var(--bg);
+  color: var(--blue);
+}
+.duplicate-file-list {
+  min-width: 0;
+  overflow: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.storage-duplicate-dialog .duplicate-file-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px;
+  min-height: 76px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  background: var(--bg);
+}
+.storage-duplicate-dialog .duplicate-file-option.selected {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.duplicate-file-option input[type='radio'] {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0;
+  padding: 0;
+}
+.duplicate-file-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.duplicate-file-copy strong {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.duplicate-file-copy small {
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.duplicate-file-state {
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.selected > .duplicate-file-state {
+  color: var(--blue);
+}
+@media (max-width: 620px) {
+  .duplicate-file-picker {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 72px minmax(0, 1fr);
+    height: 320px;
+  }
+  .duplicate-group-list {
+    display: flex;
+    gap: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .duplicate-group-list .container-item {
+    flex: 0 0 160px;
+    margin: 0;
+  }
+  .duplicate-file-list {
+    padding: 10px;
+  }
+  .storage-duplicate-dialog .duplicate-file-option {
+    padding: 10px;
+    gap: 8px;
+  }
+}
+.duplicate-options-row {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+  min-height: 0;
+  align-items: start;
+}
+.duplicate-options-row label {
+  margin: 0 0 6px !important;
+  font-size: 13px;
+}
+.duplicate-options-row .storage-duplicate-action-panel {
+  min-height: 0;
+}
+.duplicate-options-row [data-directory] {
+  height: 32px;
+  min-height: 32px;
+}
+.duplicate-options-row .help {
+  font-size: 11px;
+  margin-top: 4px;
+}
+.duplicate-options-row .task-form-control {
+  width: 100%;
+}
+.storage-duplicate-dialog .terminal-choice > label {
+  min-height: 48px;
+}
+.duplicate-file-picker {
+  height: 260px;
+}
+.storage-duplicate-dialog .task-form-body label.duplicate-file-option {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  margin: 0;
+  padding: 12px;
+  gap: 10px;
+  min-height: 76px;
+}
+.storage-duplicate-dialog .task-form-body label.duplicate-file-option .duplicate-file-copy {
+  display: flex;
+  flex-direction: column;
+}
+.storage-duplicate-dialog .task-form-body label.duplicate-file-option .duplicate-file-state {
+  display: inline-flex;
+}
+.storage-duplicate-dialog .task-form-body label.duplicate-file-option input {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+}
+@media (max-width: 620px) {
+  .duplicate-options-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .duplicate-options-row .storage-duplicate-action-panel {
+    min-height: 0;
+  }
+  .duplicate-file-picker {
+    height: 280px;
+  }
+}
+.duplicate-grouped-list {
+  height: 280px;
+  min-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-anchor: none;
+}
+.duplicate-review-group + .duplicate-review-group {
+  border-top: 1px solid var(--line);
+}
+.duplicate-review-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  border-radius: 0;
+  padding: 10px 12px;
+  background: var(--soft);
+  gap: 8px;
+  text-align: left;
+}
+.duplicate-review-heading strong {
+  min-width: 0;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.duplicate-review-heading > span {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.duplicate-review-heading > svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+.duplicate-review-heading[aria-expanded='true'] > svg {
+  transform: rotate(90deg);
+}
+.duplicate-review-files {
+  padding: 0 12px;
+}
+.storage-duplicate-dialog .duplicate-review-files label.duplicate-file-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  min-height: 68px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+.storage-duplicate-dialog .duplicate-review-files label.duplicate-file-option:last-child {
+  border-bottom: 0;
+}
+.storage-duplicate-dialog .duplicate-review-files label.duplicate-file-option.selected {
+  background: transparent;
+}
+.duplicate-review-files .selected .duplicate-file-state {
+  color: var(--blue);
+  background: var(--blue-soft);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.duplicate-review-files .duplicate-file-copy strong {
+  font-size: 12px;
+}
+.duplicate-review-files .duplicate-file-copy small {
+  font-size: 11px;
+}
+.duplicate-review-files .duplicate-file-state {
+  min-width: 52px;
+  text-align: center;
+}
+@media (max-width: 620px) {
+  .duplicate-grouped-list {
+    height: 280px;
+  }
+  .duplicate-review-files {
+    padding: 0 10px;
+  }
+  .storage-duplicate-dialog .duplicate-review-files label.duplicate-file-option {
+    gap: 8px;
+  }
+}
+.storage-duplicate-dialog .duplicate-review-files .duplicate-file-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 24px;
+  padding: 2px 8px;
+  line-height: 20px;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: normal;
+}
+
+.storage-duplicate-dialog .duplicate-options-row + .terminal-choice-field {
+  margin-top: 16px;
+}
+.duplicate-options-row .task-form-control {
+  margin-bottom: 0;
+}
+
+/* Generated artwork shares sizing across storage entry and scan views. */

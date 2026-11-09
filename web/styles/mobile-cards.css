@@ -1,0 +1,284 @@
+/* Shared mobile card geometry and compositor-based pull-to-refresh feedback. */
+.pull-refresh-indicator {
+  height: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 20px;
+  pointer-events: none;
+}
+@media (min-width: 621px) {
+  .pull-refresh-indicator {
+    display: none;
+  }
+}
+
+.pull-refresh-indicator svg {
+  width: 20px;
+  height: 20px;
+  color: var(--blue);
+  transform: rotate(var(--pull-angle, 0deg));
+  flex-shrink: 0;
+}
+.pull-refresh-indicator.refreshing svg {
+  animation: pull-refresh-spin 0.8s linear infinite;
+}
+@keyframes pull-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh-indicator.refreshing svg {
+    animation: none;
+  }
+}
+
+/* Continuous mobile lists, shared card content and accessible card actions. */
+@media (max-width: 620px) {
+  #task-pagination {
+    display: none;
+  }
+  .task-history-sheet .semi-sidesheet-footer {
+    display: none;
+  }
+  #cards,
+  #task-mobile-list,
+  #empty,
+  #task-empty,
+  .history-mobile-list {
+    overscroll-behavior-y: contain;
+  }
+  .history-sheet-toolbar > button {
+    display: none;
+  }
+  .mobile-task-title h3,
+  .card h3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    height: 48px;
+    min-height: 48px;
+    line-height: 24px;
+  }
+  .mobile-task-title p {
+    height: 18px;
+    min-height: 18px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 0;
+  }
+  .mobile-task-kind {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .mobile-status-dot {
+    flex-shrink: 0;
+  }
+  .mobile-task-facts strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 22px;
+    height: auto;
+    min-height: 0;
+    max-height: 44px;
+  }
+  .mobile-task-next > span:not(.switch-control) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-main {
+    min-height: 72px;
+    padding-right: 52px;
+  }
+  .card-url {
+    line-height: 18px;
+    height: 18px;
+  }
+  .card-meta {
+    white-space: nowrap;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 16px 0;
+  }
+  .tool-page {
+    --mobile-card-radius: 16px;
+    --mobile-card-padding: 16px;
+    --mobile-card-icon: 48px;
+    --mobile-card-gap: 12px;
+  }
+  #icons-page #cards,
+  #task-mobile-list:not([hidden]) {
+    gap: var(--mobile-card-gap);
+  }
+  .card,
+  .mobile-task-card {
+    border-radius: var(--mobile-card-radius);
+    background: var(--bg);
+    border: 0;
+    overflow: hidden;
+  }
+  .cards {
+    grid-auto-rows: max-content;
+  }
+  .card {
+    padding: var(--mobile-card-padding) var(--mobile-card-padding) 0;
+  }
+  .card-main,
+  .mobile-task-heading {
+    gap: var(--mobile-card-gap);
+    align-items: center;
+    min-height: var(--mobile-card-icon);
+  }
+  .card-info {
+    padding-right: 0;
+  }
+  .mobile-task-heading {
+    padding: var(--mobile-card-padding);
+  }
+  .card-main img,
+  .mobile-task-icon {
+    width: var(--mobile-card-icon);
+    height: var(--mobile-card-icon);
+    flex: 0 0 var(--mobile-card-icon);
+    border-radius: 12px;
+  }
+  .mobile-task-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  .card h3,
+  .mobile-task-title h3 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    height: auto;
+    min-height: 0;
+    max-height: 48px;
+    margin: 0 0 4px;
+  }
+  .card-url,
+  .mobile-task-title p {
+    font-size: 12px;
+    line-height: 18px;
+    height: 18px;
+  }
+  .mobile-task-heading > .mobile-more-button {
+    flex: 0 0 40px;
+  }
+  .mobile-task-facts {
+    padding: 16px;
+  }
+  .card-actions {
+    padding: 12px 0;
+    min-height: 44px;
+  }
+  .mobile-task-next {
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+  .mobile-task-card {
+    position: relative;
+  }
+  .mobile-task-heading {
+    padding-right: 68px;
+  }
+  .mobile-task-heading .mobile-more-button {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 16px;
+    right: 16px;
+  }
+  .pull-refresh-indicator svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text);
+  }
+  .mobile-more-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 6px;
+    line-height: 1;
+    color: var(--muted);
+    background: transparent;
+    gap: 0;
+  }
+  .mobile-more-button svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Pull feedback moves on the compositor instead of resizing the flex list. */
+/* Gesture wrappers keep the page's flex sizing and scroll boundaries intact. */
+.tool-page > .pull-refresh-host,
+.tool-page > .pull-refresh-host > .pull-refresh-surface,
+.terminal-list-view > .pull-refresh-host,
+.terminal-list-view > .pull-refresh-host > .pull-refresh-surface,
+.storage-workspace-content > .pull-refresh-host,
+.storage-workspace-content > .pull-refresh-host > .pull-refresh-surface {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.pull-refresh-host {
+  position: relative;
+}
+.pull-refresh-host > .pull-refresh-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 44px;
+  opacity: 0;
+  transform: translate3d(0, -22px, 0);
+  transition:
+    transform 0.22s ease-out,
+    opacity 0.18s ease-out;
+}
+.pull-refresh-surface {
+  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.pull-refresh-surface.pull-refresh-dragging {
+  transition: none;
+  will-change: transform;
+}
+.pull-refresh-host:has(.pull-refresh-dragging) > .pull-refresh-indicator {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh-surface,
+  .pull-refresh-host > .pull-refresh-indicator {
+    transition: none;
+  }
+}

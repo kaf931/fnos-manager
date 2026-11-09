@@ -1,0 +1,423 @@
+/* Task headers and cells share one fixed-layout table and one horizontal scroll container. */
+#tasks-page {
+  min-width: 0;
+}
+#task-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overscroll-behavior-x: contain;
+}
+.task-table {
+  table-layout: fixed;
+  min-width: 940px;
+  width: 100%;
+}
+.task-table .col-plan {
+  width: 160px;
+}
+.task-table .col-next {
+  width: 140px;
+}
+.task-table .col-result {
+  width: 92px;
+}
+.task-table .col-state {
+  width: 90px;
+}
+.task-table .col-actions {
+  width: 224px;
+}
+.task-table th,
+.task-table td {
+  box-sizing: border-box;
+  text-align: left !important;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.task-table th {
+  height: 40px;
+  white-space: nowrap;
+}
+.task-table td {
+  height: 72px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.task-table strong {
+  max-width: none;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.task-table small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-actions {
+  justify-content: flex-start;
+  gap: 8px;
+}
+.task-actions button {
+  flex: none;
+  min-height: 28px;
+  padding: 0 1px;
+}
+.task-pagination {
+  margin-top: 16px;
+  min-height: 32px;
+  flex-shrink: 0;
+}
+.task-pagination-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pagination-total {
+  font-size: 12px;
+  color: var(--muted);
+}
+.task-pagination-inner .semi-page {
+  margin: 0;
+}
+.task-pagination-inner .semi-page-item {
+  min-height: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.task-pagination-inner .semi-page-item:focus-visible {
+  outline: 2px solid var(--blue);
+}
+.task-pagination-inner .semi-select {
+  font-size: 12px;
+}
+.layout main {
+  max-width: calc(100% - 180px);
+}
+@media (max-width: 850px) {
+  .layout main {
+    max-width: calc(100% - 160px);
+  }
+}
+@media (max-width: 620px) {
+  .layout main {
+    max-width: 100%;
+  }
+  .task-pagination-inner {
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .task-pagination-inner .semi-page {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .filters {
+    gap: 12px;
+  }
+}
+/* The application owns its scroll areas; pagination stays in the bottom layout row. */
+html {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+body {
+  overflow: hidden;
+}
+.layout {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.layout main {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.tool-page {
+  min-height: 0;
+}
+.tool-page > .toolbar,
+.tool-page > .filterbar,
+.tool-page > .section-label,
+.tool-page > .notice {
+  flex-shrink: 0;
+}
+#icons-page {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+#tasks-page {
+  overflow: hidden;
+}
+#task-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  margin-bottom: 0;
+}
+.task-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.task-table th {
+  background: linear-gradient(var(--semi-color-fill-0), var(--semi-color-fill-0)), var(--bg);
+}
+.native-pagination {
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+#task-empty {
+  min-height: 0;
+  overflow: auto;
+}
+#tasks-page .task-pagination-inner .semi-page {
+  flex-wrap: nowrap;
+}
+@media (max-width: 620px) {
+  .layout main {
+    height: calc(100vh - 48px);
+    height: calc(100dvh - 48px);
+    min-height: 0;
+  }
+  .native-pagination {
+    padding-top: 12px;
+  }
+  .task-pagination-inner {
+    gap: 6px;
+  }
+  .task-pagination-inner .semi-page-item {
+    min-width: 24px;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+}
+/* Reference: fnOS Logs application, single toolbar and compact list with a bottom pager. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+#task-table-wrap {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+.task-table {
+  min-width: 820px;
+}
+.task-table .col-plan {
+  width: 136px;
+}
+.task-table .col-next {
+  width: 132px;
+}
+.task-table .col-result {
+  width: 80px;
+}
+.task-table .col-state {
+  width: 80px;
+}
+.task-table .col-actions {
+  width: 200px;
+}
+.task-table th,
+.task-table td {
+  padding: 6px 12px;
+}
+.task-table th {
+  height: 36px;
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 400;
+  border-bottom: 1px solid var(--line);
+}
+.task-table th + th {
+  position: relative;
+}
+.task-table th + th::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 11px;
+  height: 14px;
+  width: 1px;
+  background: var(--line);
+}
+.task-table td {
+  height: 48px;
+  font-size: 12px;
+}
+.task-table strong {
+  font-size: 12px;
+  line-height: 18px;
+  margin-bottom: 0;
+}
+.task-table small {
+  font-size: 11px;
+  line-height: 16px;
+}
+.task-actions {
+  gap: 6px;
+}
+.task-actions button {
+  font-size: 12px;
+}
+.pagination-summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.pagination-summary .icon-button {
+  width: 20px;
+  min-width: 20px;
+  height: 28px;
+  min-height: 28px;
+  padding: 2px;
+}
+.pagination-summary svg {
+  width: 16px;
+  height: 16px;
+}
+.pagination-total {
+  color: var(--semi-color-text-1);
+}
+.native-pagination {
+  border-top: 0;
+  padding-top: 12px;
+}
+.task-pagination-inner {
+  flex-wrap: nowrap;
+  gap: 16px;
+}
+.task-pagination-inner .semi-page-item {
+  border: 1px solid var(--semi-color-border);
+  min-width: 28px;
+  height: 28px;
+  margin-right: 6px;
+}
+.task-pagination-inner .semi-page-item-active {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+.task-pagination-inner .semi-page-quickjump input {
+  width: 42px;
+}
+@media (max-width: 1100px) {
+  .task-pagination-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #tasks-page .task-pagination-inner .semi-page {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+}
+@media (max-width: 620px) {
+  .task-pagination-inner {
+    align-items: center;
+  }
+  .task-pagination-inner .semi-page-item {
+    min-width: 24px;
+    margin-right: 4px;
+  }
+}
+/* Use the same Semi Select as the pager instead of a browser-native select menu. */
+/* fnOS-style outlined pagination controls, including the existing Semi quick jumper. */
+.task-pagination-inner .semi-select,
+.task-pagination-inner .semi-page-quickjump .semi-input-wrapper {
+  height: 32px;
+  background: var(--semi-color-input-DefaultBg);
+  border: 1px solid var(--semi-color-border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+.task-pagination-inner .semi-select:hover,
+.task-pagination-inner .semi-page-quickjump .semi-input-wrapper:hover {
+  border-color: var(--semi-color-border-hover);
+}
+.task-pagination-inner .semi-select-focus,
+.task-pagination-inner .semi-page-quickjump .semi-input-wrapper:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
+}
+.task-pagination-inner .semi-page-quickjump-input-number {
+  width: 48px;
+  min-width: 48px;
+}
+.task-pagination-inner .semi-page-quickjump input {
+  height: 30px;
+  width: 100%;
+  padding: 0 8px;
+  text-align: center;
+  outline: 0;
+  box-shadow: none;
+  color: var(--text);
+}
+.task-pagination-inner .semi-page-item {
+  height: 32px;
+  min-height: 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.task-pagination-inner .semi-page-item-active {
+  background: var(--blue);
+  color: white;
+}
+.task-pagination-inner .semi-select-selection {
+  color: var(--semi-color-text-1);
+}
+.task-pagination-inner .semi-page-options {
+  align-items: center;
+}
+#icons-page .cards {
+  flex-shrink: 0;
+}
+/* Icon content surfaces own scrolling beneath the shared toolbar. */
+#icons-page {
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+#icons-page #cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+#icons-page #empty {
+  min-height: 0;
+  overflow: auto;
+}
+.card-icon-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-icon-actions button {
+  min-width: 28px;
+  height: 28px;
+}
+.card-icon-actions button:hover {
+  background: var(--semi-color-fill-0);
+}

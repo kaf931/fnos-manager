@@ -1,0 +1,126 @@
+.storage-history-list {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.storage-history-table {
+  width: 100%;
+  min-width: 765px;
+  table-layout: fixed;
+}
+.storage-history-table th.col-selection {
+  width: 40px;
+}
+.storage-history-table input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+.storage-history-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.storage-history-inline .history-sheet-toolbar {
+  padding: 0 0 12px;
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.storage-history-inline .history-pagination {
+  padding-top: 16px;
+}
+.storage-history-inline .history-mobile-list {
+  display: block;
+}
+.storage-history-table .state-badge {
+  font-size: 12px;
+}
+.storage-workspace-content .storage-table td {
+  height: 48px !important;
+  box-sizing: border-box;
+  padding: 6px 12px;
+}
+.storage-history-inline .history-sheet-toolbar,
+#storage-organize > .storage-scope {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+.storage-history-inline .history-pagination {
+  border: 0;
+  background: transparent;
+}
+
+/* Embedded lists already receive the workspace inset; sheet lists retain theirs. */
+.storage-history-inline .history-mobile-list {
+  padding: 0 !important;
+}
+
+@media (max-width: 620px) {
+  .history-compact-list {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .history-compact-list > .help {
+    padding: 12px;
+    margin: 0;
+  }
+  .history-compact-row:last-child {
+    border-bottom: 0;
+  }
+  .history-compact-row {
+    margin-inline: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .history-compact-name {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    overscroll-behavior-x: contain;
+  }
+  .history-compact-name-content {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .history-compact-name-content > button {
+    width: max-content;
+    max-width: none;
+    white-space: nowrap;
+  }
+  .history-compact-count {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .history-compact-meta {
+    max-width: 36%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .history-compact-row > input {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0 4px 0 0;
+  }
+  .history-compact-select-all {
+    justify-content: flex-start;
+  }
+}

@@ -1,0 +1,16 @@
+/* Ordered component styles; keep foundational surfaces before shared toolbar variants. */
+@import './styles/foundation.css';
+@import './styles/task-tables.css';
+@import './styles/dialogs.css';
+@import './styles/mobile-layout.css';
+@import './styles/mobile-cards.css';
+@import './styles/inputs-and-editor.css';
+@import './styles/terminal.css';
+@import './styles/shared-controls.css';
+@import './styles/shared-toolbars.css';
+@import './styles/shared-select.css';
+@import './styles/workspace-rail.css';
+
+@import './styles/appearance.css';
+
+@import './ui/markdown.css';

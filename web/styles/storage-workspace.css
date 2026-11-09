@@ -1,0 +1,549 @@
+/* Storage uses shared toolbar, selects, task table, cards, dialogs and pagination. */
+#storage-page {
+  overflow: hidden;
+}
+.storage-scope {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.storage-scope > .search {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.storage-scope input {
+  flex: 1;
+  min-width: 0;
+}
+.storage-scope button {
+  flex-shrink: 0;
+}
+.storage-summary {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 0 12px;
+  overflow-wrap: anywhere;
+  flex-shrink: 0;
+}
+#storage-table {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+.storage-table {
+  min-width: 600px;
+}
+.storage-table th:first-child {
+  width: 48%;
+}
+.storage-table strong {
+  max-width: none;
+}
+.storage-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.storage-table td {
+  white-space: normal;
+  height: auto !important;
+  min-height: 48px;
+}
+.storage-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.storage-note {
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 8px;
+  flex-shrink: 0;
+}
+#storage-mobile {
+  display: none;
+}
+#storage-empty {
+  min-height: 0;
+  overflow: auto;
+}
+#storage-picker {
+  width: 620px;
+}
+#storage-directory-list {
+  max-height: 48vh;
+  min-height: 100px;
+  overflow: auto;
+}
+#storage-directory-list .container-item {
+  width: 100%;
+  text-align: left;
+  gap: 10px;
+}
+#storage-directory-list svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+#storage-current-directory {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+@media (max-width: 620px) {
+  html[data-page] .sidebar nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  #storage-page > .task-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 8px;
+  }
+  #storage-page .task-toolbar-filters {
+    display: contents;
+  }
+  #storage-page .toolbar-actions {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  #storage-page .storage-scope {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #storage-page .storage-scope > .search {
+    flex-basis: calc(100% - 90px);
+  }
+  #storage-page .storage-scope #storage-start {
+    margin-left: auto;
+  }
+  #storage-table,
+  #storage-pagination {
+    display: none !important;
+  }
+  #storage-mobile:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-card-gap);
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .storage-summary {
+    line-height: 1.6;
+  }
+  .storage-note {
+    line-height: 1.5;
+  }
+}
+
+.storage-history-path {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.history-pagination {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+
+#storage-organize {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.storage-rename-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.storage-rename-list td {
+  overflow-wrap: anywhere;
+}
+.storage-rename-list input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+.storage-rename-list th.col-selection {
+  width: 40px;
+}
+.storage-rename-list th:nth-child(2),
+.storage-rename-list th:nth-child(3) {
+  width: 35%;
+}
+#storage-organize [data-count] {
+  margin-right: auto;
+}
+@media (max-width: 620px) {
+  #storage-organize > .storage-scope {
+    flex-wrap: wrap;
+  }
+  #storage-organize .storage-table {
+    min-width: 0;
+    font-size: 12px;
+  }
+  #storage-organize .task-pagination {
+    display: none !important;
+  }
+  #storage-organize [data-count] {
+    width: 100%;
+  }
+}
+
+.storage-rename-mobile {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mobile-card-gap);
+}
+/* Storage workspace shares the terminal's full-application presentation. */
+.storage-focused .sidebar {
+  display: none !important;
+}
+.storage-focused .layout main {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  min-height: 0;
+  border-radius: 0;
+}
+.storage-focused #storage-page {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  background: var(--sidebar);
+  gap: 0;
+}
+.storage-workspace-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 20px 16px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin: 0 8px 8px 0;
+}
+.storage-workspace-toolbar {
+  display: flex;
+  flex-shrink: 0;
+}
+.storage-directory {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 300px;
+  min-width: 0;
+}
+.storage-directory > .search {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+.storage-directory input {
+  min-width: 0;
+  width: 100%;
+}
+.storage-directory button {
+  flex-shrink: 0;
+}
+.storage-workspace-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.storage-workspace-actions > .search {
+  width: 180px;
+  min-width: 120px;
+}
+.storage-workspace-actions button {
+  flex-shrink: 0;
+}
+.storage-rules-panel {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0 !important;
+  width: 380px;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  display: none;
+  flex-direction: column;
+}
+.storage-rules-panel[open] {
+  display: flex;
+}
+.storage-rules-panel > .task-form-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.storage-rules-panel .form-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.storage-rules-panel > .dialog-footer {
+  flex-shrink: 0;
+}
+#storage-organize > .storage-scope {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 0;
+}
+#storage-organize .storage-rename-list {
+  border: 0;
+  border-radius: 0;
+}
+.storage-workspace-content > #storage-pagination {
+  margin-top: auto;
+}
+@media (max-width: 620px) {
+  .storage-focused #storage-page {
+    padding-bottom: var(--safe-bottom, 0px);
+  }
+  .storage-workspace-content {
+    margin: 0;
+    padding: 12px 16px 16px 0;
+    border-radius: 0;
+    background: var(--sidebar);
+  }
+  .storage-directory {
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .storage-workspace-actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    margin: 0;
+  }
+  .storage-workspace-actions > .search {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+  .storage-workspace-actions #storage-history {
+    width: 32px;
+    padding: 0;
+  }
+  .storage-workspace-actions .toolbar-action-label {
+    display: none;
+  }
+  .storage-rules-panel.mobile-form-surface {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+  .storage-workspace-content #storage-mobile {
+    padding-bottom: 8px;
+  }
+  .storage-workspace-content #storage-table {
+    display: none !important;
+  }
+}
+#storage-scan-history,
+#storage-rename-history,
+#storage-operations,
+#storage-deliveries,
+#storage-cleanup,
+#storage-maintenance-records,
+#storage-attachments {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.storage-history-inline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.storage-records-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+.storage-history-inline .history-sheet-toolbar {
+  padding: 0 0 12px;
+}
+.storage-history-inline .history-sheet-table {
+  flex: 1;
+  min-height: 0;
+}
+.storage-history-inline .history-sheet-footnote {
+  padding: 12px 0;
+}
+.storage-history-inline .history-pagination {
+  padding-top: 12px;
+}
+.storage-history-inline .history-mobile-list {
+  overflow: auto;
+}
+@media (max-width: 620px) {
+  .storage-history-inline .history-sheet-toolbar > button {
+    display: none;
+  }
+  .storage-records-title {
+    font-size: 14px;
+  }
+}
+.storage-records-search {
+  width: 220px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.storage-records-search input {
+  min-width: 0;
+  width: 100%;
+}
+.storage-history-inline .history-sheet-toolbar {
+  gap: 12px;
+}
+.storage-history-inline .history-sheet-toolbar > span {
+  margin-right: auto;
+}
+.storage-workspace-actions {
+  margin-left: 0;
+}
+@media (max-width: 620px) {
+  .storage-records-search {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .storage-history-inline .history-sheet-toolbar {
+    flex-wrap: wrap;
+  }
+  .storage-workspace-actions {
+    width: auto;
+    margin-left: auto;
+  }
+  .storage-directory {
+    flex: 1 1 240px;
+  }
+}
+#storage-path {
+  cursor: pointer;
+}
+#storage-path:hover:not(:disabled) {
+  border-color: var(--semi-color-border-hover);
+}
+#storage-path:focus-visible {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: none;
+}
+/* Match the shared menu input width instead of filling the toolbar. */
+.storage-directory {
+  flex: 0 1 220px;
+  width: 220px;
+  max-width: 100%;
+}
+.storage-directory > .search {
+  height: 32px;
+}
+.storage-directory input {
+  font-size: 12px;
+}
+.storage-workspace-actions {
+  margin-left: auto;
+}
+@media (max-width: 1100px) {
+  .storage-directory {
+    flex-basis: 180px;
+    width: 180px;
+  }
+}
+@media (max-width: 620px) {
+  .storage-directory {
+    flex: 0 1 220px;
+    width: 220px;
+    max-width: 100%;
+  }
+  .storage-directory input {
+    font-size: 14px;
+  }
+  .storage-workspace-actions {
+    flex-shrink: 0;
+  }
+}
+.storage-batch-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.storage-batch-dialog > .task-form-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.storage-batch-dialog > .dialog-header,
+.storage-batch-dialog > .dialog-footer {
+  flex-shrink: 0;
+}
+.storage-batch-dialog .terminal-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.storage-batch-dialog .terminal-choice label {
+  margin: 0;
+  min-height: 44px;
+}
+.storage-batch-preview {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.storage-batch-preview .table-wrap {
+  max-height: 260px;
+  overflow: auto;
+}
+.storage-batch-preview .task-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+.storage-batch-preview td {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.storage-batch-preview th:last-child {
+  width: 24%;
+}
+.storage-batch-dialog .dialog-footer {
+  gap: 8px;
+}
+#storage-organize > .storage-scope {
+  min-height: 32px;
+}
+@media (max-width: 620px) {
+  .storage-batch-dialog .dialog-footer {
+    flex-wrap: wrap;
+  }
+  .storage-batch-preview .task-table {
+    font-size: 12px;
+  }
+  .storage-batch-dialog .terminal-choice {
+    gap: 8px;
+  }
+}

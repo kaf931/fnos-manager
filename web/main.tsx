@@ -1,0 +1,12 @@
+import { createRoot } from 'react-dom/client';
+import { App } from './app-shell.js';
+import './style.css';
+import './fnos-theme.css';
+import './native-ui.css';
+import './storage.css';
+import './shared-surfaces.css';
+import './shared-scrollbars.css';
+import './terminal-ai-progress.css';
+const host = document.getElementById('app');
+if (!host) throw new Error('缺少应用挂载点');
+createRoot(host).render(<App />);

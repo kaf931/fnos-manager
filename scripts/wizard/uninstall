@@ -1,0 +1,22 @@
+[
+  {
+    "stepTitle": "卸载 NAS 管家",
+    "items": [
+      {
+        "type": "radio",
+        "field": "wizard_data_action",
+        "label": "应用数据",
+        "initValue": "keep",
+        "options": [
+          { "label": "保留数据，重新安装后继续使用", "value": "keep" },
+          { "label": "删除全部应用数据", "value": "delete" }
+        ],
+        "rules": [{ "required": true, "message": "请选择数据处理方式" }]
+      },
+      {
+        "type": "tips",
+        "helpText": "应用数据包括桌面图标配置、计划任务及日志、SSH 连接和凭据、AI 配置和聊天记录、存储扫描及改名记录、网络设备及偏好设置。删除后无法在本应用中恢复；不会删除扫描目录中的文件、远程主机文件或 Docker 容器。已安装的独立桌面入口需另行管理。"
+      }
+    ]
+  }
+]

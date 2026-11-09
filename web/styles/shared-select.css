@@ -1,0 +1,59 @@
+/* One Select style for toolbar filters and dialog fields, including keyboard focus. */
+.native-select,
+.icon-button.input-icon-button {
+  height: 32px;
+  border: 1px solid var(--semi-color-border);
+  border-radius: 6px;
+  background: var(--semi-color-input-DefaultBg);
+  color: var(--text);
+  box-shadow: none;
+  font-size: 14px;
+}
+.native-select .semi-select-selection {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 20px;
+}
+.native-select:hover,
+.icon-button.input-icon-button:not(:disabled):hover {
+  border-color: var(--semi-color-border-hover);
+}
+.native-select.semi-select-focus,
+.icon-button.input-icon-button:focus-visible {
+  border-color: var(--blue);
+  box-shadow: none;
+  outline: none;
+}
+.native-select .semi-select-arrow {
+  color: var(--muted);
+}
+.native-select-dropdown .semi-select-option {
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 32px;
+}
+.native-select-dropdown .semi-select-option-selected {
+  color: var(--blue);
+}
+
+.form-panel > .native-select,
+.task-form-body > .native-select,
+.task-form-body label > .native-select {
+  width: 100%;
+}
+.task-form-body label > .native-select {
+  display: flex;
+  margin-top: 8px;
+}
+@media (max-width: 620px) {
+  .terminal-dialog .native-select {
+    min-height: 40px;
+  }
+}
+
+.icon-button.input-icon-button {
+  width: 32px;
+  min-width: 32px;
+  flex: 0 0 32px;
+  padding: 0;
+}
