@@ -763,3 +763,7 @@ p.help:empty {
 .semi-dropdown-wrapper:has(.content-surface-menu) {
   border-radius: var(--app-content-radius, 12px);
 }
+
+.semi-dropdown-wrapper:has(.content-surface-menu) {
+  box-shadow: var(--semi-shadow-2);
+}
