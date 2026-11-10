@@ -119,7 +119,7 @@ export type NotificationTemplateInput = NotificationSettingsInput & { name: stri
 export type NotificationTemplateSummary = Omit<
   NotificationTemplate,
   'token' | 'signingSecret' | 'headers'
->;
+> & { ready: boolean };
 
 export interface InboxMessage {
   id: string;

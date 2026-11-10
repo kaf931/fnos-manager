@@ -117,7 +117,7 @@ test('template CRUD and switches are owner scoped, validated and preserve delive
   }
 });
 
-test('reminder endpoints validate, isolate owners and manage notes without sending', async () => {
+test('reminder endpoints require time and templates, isolate owners and manage paused reminders', async () => {
   const f = await appFixture();
   try {
     await f.app.get(NotificationService).close();
@@ -127,15 +127,28 @@ test('reminder endpoints validate, isolate owners and manage notes without sendi
         headers: { ...f.headers, ...extra },
         body: body ? JSON.stringify(body) : undefined,
       });
+    const template = f.app
+      .get(NotificationService)
+      .repository.createTemplate('1000', {
+        channel: 'inapp',
+        name: 'App',
+        enabled: true,
+        url: '',
+        token: '',
+        condition: 'all',
+        scanFailures: true,
+      });
     const note = {
       name: 'Remember',
       content: 'Private note',
-      dueAt: null,
+      dueAt: new Date(Date.now() + 3600000).toISOString(),
       repeat: 'none',
-      templateIds: [],
+      templateIds: [template.id],
       enabled: false,
     };
     assert.equal((await call('', 'POST', note, { 'x-deskicons-token': 'bad' })).status, 403);
+    assert.equal((await call('', 'POST', { ...note, dueAt: null })).status, 400);
+    assert.equal((await call('', 'POST', { ...note, templateIds: [] })).status, 400);
     const created = await call('', 'POST', note);
     assert.equal(created.status, 200);
     const r = await created.json();
@@ -145,7 +158,7 @@ test('reminder endpoints validate, isolate owners and manage notes without sendi
       0,
     );
     assert.equal((await call('/' + r.id, 'PUT', note, { 'x-trim-userid': '1001' })).status, 404);
-    assert.equal((await call('/' + r.id + '/enabled', 'PATCH', { enabled: true })).status, 400);
+    assert.equal((await call('/' + r.id + '/enabled', 'PATCH', { enabled: true })).status, 200);
     assert.equal((await call('/' + r.id + '/completed', 'PATCH', { completed: true })).status, 200);
     assert.equal((await call('/' + r.id + '/snooze', 'POST', {})).status, 400);
     assert.equal(

@@ -48,13 +48,9 @@ test('reminder recurrence preserves Beijing wall time and original month-end anc
   assert.equal(nextReminderAt('2026-11-09T01:00:00Z', 'weekly', now), '2026-11-16T01:00:00.000Z');
   assert.equal(nextReminderAt('2026-11-09T01:00:00Z', 'none', now), null);
 });
-test('notes, owner isolation, multi-template outbox, due deduplication and restart catch-up', (t) => {
+test('required schedule, owner isolation, multi-template outbox, due deduplication and restart catch-up', (t) => {
   const { repo, notifications, template } = fixture(t);
-  const note = repo.create(
-    'a',
-    input(template.id, { dueAt: null, enabled: false, templateIds: [] }),
-    now,
-  );
+  const note = repo.create('a', input(template.id, { enabled: false }), now);
   assert.equal(note.nextAt, null);
   assert.throws(() => repo.get('b', note.id));
   const second = notifications.createTemplate('a', {
@@ -191,4 +187,18 @@ test('editing a postponed one-off reminder keeps the postponed deadline', (t) =>
   );
   assert.equal(edited.nextAt, postponed.nextAt);
   assert.equal(edited.content, 'Changed note');
+});
+
+test('saving even a paused reminder requires a time and an enabled ready template', (t) => {
+  const { repo, notifications, template } = fixture(t);
+  assert.throws(
+    () => repo.create('a', input(template.id, { dueAt: null, enabled: false }), now),
+    /提醒时间/,
+  );
+  assert.throws(
+    () => repo.create('a', input(template.id, { templateIds: [], enabled: false }), now),
+    /通知模板/,
+  );
+  notifications.setTemplateEnabled('a', template.id, false);
+  assert.throws(() => repo.create('a', input(template.id, { enabled: false }), now), /通知模板/);
 });

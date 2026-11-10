@@ -253,7 +253,7 @@ export function RemindersPanel({
               subject="提醒事项"
               total={rows.length}
               title="记下需要处理的事情"
-              description="保存记事，或选择通知模板按时提醒。"
+              description="填写事项，选择通知模板按时提醒。"
               icon="clock"
               onAdd={() => setEditor({ row: null })}
             />

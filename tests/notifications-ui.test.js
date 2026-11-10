@@ -220,16 +220,12 @@ test('notification center reminders use shared cards and dialog and submit a not
     Simulate.submit(document.querySelector('#reminder-form'));
     await tick();
   });
-  const note = calls.find((c) => c.method === 'POST');
-  assert.equal(note.route, '/notifications/reminders');
-  assert.deepEqual(note.body, {
-    name: 'Remember',
-    content: 'Memo',
-    dueAt: null,
-    repeat: 'none',
-    templateIds: [],
-    enabled: false,
-  });
+  assert.equal(
+    calls.some((c) => c.method === 'POST'),
+    false,
+  );
+  assert.ok(document.querySelector('[role="alert"]').textContent.includes('提醒时间'));
+  assert.equal(document.querySelector('input[type="datetime-local"]').required, true);
 });
 
 test('notification overview shows templates above reminders and editing preserves reminder search', async (t) => {

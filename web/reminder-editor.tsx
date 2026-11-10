@@ -34,11 +34,20 @@ export function ReminderEditor({
     [error, setError] = useState('');
   const lock = useRef(false);
   const patch = (v: Partial<ReminderInput>) => setValue((old) => ({ ...old, ...v }));
+  const available = templates.filter((template) => template.enabled && template.ready);
   const local = value.dueAt
     ? new Date(Date.parse(value.dueAt) + 8 * 3600000).toISOString().slice(0, 16)
     : '';
   async function save() {
     if (lock.current) return;
+    if (!value.dueAt) {
+      setError('请先设置提醒时间');
+      return;
+    }
+    if (!available.some((template) => value.templateIds.includes(template.id))) {
+      setError('请至少选择一个已启用且配置完整的通知模板');
+      return;
+    }
     lock.current = true;
     setBusy(true);
     setError('');
@@ -69,7 +78,12 @@ export function ReminderEditor({
           <button type="button" disabled={busy} onClick={onClose}>
             取消
           </button>
-          <button type="submit" form="reminder-form" className="primary" disabled={busy}>
+          <button
+            type="submit"
+            form="reminder-form"
+            className="primary"
+            disabled={busy || !available.length}
+          >
             {busy ? '保存中…' : '保存事项'}
           </button>
         </>
@@ -112,6 +126,7 @@ export function ReminderEditor({
             提醒时间（北京时间）
             <input
               type="datetime-local"
+              required
               value={local}
               disabled={busy}
               onChange={(e) => {
@@ -145,9 +160,9 @@ export function ReminderEditor({
           </label>
         </div>
         <label id="reminder-template-label">通知模板</label>
-        {templates.length ? (
+        {available.length ? (
           <div className="form-check-row" role="group" aria-labelledby="reminder-template-label">
-            {templates.map((template) => (
+            {available.map((template) => (
               <label className="checkbox-label" key={template.id}>
                 <input
                   type="checkbox"
@@ -167,7 +182,7 @@ export function ReminderEditor({
             ))}
           </div>
         ) : (
-          <p className="help">请先在“通知模板”中创建发送渠道。</p>
+          <p className="help">请先配置并启用一个通知模板。</p>
         )}
         <div className="form-check-row">
           <label className="checkbox-label">
@@ -180,7 +195,7 @@ export function ReminderEditor({
             启用提醒
           </label>
         </div>
-        <p className="help">不启用提醒也可保存为记事；完成事项后停止通知。</p>
+        <p className="help">完成事项后停止通知。</p>
       </form>
     </ReactDialog>
   );

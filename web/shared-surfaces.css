@@ -723,7 +723,7 @@ p.help:empty {
   min-width: 600px;
 }
 
-/* Opaque edge masks overlay the scroller without reserving empty arrow tracks. */
+/* Edge controls overlay the scroller and reuse the shared button hover state. */
 .compact-card-strip-shell {
   position: relative;
   min-width: 0;
@@ -739,7 +739,7 @@ p.help:empty {
   padding: 4px;
   border: 0;
   border-radius: 0;
-  background: var(--bg);
+  background: transparent;
 }
 .compact-card-strip-previous {
   left: 0;

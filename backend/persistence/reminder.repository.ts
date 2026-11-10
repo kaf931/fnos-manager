@@ -45,13 +45,13 @@ export class ReminderRepository {
     if (!row) throw new DomainError('提醒事项不存在', 404);
     return this.decode(row);
   }
-  private templates(owner: string, ids: string[], enabled: boolean) {
+  private templates(owner: string, ids: string[]) {
     let active = 0;
     for (const id of ids) {
       const value = this.notifications.getTemplate(owner, id);
       if (value.enabled && notificationReady(value)) active++;
     }
-    if (enabled && !active) throw new DomainError('请至少选择一个已启用的通知模板');
+    if (!active) throw new DomainError('请至少选择一个已启用的通知模板');
   }
   private validate(
     owner: string,
@@ -91,11 +91,10 @@ export class ReminderRepository {
           : NaN;
     if (due !== null && (!Number.isFinite(due) || new Date(due).toISOString() !== canonical))
       throw new DomainError('提醒时间无效');
-    if (due === null && (input.enabled || input.repeat !== 'none'))
-      throw new DomainError('请先设置提醒时间');
+    if (due === null) throw new DomainError('请先设置提醒时间');
     if (!preserveSchedule && input.enabled && input.repeat === 'none' && due !== null && due <= now)
       throw new DomainError('请选择未来的提醒时间');
-    this.templates(owner, input.templateIds, input.enabled);
+    this.templates(owner, input.templateIds);
     return {
       ...input,
       name: input.name.trim(),
@@ -200,7 +199,7 @@ export class ReminderRepository {
     return this.database.transaction(() => {
       const v = this.get(owner, id);
       if (v.status === 'completed') throw new DomainError('请先重新打开已完成事项');
-      this.templates(owner, v.templateIds, true);
+      this.templates(owner, v.templateIds);
       this.cancel(owner, id, now);
       const due = now + minutes * 60000;
       this.database.connection

@@ -4,7 +4,7 @@ import {
   ArrayUnique,
   IsBoolean,
   IsIn,
-  IsOptional,
+  ArrayMinSize,
   IsString,
   MaxLength,
 } from 'class-validator';
@@ -16,9 +16,10 @@ import {
 export class ReminderDto implements ReminderInput {
   @IsString() @MaxLength(80) name!: string;
   @IsString() @MaxLength(8000) content!: string;
-  @IsOptional() @IsString() @MaxLength(40) dueAt!: string | null;
+  @IsString() @MaxLength(40) dueAt!: string | null;
   @IsIn(REMINDER_REPEATS) repeat!: ReminderRepeat;
   @IsArray()
+  @ArrayMinSize(1)
   @ArrayMaxSize(50)
   @ArrayUnique()
   @IsString({ each: true })

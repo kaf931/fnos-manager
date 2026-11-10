@@ -141,7 +141,7 @@ export class NotificationRepository {
           headers: _headers,
           ...value
         } = this.decodeTemplate(row);
-        return value;
+        return { ...value, ready: notificationReady(this.decodeTemplate(row)) };
       });
   }
   getTemplate(owner: string, id: string): NotificationTemplate {
