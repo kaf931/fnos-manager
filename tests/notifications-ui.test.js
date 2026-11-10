@@ -1265,6 +1265,7 @@ test('mobile reminder batch reuses inline record layout and has a distinct check
   );
   await act(() => button('批量管理提醒').click());
   const body = document.querySelector('dialog .task-form-body');
+  assert.ok(body.closest('dialog').classList.contains('list-management-dialog'));
   assert.ok(body.classList.contains('storage-history-inline'));
   assert.ok(body.querySelector('.record-toolbar .native-select, .record-toolbar select'));
   assert.ok(body.querySelector('.history-compact-list'));
@@ -1299,6 +1300,8 @@ test('mobile app messages reuse compact inline records and retain navigation bet
   );
   await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 1 });
   const body = document.querySelector('dialog .task-form-body');
+  const dialogClasses = body.closest('dialog').className;
+  assert.ok(body.closest('dialog').classList.contains('list-management-dialog'));
   assert.ok(body.classList.contains('storage-history-inline'));
   assert.ok(body.classList.contains('terminal-list-view'));
   assert.equal(!!body.querySelector('.history-mobile-list'), false);
@@ -1311,10 +1314,12 @@ test('mobile app messages reuse compact inline records and retain navigation bet
     await tick();
   });
   assert.ok(document.querySelector('dialog').textContent.includes('消息详情'));
+  assert.equal(document.querySelector('dialog').className, dialogClasses);
   assert.equal(document.querySelector('.history-run-output').textContent, row.content);
   assert.ok(
     calls.some((call) => call.path === '/notifications/inbox/read' && call.method === 'POST'),
   );
   await act(() => button('返回消息').click());
   assert.ok(document.querySelector('.history-compact-list'));
+  assert.equal(document.querySelector('dialog').className, dialogClasses);
 });

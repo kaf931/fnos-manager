@@ -316,6 +316,11 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+}
+.list-management-dialog > .task-form-body:has(.storage-history-list),
+html.mobile-form-page
+  .mobile-form-surface.list-management-dialog
+  > .task-form-body:has(.storage-history-list) {
   overflow: hidden;
 }
 .storage-inline-toolbar {

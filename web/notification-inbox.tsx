@@ -297,6 +297,7 @@ function InboxDialog({
   }
   return (
     <ReactDialog
+      className="list-management-dialog dialog-scroll-surface"
       open
       title={detail ? '消息详情' : '应用内消息'}
       onClose={onClose}

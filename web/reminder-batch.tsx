@@ -77,6 +77,7 @@ export function ReminderBatch({
   }
   return (
     <ReactDialog
+      className="list-management-dialog dialog-scroll-surface"
       open
       title="批量管理提醒事项"
       size="large"
