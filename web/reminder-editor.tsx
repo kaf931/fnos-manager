@@ -200,7 +200,6 @@ export function ReminderEditor({
             启用提醒
           </label>
         </div>
-        <p className="help">完成事项后停止通知。</p>
       </form>
     </ReactDialog>
   );
