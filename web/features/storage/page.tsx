@@ -1,3 +1,4 @@
+import { FeatureEntryCard } from '../../ui/feature-entry-card.js';
 import { WorkspaceRail } from '../../ui/workspace-rail.js';
 import React, { useEffect, useRef, useState } from 'react';
 import type { ApiClient, Toast } from '../../contracts/shared.js';
@@ -297,16 +298,16 @@ export function StoragePage({
             {(['space', 'duplicates'] as const).map((key) => {
               const last = jobs[key];
               return (
-                <article key={key} className="storage-entry-card shared-mobile-card">
-                  <div className="storage-entry-symbol">
-                    <StorageArtwork kind={key} />
-                  </div>
-                  <h2>{labels[key]}</h2>
-                  <p className="help">
-                    {key === 'space'
+                <FeatureEntryCard
+                  key={key}
+                  title={labels[key]}
+                  icon={<StorageArtwork kind={key} />}
+                  description={
+                    key === 'space'
                       ? '查看目录与文件大小，定位占用空间。'
-                      : '检查内容相同的文件，整理重复副本。'}
-                  </p>
+                      : '检查内容相同的文件，整理重复副本。'
+                  }
+                >
                   <div className="storage-entry-last">
                     {last ? (
                       <>
@@ -341,7 +342,7 @@ export function StoragePage({
                       </button>
                     )}
                   </div>
-                </article>
+                </FeatureEntryCard>
               );
             })}
           </div>

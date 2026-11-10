@@ -4,7 +4,7 @@
   min-width: 0;
   min-height: 0;
 }
-#storage-entry {
+.storage-entry {
   overflow: auto;
   padding: 16px;
   padding-right: calc(16px - var(--app-scrollbar-gutter, 0px));

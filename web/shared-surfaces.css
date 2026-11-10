@@ -501,7 +501,7 @@
     .layout
     main
     :is(
-      #storage-entry,
+      .storage-entry,
       #cards,
       #task-mobile-list,
       #terminal-connections,
@@ -552,7 +552,7 @@ html.standalone-entry:not(.terminal-focused):not(.storage-focused) .layout main 
     .layout
     main
     :is(
-      #storage-entry,
+      .storage-entry,
       #cards,
       #task-mobile-list,
       #terminal-connections,

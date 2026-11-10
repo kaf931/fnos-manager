@@ -1,4 +1,4 @@
-import Tabs from '@douyinfe/semi-ui/lib/es/tabs';
+import { FeatureEntryCard } from './ui/feature-entry-card.js';
 import { RemindersPanel } from './reminders.js';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -256,21 +256,59 @@ export function NotificationSettingsPage({
   toast: Toast;
   active?: boolean;
 }) {
-  const [tab, setTab] = useState('templates');
+  const [view, setView] = useState<'templates' | 'reminders' | null>(null);
   return (
     <section id="notifications-page" className="tool-page" hidden={!active} aria-label="通知中心">
       <h1 className="sr-only">通知中心</h1>
-      <Tabs
-        activeKey={tab}
-        onChange={setTab}
-        tabPaneMotion={false}
-        tabList={[
-          { itemKey: 'templates', tab: '通知模板' },
-          { itemKey: 'reminders', tab: '提醒事项' },
-        ]}
-      />
-      <NotificationTemplatesPanel api={api} toast={toast} active={active && tab === 'templates'} />
-      <RemindersPanel api={api} toast={toast} active={active && tab === 'reminders'} />
+      <div
+        id="notification-entry"
+        className="storage-entry"
+        data-scroll-inset
+        hidden={view !== null}
+      >
+        <div className="storage-entry-cards">
+          <FeatureEntryCard
+            title="提醒事项"
+            description="记事、待办与定时提醒"
+            icon={<AppIcon name="clock" />}
+          >
+            <div className="storage-entry-buttons">
+              <button
+                type="button"
+                className="primary"
+                aria-label="打开提醒事项"
+                onClick={() => setView('reminders')}
+              >
+                打开
+              </button>
+            </div>
+          </FeatureEntryCard>
+          <FeatureEntryCard
+            title="通知模板"
+            description="管理消息渠道与发送内容"
+            icon={<AppIcon name="bell" />}
+          >
+            <div className="storage-entry-buttons">
+              <button
+                type="button"
+                className="primary"
+                aria-label="打开通知模板"
+                onClick={() => setView('templates')}
+              >
+                打开
+              </button>
+            </div>
+          </FeatureEntryCard>
+        </div>
+      </div>
+      <header className="toolbar storage-workspace-toolbar task-toolbar" hidden={view === null}>
+        <button type="button" aria-label="返回通知中心" onClick={() => setView(null)}>
+          <AppIcon name="back" />
+          返回通知中心
+        </button>
+      </header>
+      <NotificationTemplatesPanel api={api} toast={toast} active={active && view === 'templates'} />
+      <RemindersPanel api={api} toast={toast} active={active && view === 'reminders'} />
     </section>
   );
 }

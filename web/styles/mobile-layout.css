@@ -187,14 +187,14 @@ html {
     border-radius: 0;
   }
   /* Content remains visible around the pill; the final item can scroll above it. */
-  .layout main :is(#storage-entry, #cards, #task-mobile-list, #terminal-connections, #wake-cards) {
+  .layout main :is(.storage-entry, #cards, #task-mobile-list, #terminal-connections, #wake-cards) {
     padding-bottom: 72px;
     scroll-padding-bottom: 72px;
   }
   .mobile-keyboard-open
     .layout
     main
-    :is(#storage-entry, #cards, #task-mobile-list, #terminal-connections, #wake-cards) {
+    :is(.storage-entry, #cards, #task-mobile-list, #terminal-connections, #wake-cards) {
     padding-bottom: 8px;
     scroll-padding-bottom: 8px;
   }
