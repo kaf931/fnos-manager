@@ -36,6 +36,8 @@
     "@codemirror/merge": "^6.12.3",
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.15",
+    "@dnd-kit/dom": "0.5.3",
+    "@dnd-kit/react": "0.5.3",
     "@douyinfe/semi-ui": "^2.104.0",
     "@nestjs/common": "12.2.0",
     "@nestjs/core": "12.2.0",

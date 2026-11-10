@@ -781,11 +781,13 @@ p.help:empty {
   cursor: grab;
   touch-action: none;
 }
-.sortable-card[data-dragging='true'] {
-  opacity: 0.65;
+.sortable-card[data-dnd-placeholder] {
+  opacity: 0.25;
 }
-.sortable-card[data-drop-target='true'] {
-  outline: 2px solid var(--blue);
-  outline-offset: -2px;
+.sortable-card[data-dnd-dragging] {
   border-radius: 9px;
+  box-shadow: var(--semi-shadow-2);
+}
+.sortable-card[data-dnd-dragging] .sortable-card-handle {
+  cursor: grabbing;
 }

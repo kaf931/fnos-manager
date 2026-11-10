@@ -8,6 +8,9 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DEFAULT_NOTIFICATION_OPTIONS } from '../server/domain/notifications.js';
 const stubs = {
+  dnd: `import React from 'react';export const dndBridge={props:null,items:new Map()};export function DragDropProvider(props){dndBridge.props=props;return props.children;}`,
+  'dnd-sortable': `import {dndBridge} from '@dnd-kit/react';export function useSortable(input){dndBridge.items.set(input.id,input);return{ref:()=>{},handleRef:()=>{},isDragging:false};}export const isSortable=source=>source?.sortable===true;`,
+  'dnd-dom': `class Constraint{constructor(options){this.options=options;}}class Sensor{static configure(options){return{sensor:this,options};}}export const PointerActivationConstraints={Delay:Constraint,Distance:Constraint};export class PointerSensor extends Sensor{}export class KeyboardSensor extends Sensor{}export class Feedback extends Sensor{}`,
   pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
   checkbox: `import React from 'react';export default function Checkbox({children,onChange,...props}){return React.createElement('label',null,React.createElement('input',{...props,type:'checkbox',onChange}),children);}`,
 
@@ -21,7 +24,7 @@ const stubs = {
 const built = await build({
   stdin: {
     contents:
-      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx';",
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {dndBridge} from '@dnd-kit/react';",
     resolveDir: process.cwd(),
     loader: 'tsx',
   },
@@ -35,6 +38,14 @@ const built = await build({
     {
       name: 'boundaries',
       setup(b) {
+        b.onResolve({ filter: /^@dnd-kit\/(react(?:\/sortable)?|dom)$/ }, (a) => ({
+          path: a.path.endsWith('/sortable')
+            ? 'dnd-sortable'
+            : a.path.endsWith('/dom')
+              ? 'dnd-dom'
+              : 'dnd',
+          namespace: 'stub',
+        }));
         b.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (a) => ({
           path: a.path,
           external: true,
@@ -65,7 +76,7 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { NotificationSettingsPage, NotificationInbox } = module.exports;
+const { NotificationSettingsPage, NotificationInbox, dndBridge } = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
 function fixture(t, api, mobile = false) {
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
@@ -900,7 +911,29 @@ test('inbox search submits a scoped encoded query', async (t) => {
   assert.ok(calls.some((route) => route.includes('&q=' + encodeURIComponent('测试 100%'))));
 });
 
-test('all templates support drag, keyboard ordering and shared strip persistence; failed saves roll back', async (t) => {
+// Exercise the persistence boundary with dnd-kit completion events. Real gestures,
+// layout and Web Animations are verified in a browser, not simulated by JSDOM.
+async function finishSort(from, to, { canceled = false, target = true } = {}) {
+  await act(async () => {
+    dndBridge.props.onDragEnd({
+      canceled,
+      operation: {
+        source: {
+          id: from,
+          initialIndex: dndBridge.items.get(from).index,
+          index: dndBridge.items.get(to).index,
+          sortable: true,
+        },
+        target: target ? {} : null,
+      },
+    });
+    await tick();
+  });
+}
+const sortedIds = () =>
+  [...document.querySelectorAll('.cards > [data-sortable-id]')].map((e) => e.dataset.sortableId);
+
+test('dnd-kit completion persists shared template order and failed saves restore it', async (t) => {
   let saved = [],
     fail = false;
   const f = fixture(t, async (route, method, body) => {
@@ -915,96 +948,54 @@ test('all templates support drag, keyboard ordering and shared strip persistence
   });
   await f.open();
   await act(() => button('全部模板').click());
-  const ids = () =>
-    [...document.querySelectorAll('[data-sortable-id]')].map((e) => e.dataset.sortableId);
-  const initial = ids();
-  const handle = document.querySelector('.sortable-card-handle');
-  handle.setPointerCapture = () => {};
-  handle.hasPointerCapture = () => true;
-  handle.releasePointerCapture = () => {};
-  const target = document.querySelectorAll('[data-sortable-id]')[2];
-  document.elementFromPoint = () => target;
-  document.querySelector('.task-form-body').scrollBy = () => {};
-  const pointer = { pointerType: 'mouse', button: 0, pointerId: 1, clientX: 40, clientY: 80 };
-  assert.equal(handle.draggable, false);
-  await act(() => Simulate.pointerDown(handle, pointer));
-  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 100 }));
-  await act(() => Simulate.pointerCancel(handle, pointer));
-  await act(() => Simulate.pointerUp(handle, pointer));
-  assert.deepEqual(saved, []);
-  await act(() => Simulate.pointerDown(handle, pointer));
-  assert.deepEqual(saved, []);
-  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 100 }));
-  await act(async () => {
-    Simulate.pointerUp(handle, { ...pointer, clientX: 100 });
-    await tick();
-  });
-  assert.equal(ids()[2], initial[0]);
-  assert.deepEqual(saved, ids());
-  const first = ids()[0];
-  await act(async () => {
-    Simulate.keyDown(document.querySelector('.sortable-card-handle'), { key: 'ArrowRight' });
-    await tick();
-  });
-  assert.equal(ids()[1], first);
-  const prior = ids();
+  const initial = sortedIds();
+  assert.equal(document.querySelector('.sortable-card-handle').draggable, false);
+  await finishSort(initial[0], initial[3]);
+  assert.equal(saved[3], initial[0]);
+  assert.deepEqual(saved, sortedIds());
+  const prior = sortedIds();
+  fail = true;
+  await finishSort(prior[0], prior[2]);
+  assert.deepEqual(sortedIds(), prior);
   assert.deepEqual(
     [...document.querySelectorAll('.compact-card-strip .compact-card strong')].map(
       (e) => e.textContent,
     ),
-    [...document.querySelectorAll('[data-sortable-id] .compact-card strong')].map(
-      (e) => e.textContent,
-    ),
+    [...document.querySelectorAll('.cards .compact-card strong')].map((e) => e.textContent),
   );
-  fail = true;
-  await act(async () => {
-    Simulate.keyDown(document.querySelector('.sortable-card-handle'), { key: 'ArrowRight' });
-    await tick();
-  });
-  assert.deepEqual(ids(), prior);
-  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
-  await act(() => button('全部模板').click());
-  assert.deepEqual(ids(), prior);
 });
 
-test('mobile template handle supports long press drag and cancels without changing order', async (t) => {
-  let saved = [];
+test('canceled and outside drops do not save; animation and sensor configuration preserve touch and keyboard access', async (t) => {
+  let writes = 0;
   const f = fixture(
     t,
-    async (route, method, body) => {
-      if (route.endsWith('/template-order')) {
-        if (method === 'PUT') saved = body.keys;
-        return { keys: saved };
-      }
-      return [];
+    async (route, method) => {
+      if (method === 'PUT') writes++;
+      return route.endsWith('/template-order') ? { keys: [] } : [];
     },
     true,
   );
   await f.open();
   await act(() => button('全部模板').click());
-  const cards = [...document.querySelectorAll('[data-sortable-id]')];
-  const handle = document.querySelector('.sortable-card-handle');
-  handle.setPointerCapture = () => {};
-  handle.hasPointerCapture = () => true;
-  handle.releasePointerCapture = () => {};
-  document.elementFromPoint = () => cards[2];
-  document.querySelector('.task-form-body').scrollBy = () => {};
-  const pointer = { pointerType: 'touch', pointerId: 1, clientX: 40, clientY: 80 };
-  await act(async () => {
-    Simulate.pointerDown(handle, pointer);
-    await new Promise((r) => setTimeout(r, 280));
-  });
-  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 90 }));
-  await act(() => Simulate.pointerCancel(handle, pointer));
-  assert.deepEqual(saved, []);
-  await act(async () => {
-    Simulate.pointerDown(handle, pointer);
-    await new Promise((r) => setTimeout(r, 280));
-  });
-  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 90 }));
-  await act(async () => {
-    Simulate.pointerUp(handle, pointer);
-    await tick();
-  });
-  assert.equal(saved[2], cards[0].dataset.sortableId);
+  const initial = sortedIds();
+  await finishSort(initial[0], initial[3], { canceled: true });
+  await finishSort(initial[0], initial[3], { target: false });
+  assert.equal(writes, 0);
+  assert.deepEqual(sortedIds(), initial);
+  const config = dndBridge.items.get(initial[0]);
+  assert.equal(config.transition.duration, 220);
+  const plugins = config.plugins([]);
+  assert.equal(plugins[0].options.feedback, 'clone');
+  assert.equal(plugins[0].options.dropAnimation.duration, 220);
+  const sensors = dndBridge.props.sensors;
+  assert.equal(sensors.length, 2);
+  assert.equal(
+    sensors[0].options.activationConstraints({ pointerType: 'touch' })[0].options.value,
+    250,
+  );
+  assert.equal(
+    sensors[0].options.activationConstraints({ pointerType: 'mouse' })[0].options.value,
+    5,
+  );
+  assert.match(document.querySelector('.sortable-card-handle').title, /Esc/);
 });
