@@ -183,7 +183,7 @@ test('v16 migration preserves devices and is idempotent; probe rows cascade on d
   );
   s.database.close();
   const db = new DatabaseService(s.dataDir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
   assert.equal(
     db.connection.prepare('SELECT name FROM wake_devices WHERE id=?').get(kept.id).name,
     'PC',

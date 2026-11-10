@@ -1,5 +1,9 @@
 import {
   IsArray,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
   ArrayMaxSize,
   ArrayUnique,
   IsBoolean,
@@ -18,6 +22,14 @@ export class ReminderDto implements ReminderInput {
   @IsString() @MaxLength(8000) content!: string;
   @IsString() @MaxLength(40) dueAt!: string | null;
   @IsIn(REMINDER_REPEATS) repeat!: ReminderRepeat;
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(7)
+  @ArrayUnique()
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  @Max(6, { each: true })
+  weekdays?: number[];
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(50)

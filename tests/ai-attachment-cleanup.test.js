@@ -248,7 +248,7 @@ test('schema 9 upgrades preserve attachment files, metadata and history', async 
   );
   db.close();
   db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
   const metadata = db.connection
     .prepare('SELECT created_at,deleted_at FROM ai_chat_attachments')
     .get();

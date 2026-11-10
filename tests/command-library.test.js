@@ -72,7 +72,7 @@ test('v5 upgrade imports icon binaries before removing old PNG files and survive
     image,
   );
   await assert.rejects(access(file));
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
   db.close();
   db = new DatabaseService(dir);
   t.after(() => db.close());

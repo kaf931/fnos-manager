@@ -1,3 +1,4 @@
+import { CalendarUnavailableError } from './china-calendar.js';
 import type { ReminderInput } from '../domain/reminders.js';
 import type { ReminderRepository } from '../persistence/reminder.repository.js';
 import { sendEmailNotification } from './email.js';
@@ -101,14 +102,25 @@ export class NotificationService {
   listReminders(owner: string) {
     return this.reminderRepository().list(owner);
   }
+  private async withCalendar<T>(operation: () => T): Promise<T> {
+    try {
+      return operation();
+    } catch (error) {
+      if (!(error instanceof CalendarUnavailableError)) throw error;
+      await this.reminderRepository().calendar.refresh(error.year, true);
+      if (this.stopped) throw Object.assign(new Error('提醒服务正在停止'), { status: 503 });
+      this.reminderRepository().refreshCalendarSchedules();
+      return operation();
+    }
+  }
   createReminder(owner: string, input: ReminderInput) {
-    return this.reminderRepository().create(owner, input);
+    return this.withCalendar(() => this.reminderRepository().create(owner, input));
   }
   updateReminder(owner: string, id: string, input: ReminderInput) {
-    return this.reminderRepository().update(owner, id, input);
+    return this.withCalendar(() => this.reminderRepository().update(owner, id, input));
   }
   enableReminder(owner: string, id: string, enabled: boolean) {
-    return this.reminderRepository().setEnabled(owner, id, enabled);
+    return this.withCalendar(() => this.reminderRepository().setEnabled(owner, id, enabled));
   }
   completeReminder(owner: string, id: string, completed: boolean) {
     return this.reminderRepository().complete(owner, id, completed);
@@ -163,6 +175,11 @@ export class NotificationService {
   start(): void {
     if (this.timer || this.stopped) return;
     this.repository.recover();
+    this.reminders?.refreshCalendarSchedules();
+    this.reminders?.calendar.start(
+      () => this.reminders!.hasCalendarReminders(),
+      () => this.reminders!.refreshCalendarSchedules(),
+    );
     this.timer = setInterval(() => {
       void this.tick().catch(() => {
         console.error('通知队列处理失败，将在下次启动恢复');
@@ -215,6 +232,7 @@ export class NotificationService {
     this.stopped = true;
     if (this.timer) clearInterval(this.timer);
     this.controller?.abort();
+    await this.reminders?.calendar.close();
     await this.active;
   }
 }

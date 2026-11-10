@@ -29,7 +29,7 @@ export function ReminderBatch({
     return () => media.removeEventListener?.('change', sync);
   }, []);
   const [ids, setIds] = useState(new Set<string>()),
-    [action, setAction] = useState('complete'),
+    [action, setAction] = useState<'complete' | 'pause'>('complete'),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
@@ -49,14 +49,14 @@ export function ReminderBatch({
     toggleAll: () =>
       setIds((old) => (old.size ? new Set() : new Set(rows.slice(0, 200).map((row) => row.id)))),
   };
-  async function execute() {
+  async function execute(operation: 'complete' | 'pause' | 'delete' = action) {
     if (lock.current || !ids.size) return;
     lock.current = true;
     setBusy(true);
     setError('');
     try {
       if (
-        action === 'delete' &&
+        operation === 'delete' &&
         !(await confirmAction({
           title: '删除提醒事项',
           text: `删除所选 ${ids.size} 个事项？历史投递记录将保留。`,
@@ -65,7 +65,7 @@ export function ReminderBatch({
         }))
       )
         return;
-      await api('/notifications/reminders/batch', 'POST', { ids: [...ids], action });
+      await api('/notifications/reminders/batch', 'POST', { ids: [...ids], action: operation });
       toast('批量操作已完成');
       onSaved();
     } catch (e) {
@@ -87,12 +87,21 @@ export function ReminderBatch({
       footer={
         <>
           <span>已选择 {ids.size} 项</span>
+          <button
+            type="button"
+            className="danger"
+            aria-label="删除所选提醒事项"
+            disabled={busy || !ids.size}
+            onClick={() => void execute('delete')}
+          >
+            删除
+          </button>
           <button type="button" disabled={busy} onClick={onClose}>
             取消
           </button>
           <button
             type="button"
-            className={action === 'delete' ? 'danger' : 'primary'}
+            className="primary"
             disabled={busy || !ids.size}
             onClick={() => void execute()}
           >
@@ -110,9 +119,10 @@ export function ReminderBatch({
             optionList={[
               { value: 'complete', label: '标记完成' },
               { value: 'pause', label: '暂停提醒' },
-              { value: 'delete', label: '删除事项' },
             ]}
-            onChange={setAction}
+            onChange={(value) => {
+              if (value === 'complete' || value === 'pause') setAction(value);
+            }}
           />
         </div>
         {error && (

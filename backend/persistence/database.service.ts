@@ -19,6 +19,7 @@ import {
   notificationOptionsSchema,
   notificationTemplatesSchema,
   reminderSchema,
+  reminderRecurrenceSchema,
   notificationInboxSchema,
   notificationTemplateOrderSchema,
   backupSchema,
@@ -82,6 +83,7 @@ export class DatabaseService {
         version !== 31 &&
         version !== 32 &&
         version !== 33 &&
+        version !== 34 &&
         version !== SCHEMA_VERSION
       )
         throw new Error(
@@ -404,6 +406,14 @@ export class DatabaseService {
             .prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(34,?)')
             .run(Date.now());
           this.connection.exec('PRAGMA user_version=34');
+        });
+      if (version !== 0 && version < 35)
+        this.transaction(() => {
+          this.connection.exec(reminderRecurrenceSchema);
+          this.connection
+            .prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(35,?)')
+            .run(Date.now());
+          this.connection.exec('PRAGMA user_version=35');
         });
       // Remove old files only after the committed BLOB equals the original bytes.
       for (const row of this.connection.prepare('SELECT icon_id,image FROM icon_images').all()) {

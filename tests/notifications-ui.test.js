@@ -21,12 +21,12 @@ const stubs = {
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
   'terminal-connections.js': `import React from 'react';export function ConnectionCards({rows,onAction,options}){return rows.map(row=>React.createElement('article',{key:row.id,className:'card'},React.createElement('h3',null,row.name),React.createElement('span',null,options.tag?.(row)),options.metaControl(row),...['connect','edit','delete'].map(a=>React.createElement('button',{key:a,onClick:()=>onAction(a,row)},a==='connect'?'测试通知':a==='edit'?'编辑模板':'删除模板'))))}`,
-  'confirmation.js': `export const confirmAction=async(options)=>{await options.onAccept?.();return true;};`,
+  'confirmation.js': `export const confirmationBridge={accept:true,requests:[]};export const confirmAction=async(options)=>{confirmationBridge.requests.push(options);if(!confirmationBridge.accept)return false;await options.onAccept?.();return true;};`,
 };
 const built = await build({
   stdin: {
     contents:
-      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {NotificationDeliveryDialog} from './web/notification-delivery-dialog.tsx'; export {ReminderEditor} from './web/reminder-editor.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {NotificationDeliveryDialog} from './web/notification-delivery-dialog.tsx'; export {ReminderEditor} from './web/reminder-editor.tsx'; export {confirmationBridge} from './web/confirmation.js'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
     resolveDir: process.cwd(),
     loader: 'tsx',
   },
@@ -36,6 +36,7 @@ const built = await build({
   platform: 'node',
   packages: 'external',
   jsx: 'automatic',
+  loader: { '.png': 'dataurl', '.ico': 'dataurl' },
   plugins: [
     {
       name: 'boundaries',
@@ -86,11 +87,14 @@ const {
   NotificationInbox,
   NotificationDeliveryDialog,
   ReminderEditor,
+  confirmationBridge,
   dndBridge,
   MobileMore,
 } = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
 function fixture(t, api, mobile = false) {
+  confirmationBridge.accept = true;
+  confirmationBridge.requests = [];
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
   const prior = {};
   for (const [key, value] of Object.entries({
@@ -1461,3 +1465,148 @@ for (const state of ['new', 'paused', 'completed']) {
     assert.deepEqual(saved.body.templateIds, ['ready-template']);
   });
 }
+
+test('custom reminder repeats expose seven shared weekday choices and require at least one selection', async (t) => {
+  const calls = [];
+  const f = fixture(
+    t,
+    async (path, method, body) => {
+      calls.push({ path, method, body });
+      return {};
+    },
+    true,
+  );
+  await f.open(ReminderEditor, {
+    initial: null,
+    templates: [{ id: 'ready', name: '应用内通知', channel: 'inapp', enabled: true, ready: true }],
+    onClose() {},
+    onSaved() {},
+  });
+  await act(() => {
+    Simulate.change(document.querySelector('#reminder-name'), { target: { value: '自定义提醒' } });
+    Simulate.change(document.querySelector('input[type="datetime-local"]'), {
+      target: { value: '2035-11-10T08:00' },
+    });
+    Simulate.change(document.querySelector('select'), { target: { value: 'custom' } });
+  });
+  const group = document.querySelector('[aria-label="重复周几"]');
+  assert.deepEqual(
+    [...group.querySelectorAll('label')].map((e) => e.textContent),
+    ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+  );
+  assert.ok(group.classList.contains('form-check-row'));
+  await act(async () => {
+    Simulate.submit(document.querySelector('form'));
+    await tick();
+  });
+  assert.equal(
+    calls.some((call) => call.method === 'POST'),
+    false,
+  );
+  assert.match(document.querySelector('[role="alert"]').textContent, /周几/);
+  await act(() => {
+    group.querySelectorAll('input')[0].click();
+    group.querySelectorAll('input')[4].click();
+  });
+  await act(async () => {
+    Simulate.submit(document.querySelector('form'));
+    await tick();
+  });
+  const saved = calls.find((call) => call.method === 'POST');
+  assert.equal(saved.body.repeat, 'custom');
+  assert.deepEqual(saved.body.weekdays, [1, 5]);
+  await act(() =>
+    Simulate.change(document.querySelector('select'), { target: { value: 'cn-workday' } }),
+  );
+  assert.equal(!!document.querySelector('[aria-label="重复周几"]'), false);
+  await act(async () => {
+    Simulate.submit(document.querySelector('form'));
+    await tick();
+  });
+  assert.deepEqual(calls.filter((call) => call.method === 'POST').at(-1).body.weekdays, []);
+  assert.ok(
+    [...document.querySelectorAll('option')].some(
+      (e) => e.textContent === '法定节假日（中国大陆）',
+    ),
+  );
+});
+
+test('reminder batch exposes direct deletion with confirmation and selection protection', async (t) => {
+  const row = {
+    id: 'delete-one',
+    name: '删除示例',
+    content: '',
+    status: 'open',
+    enabled: false,
+    repeat: 'none',
+    weekdays: [],
+    dueAt: '2035-11-10T00:00:00Z',
+    templateIds: [],
+  };
+  const calls = [];
+  const f = fixture(
+    t,
+    async (path, method, body) => {
+      calls.push({ path, method, body });
+      return path === '/notifications/reminders' ? [row] : [];
+    },
+    true,
+  );
+  await f.open();
+  await act(() => button('批量管理提醒').click());
+  assert.equal(button('删除所选提醒事项').disabled, true);
+  assert.equal(
+    [...document.querySelectorAll('option')].some((e) => e.value === 'delete'),
+    false,
+  );
+  await act(() => document.querySelector('[aria-label="选择 删除示例"]').click());
+  assert.equal(button('删除所选提醒事项').disabled, false);
+  confirmationBridge.accept = false;
+  await act(async () => {
+    button('删除所选提醒事项').click();
+    await tick();
+  });
+  assert.equal(
+    calls.some((call) => call.method === 'POST'),
+    false,
+  );
+  assert.equal(confirmationBridge.requests.at(-1).danger, true);
+  assert.match(confirmationBridge.requests.at(-1).text, /1.*事项/);
+  confirmationBridge.accept = true;
+  await act(async () => {
+    button('删除所选提醒事项').click();
+    await tick();
+  });
+  assert.deepEqual(calls.find((call) => call.method === 'POST').body, {
+    ids: ['delete-one'],
+    action: 'delete',
+  });
+});
+
+test('notification templates use local channel artwork and place more before the rightmost switch', async (t) => {
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'channel-row',
+    channel: 'inapp',
+    name: '应用内通知',
+    enabled: true,
+    ready: true,
+  };
+  const f = fixture(t, async (path) => (path === '/notifications/templates' ? [row] : []));
+  await f.open();
+  const card = button('编辑 应用内通知').closest('.compact-card');
+  const controls = card.querySelector('.compact-card-controls');
+  const more = card.querySelector('[aria-label="应用内通知的更多操作"]'),
+    toggle = card.querySelector('[aria-label="启用 应用内通知"]');
+  assert.ok(more.compareDocumentPosition(toggle) & 4);
+  assert.ok(controls.lastElementChild === toggle || controls.lastElementChild.contains(toggle));
+  for (const label of ['企业微信', '钉钉', '飞书', '个人微信（Server酱）', '手机推送（Bark）']) {
+    const image = button('配置 ' + label).querySelector('img');
+    assert.ok(image, label);
+    assert.match(image.src, /^data:image\//);
+  }
+  assert.notEqual(
+    button('配置 邮箱（SMTP）').querySelector('svg').innerHTML,
+    button('配置 通用 Webhook').querySelector('svg').innerHTML,
+  );
+});

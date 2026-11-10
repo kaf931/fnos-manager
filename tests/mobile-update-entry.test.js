@@ -52,7 +52,7 @@ test('mobile more has no update badge or update entry without a new version', as
   assert.doesNotMatch(ui.get('[role="menu"]').textContent, /应用更新/);
 });
 
-test('mobile unread indication identifies notification center separately from updates', async (t) => {
+test('mobile unread indication identifies application messages separately from updates', async (t) => {
   let chosen;
   const ui = await mountUi(
     t,
@@ -61,6 +61,7 @@ test('mobile unread indication identifies notification center separately from up
     {
       page: 'icons',
       unreadMessages: 3,
+      onMessages: () => (chosen = 'messages'),
       onChange: (page) => (chosen = page),
       onOpenChange: () => {},
     },
@@ -70,11 +71,11 @@ test('mobile unread indication identifies notification center separately from up
   assert.ok(ui.get('[data-badge="dot"]'));
   ui.click('button[aria-haspopup]');
   const entry = [...document.querySelectorAll('[role="menuitem"]')].find(
-    (node) => node.textContent === '通知中心',
+    (node) => node.textContent === '应用消息',
   );
   assert.ok(entry.querySelector('[data-badge="dot"]'));
   assert.doesNotMatch(ui.get('[role="menu"]').textContent, /应用更新/);
-  ui.click('[role="menuitem"]:nth-child(2)');
-  assert.equal(chosen, 'notifications');
+  ui.click('[role="menuitem"]:nth-child(4)');
+  assert.equal(chosen, 'messages');
   assert.equal(ui.get('[role="menu"]'), null);
 });

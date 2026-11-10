@@ -144,8 +144,8 @@ export function CompactCard({
         </span>
       </button>
       <div className="compact-card-controls">
-        {control}
         {actions}
+        {control}
       </div>
     </article>
   );

@@ -3,11 +3,18 @@ import {
   notificationOptionsSchema,
   notificationTemplatesSchema,
   reminderSchema,
+  reminderRecurrenceSchema,
   notificationInboxSchema,
   notificationTemplateOrderSchema,
 } from '../../server/persistence/schema.js';
-export function beforeInboxSchema(schema) {
+export function beforeReminderRecurrenceSchema(schema) {
   return schema
+    .replace(reminderRecurrenceSchema, '')
+    .replace(/INSERT INTO schema_migrations VALUES\(35[^;]*;/, '')
+    .replace('PRAGMA user_version=35', 'PRAGMA user_version=34');
+}
+export function beforeInboxSchema(schema) {
+  return beforeReminderRecurrenceSchema(schema)
     .replace(notificationTemplateOrderSchema, '')
     .replace(/INSERT INTO schema_migrations VALUES\(34[^;]*;/, '')
     .replace('PRAGMA user_version=34', 'PRAGMA user_version=33')
@@ -28,7 +35,8 @@ export function legacyNotificationSchema(schema) {
     .replace('PRAGMA user_version=31', 'PRAGMA user_version=30');
 }
 // Reconstruct the old notification tables when another subsystem's migration fixture rolls a current database back.
-export const legacyNotificationReset = `DROP TABLE IF EXISTS notification_template_order; DELETE FROM schema_migrations WHERE version=34;
+export const legacyNotificationReset = `DELETE FROM schema_migrations WHERE version=35;
+DROP TABLE IF EXISTS notification_template_order; DELETE FROM schema_migrations WHERE version=34;
 
 DELETE FROM schema_migrations WHERE version=33;
 DROP TABLE IF EXISTS reminders; DELETE FROM schema_migrations WHERE version=32;

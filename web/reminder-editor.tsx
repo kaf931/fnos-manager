@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Reminder, ReminderInput } from '../backend/domain/reminders.js';
-import { REMINDER_REPEAT_LABELS, REMINDER_REPEATS } from '../backend/domain/reminders.js';
+import {
+  REMINDER_REPEAT_LABELS,
+  REMINDER_REPEATS,
+  REMINDER_WEEKDAYS,
+  REMINDER_WEEKDAY_LABELS,
+} from '../backend/domain/reminders.js';
 import type { NotificationTemplateSummary } from '../backend/domain/notifications.js';
 import { NOTIFICATION_CHANNEL_LABELS } from '../backend/domain/notifications.js';
 import type { ApiClient, Toast } from './contracts/shared.js';
@@ -33,6 +38,7 @@ export function ReminderEditor({
     content: initial?.content || '',
     dueAt: initial?.dueAt || null,
     repeat: initial?.repeat || 'none',
+    weekdays: initial?.weekdays || [],
     templateIds: initial?.templateIds || [],
   });
   const [busy, setBusy] = useState(false),
@@ -58,6 +64,10 @@ export function ReminderEditor({
     }
     if (!available.some((template) => value.templateIds.includes(template.id))) {
       setError('请至少选择一个已启用且配置完整的通知模板');
+      return;
+    }
+    if (value.repeat === 'custom' && !value.weekdays?.length) {
+      setError('请至少选择一个周几');
       return;
     }
     lock.current = true;
@@ -170,12 +180,39 @@ export function ReminderEditor({
                 }))}
                 onChange={(key) => {
                   if (REMINDER_REPEATS.includes(key as ReminderInput['repeat']))
-                    patch({ repeat: key as ReminderInput['repeat'] });
+                    patch({
+                      repeat: key as ReminderInput['repeat'],
+                      weekdays: key === 'custom' ? value.weekdays : [],
+                    });
                 }}
               />
             </div>
           </label>
         </div>
+        {value.repeat === 'custom' && (
+          <div className="form-check-row" role="group" aria-label="重复周几">
+            {REMINDER_WEEKDAYS.map((day) => (
+              <label className="checkbox-label" key={day}>
+                <input
+                  type="checkbox"
+                  checked={value.weekdays?.includes(day) || false}
+                  disabled={busy}
+                  onChange={(event) =>
+                    patch({
+                      weekdays: event.target.checked
+                        ? [...(value.weekdays || []), day]
+                        : value.weekdays?.filter((v) => v !== day),
+                    })
+                  }
+                />
+                {REMINDER_WEEKDAY_LABELS[day]}
+              </label>
+            ))}
+          </div>
+        )}
+        {['cn-workday', 'cn-holiday'].includes(value.repeat) && (
+          <p className="help">按国务院放假调休安排，在指定时间提醒。</p>
+        )}
         <label id="reminder-template-label">通知模板</label>
         {available.length ? (
           <div className="form-check-row" role="group" aria-labelledby="reminder-template-label">

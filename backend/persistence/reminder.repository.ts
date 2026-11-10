@@ -1,3 +1,4 @@
+import { ChinaCalendar, CalendarUnavailableError } from '../notifications/china-calendar.js';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from '../errors.js';
 import { REMINDER_REPEATS, type Reminder, type ReminderInput } from '../domain/reminders.js';
@@ -11,6 +12,7 @@ export class ReminderRepository {
   constructor(
     private readonly database: DatabaseService,
     private readonly notifications: NotificationRepository,
+    readonly calendar = new ChinaCalendar(),
   ) {}
   private decode(row: RecordValue): Reminder {
     return {
@@ -19,6 +21,7 @@ export class ReminderRepository {
       content: String(row.content),
       dueAt: iso(row.due_at),
       repeat: row.repeat as Reminder['repeat'],
+      weekdays: JSON.parse(String(row.weekdays)),
       templateIds: JSON.parse(String(row.template_ids)),
       enabled: row.enabled === 1,
       status: row.status as Reminder['status'],
@@ -76,6 +79,15 @@ export class ReminderRepository {
       new Set(input.templateIds).size !== input.templateIds.length
     )
       throw new DomainError('提醒事项格式无效');
+    const weekdays = input.weekdays === undefined ? [] : input.weekdays;
+    if (
+      !Array.isArray(weekdays) ||
+      weekdays.length > 7 ||
+      weekdays.some((day) => !Number.isInteger(day) || day < 0 || day > 6) ||
+      new Set(weekdays).size !== weekdays.length ||
+      (input.repeat === 'custom' ? !weekdays.length : !!weekdays.length)
+    )
+      throw new DomainError('自定义重复请至少选择一个有效的周几');
     const canonical =
       typeof input.dueAt === 'string'
         ? input.dueAt.includes('.')
@@ -98,6 +110,7 @@ export class ReminderRepository {
     return {
       ...input,
       name: input.name.trim(),
+      weekdays: [...weekdays].sort((a, b) => a - b),
       dueAt: due === null ? null : new Date(due).toISOString(),
       templateIds: [...input.templateIds],
     };
@@ -107,10 +120,13 @@ export class ReminderRepository {
       if (this.list(owner).length >= 500) throw new DomainError('最多保存 500 个提醒事项');
       const v = this.validate(owner, input, now),
         id = randomUUID();
-      const next = v.enabled && v.dueAt ? nextReminderAt(v.dueAt, v.repeat, now) : null;
+      const next =
+        v.enabled && v.dueAt
+          ? nextReminderAt(v.dueAt, v.repeat, now, v.weekdays, this.calendar)
+          : null;
       this.database.connection
         .prepare(
-          "INSERT INTO reminders(id,owner_uid,name,content,due_at,repeat,template_ids,enabled,status,next_at,revision,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,'open',?,1,?,?)",
+          "INSERT INTO reminders(id,owner_uid,name,content,due_at,repeat,weekdays,template_ids,enabled,status,next_at,revision,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,'open',?,1,?,?)",
         )
         .run(
           id,
@@ -119,6 +135,7 @@ export class ReminderRepository {
           v.content,
           v.dueAt ? Date.parse(v.dueAt) : null,
           v.repeat,
+          JSON.stringify(v.weekdays),
           JSON.stringify(v.templateIds),
           Number(v.enabled),
           next ? Date.parse(next) : null,
@@ -136,6 +153,10 @@ export class ReminderRepository {
         input?.enabled &&
         old.nextAt !== null &&
         old.repeat === input.repeat &&
+        JSON.stringify(old.weekdays) ===
+          JSON.stringify(
+            [...(Array.isArray(input.weekdays) ? input.weekdays : [])].sort((a, b) => a - b),
+          ) &&
         old.dueAt !== null &&
         input.dueAt !== null &&
         Date.parse(old.dueAt) === Date.parse(input.dueAt);
@@ -144,18 +165,19 @@ export class ReminderRepository {
       const next = preserveSchedule
         ? old.nextAt
         : v.enabled && v.dueAt
-          ? nextReminderAt(v.dueAt, v.repeat, now)
+          ? nextReminderAt(v.dueAt, v.repeat, now, v.weekdays, this.calendar)
           : null;
       this.cancel(owner, id, now);
       this.database.connection
         .prepare(
-          'UPDATE reminders SET name=?,content=?,due_at=?,repeat=?,template_ids=?,enabled=?,next_at=?,revision=revision+1,error=NULL,updated_at=? WHERE owner_uid=? AND id=?',
+          'UPDATE reminders SET name=?,content=?,due_at=?,repeat=?,weekdays=?,template_ids=?,enabled=?,next_at=?,revision=revision+1,error=NULL,updated_at=? WHERE owner_uid=? AND id=?',
         )
         .run(
           v.name,
           v.content,
           v.dueAt ? Date.parse(v.dueAt) : null,
           v.repeat,
+          JSON.stringify(v.weekdays),
           JSON.stringify(v.templateIds),
           Number(v.enabled),
           next ? Date.parse(next) : null,
@@ -195,6 +217,7 @@ export class ReminderRepository {
         content: current.content,
         dueAt: current.dueAt,
         repeat: current.repeat,
+        weekdays: current.weekdays,
         templateIds,
         enabled,
       },
@@ -249,6 +272,39 @@ export class ReminderRepository {
       )
       .run(now, owner, `reminder:${id}:%`);
   }
+  hasCalendarReminders(): boolean {
+    return !!this.database.connection
+      .prepare(
+        "SELECT 1 FROM reminders WHERE enabled=1 AND status='open' AND repeat IN ('cn-workday','cn-holiday') LIMIT 1",
+      )
+      .get();
+  }
+  refreshCalendarSchedules(now = Date.now()) {
+    this.database.transaction(() => {
+      const rows = this.database.connection
+        .prepare(
+          "SELECT * FROM reminders WHERE enabled=1 AND status='open' AND repeat IN ('cn-workday','cn-holiday')",
+        )
+        .all();
+      for (const row of rows) {
+        const value = this.decode(row),
+          owner = String(row.owner_uid);
+        // Due records keep their existing delivery identity; dispatchDue catches up once.
+        if (value.nextAt && Date.parse(value.nextAt) <= now) continue;
+        let next: string | null = null,
+          error: string | null = null;
+        try {
+          next = nextReminderAt(value.dueAt!, value.repeat, now, [], this.calendar);
+        } catch (e) {
+          if (!(e instanceof CalendarUnavailableError)) throw e;
+          error = e.message;
+        }
+        this.database.connection
+          .prepare('UPDATE reminders SET next_at=?,error=?,updated_at=? WHERE owner_uid=? AND id=?')
+          .run(next ? Date.parse(next) : null, error, now, owner, value.id);
+      }
+    });
+  }
   dispatchDue(now = Date.now()): number {
     return this.database.transaction(() => {
       const rows = this.database.connection
@@ -289,12 +345,27 @@ export class ReminderRepository {
             },
             now,
           );
-        const next = v.dueAt ? nextReminderAt(v.dueAt, v.repeat, now) : null;
+        let next: string | null = null;
+        let calendarError: string | null = null;
+        try {
+          next = v.dueAt ? nextReminderAt(v.dueAt, v.repeat, now, v.weekdays, this.calendar) : null;
+        } catch (error) {
+          if (!(error instanceof CalendarUnavailableError)) throw error;
+          calendarError = error.message;
+        }
         this.database.connection
           .prepare(
-            'UPDATE reminders SET next_at=?,enabled=?,last_fired_at=?,error=NULL,updated_at=? WHERE owner_uid=? AND id=?',
+            'UPDATE reminders SET next_at=?,enabled=?,last_fired_at=?,error=?,updated_at=? WHERE owner_uid=? AND id=?',
           )
-          .run(next ? Date.parse(next) : null, Number(!!next), now, now, owner, v.id);
+          .run(
+            next ? Date.parse(next) : null,
+            Number(!!next || !!calendarError),
+            now,
+            calendarError,
+            now,
+            owner,
+            v.id,
+          );
         count++;
       }
       return count;

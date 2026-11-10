@@ -55,7 +55,7 @@ test('schema15 upgrade preserves notification settings and creates empty operati
     );
     old.close();
     db = new DatabaseService(dir);
-    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 34);
+    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 35);
     assert.equal(db.connection.prepare('select count(*) n from operation_records').get().n, 0);
     assert.equal(
       JSON.parse(db.connection.prepare('select config from notification_templates').get().config)

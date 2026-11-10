@@ -99,7 +99,7 @@ test('schema v3 settings migrate once into providers while retaining old busines
   );
   db.close();
   db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 34);
+  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 35);
   assert.equal(db.connection.prepare('select id from icons').get().id, 'keep');
   const s = new AiSettingsService(new AiSettingsRepository(db));
   assert.equal(s.listProviders('a').length, 1);

@@ -1,3 +1,4 @@
+import { ChinaCalendar } from '../../notifications/china-calendar.js';
 import { ReminderRepository } from '../../persistence/reminder.repository.js';
 import { Module } from '@nestjs/common';
 import { NotificationRepository } from '../../persistence/notification.repository.js';
@@ -15,7 +16,11 @@ import { NotificationsController } from './notifications.controller.js';
         const repository = new NotificationRepository(db);
         return resources.add(
           'notificationService',
-          new NotificationService(repository, undefined, new ReminderRepository(db, repository)),
+          new NotificationService(
+            repository,
+            undefined,
+            new ReminderRepository(db, repository, new ChinaCalendar(db.dataDir)),
+          ),
         );
       },
     },

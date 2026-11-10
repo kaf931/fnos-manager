@@ -256,7 +256,7 @@ test('reminder batch API validates selection, CSRF and owner isolation', async (
       condition: 'all',
       scanFailures: true,
     });
-    const reminder = service.createReminder('1000', {
+    const reminder = await service.createReminder('1000', {
       name: 'Batch',
       content: '',
       dueAt: new Date(Date.now() + 3600000).toISOString(),
@@ -294,6 +294,56 @@ test('reminder batch API validates selection, CSRF and owner isolation', async (
         })
       ).status,
       200,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test('custom reminder weekdays are validated at the HTTP boundary and stored with account isolation', async () => {
+  const f = await appFixture();
+  try {
+    await f.app.get(NotificationService).close();
+    const call = (path, method = 'GET', body, extra = {}) =>
+      fetch(f.base + '/notifications' + path, {
+        method,
+        headers: { ...f.headers, ...extra },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    const template = await (
+      await call('/templates', 'POST', {
+        name: 'Inbox',
+        channel: 'inapp',
+        url: '',
+        token: '',
+        enabled: true,
+        condition: 'all',
+        scanFailures: true,
+      })
+    ).json();
+    const value = {
+      name: '自定义提醒',
+      content: '',
+      dueAt: '2035-11-10T01:00:00Z',
+      repeat: 'custom',
+      weekdays: [1, 5],
+      templateIds: [template.id],
+      enabled: true,
+    };
+    const response = await call('/reminders', 'POST', value);
+    assert.equal(response.status, 200);
+    const saved = await response.json();
+    assert.deepEqual(saved.weekdays, [1, 5]);
+    for (const weekdays of [[], [1, 1], [-1], [7], [1.5], ['1'], null])
+      assert.equal((await call('/reminders', 'POST', { ...value, weekdays })).status, 400);
+    assert.equal((await call('/reminders', 'POST', { ...value, repeat: 'daily' })).status, 400);
+    assert.equal(
+      (await call('/reminders', 'POST', value, { 'x-deskicons-token': 'wrong' })).status,
+      403,
+    );
+    assert.deepEqual(
+      await (await call('/reminders', 'GET', undefined, { 'x-trim-userid': '1001' })).json(),
+      [],
     );
   } finally {
     await f.close();

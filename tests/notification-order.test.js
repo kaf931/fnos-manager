@@ -1,3 +1,4 @@
+import { beforeReminderRecurrenceSchema } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -13,7 +14,7 @@ test('template ordering migrates from version 33, persists and rejects foreign o
   try {
     const old = new DatabaseSync(dir + '/nas-manager.sqlite');
     old.exec(
-      schema
+      beforeReminderRecurrenceSchema(schema)
         .replace(notificationTemplateOrderSchema, '')
         .replace(/INSERT INTO schema_migrations VALUES\(34[^;]*;/, '')
         .replace('PRAGMA user_version=34', 'PRAGMA user_version=33'),
@@ -21,7 +22,7 @@ test('template ordering migrates from version 33, persists and rejects foreign o
     old.close();
     db = new DatabaseService(dir);
     let repo = new NotificationRepository(db);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
     assert.deepEqual(repo.templateOrder('a'), { keys: [] });
     const row = repo.createTemplate('a', {
       channel: 'inapp',

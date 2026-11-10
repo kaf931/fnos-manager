@@ -13,7 +13,7 @@ const compiled = await build({
   format: 'cjs',
   packages: 'external',
   jsx: 'automatic',
-  loader: { '.png': 'dataurl' },
+  loader: { '.png': 'dataurl', '.ico': 'dataurl' },
   plugins: [
     {
       name: 'feature-boundaries',

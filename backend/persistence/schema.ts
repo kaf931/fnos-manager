@@ -1,5 +1,5 @@
 /** Relational schema. JSON is reserved for task variants and scan statistics. */
-export const SCHEMA_VERSION = 34;
+export const SCHEMA_VERSION = 35;
 const baseSchema = `
 CREATE TABLE schema_migrations (
   version INTEGER PRIMARY KEY NOT NULL,
@@ -545,6 +545,24 @@ export const notificationTemplateOrderSchema = `CREATE TABLE notification_templa
  entries TEXT NOT NULL CHECK(json_valid(entries) AND json_type(entries)='array')
 ) STRICT;`;
 export const notificationInboxSchema = `ALTER TABLE notification_deliveries ADD COLUMN read_at INTEGER;`;
+export const reminderRecurrenceSchema = `
+CREATE TABLE reminders_recurrence (
+ id TEXT NOT NULL,owner_uid TEXT NOT NULL,name TEXT NOT NULL CHECK(length(name) BETWEEN 1 AND 80),
+ content TEXT NOT NULL CHECK(length(content)<=8000),due_at INTEGER,
+ repeat TEXT NOT NULL CHECK(repeat IN ('none','daily','weekly','monthly','cn-workday','cn-holiday','custom')),
+ weekdays TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(weekdays) AND json_type(weekdays)='array' AND json_array_length(weekdays)<=7),
+ template_ids TEXT NOT NULL CHECK(json_valid(template_ids)),enabled INTEGER NOT NULL CHECK(enabled IN (0,1)),
+ status TEXT NOT NULL CHECK(status IN ('open','completed')),next_at INTEGER,last_fired_at INTEGER,completed_at INTEGER,
+ revision INTEGER NOT NULL CHECK(revision>=1),error TEXT,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,
+ PRIMARY KEY(owner_uid,id), CHECK(enabled=0 OR (due_at IS NOT NULL AND status='open')),
+ CHECK((repeat='custom' AND json_array_length(weekdays)>0) OR (repeat<>'custom' AND json_array_length(weekdays)=0))
+) STRICT;
+INSERT INTO reminders_recurrence(id,owner_uid,name,content,due_at,repeat,template_ids,enabled,status,next_at,last_fired_at,completed_at,revision,error,created_at,updated_at)
+ SELECT id,owner_uid,name,content,due_at,repeat,template_ids,enabled,status,next_at,last_fired_at,completed_at,revision,error,created_at,updated_at FROM reminders;
+DROP TABLE reminders;
+ALTER TABLE reminders_recurrence RENAME TO reminders;
+CREATE INDEX reminders_due ON reminders(enabled,status,next_at);
+`;
 export const reminderSchema = `
 CREATE TABLE reminders (
  id TEXT NOT NULL,owner_uid TEXT NOT NULL,name TEXT NOT NULL CHECK(length(name) BETWEEN 1 AND 80),
@@ -723,6 +741,7 @@ export const schema =
   notificationOptionsSchema +
   notificationTemplatesSchema +
   reminderSchema +
+  reminderRecurrenceSchema +
   notificationInboxSchema +
   notificationTemplateOrderSchema +
   operationSchema +
@@ -765,5 +784,6 @@ INSERT INTO schema_migrations VALUES(31,CAST(unixepoch('subsec')*1000 AS INTEGER
 INSERT INTO schema_migrations VALUES(32,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(33,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(34,CAST(unixepoch('subsec')*1000 AS INTEGER));
-PRAGMA user_version=34;
+INSERT INTO schema_migrations VALUES(35,CAST(unixepoch('subsec')*1000 AS INTEGER));
+PRAGMA user_version=35;
 `;

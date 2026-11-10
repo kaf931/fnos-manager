@@ -304,3 +304,61 @@ test('reminder recovery retains existing disabled templates and never accepts fo
     ),
   );
 });
+
+test('custom weekday schedules filter the first date and retain Beijing time across weeks', () => {
+  assert.equal(
+    nextReminderAt('2026-11-10T01:30:00Z', 'custom', at('2026-11-09T00:00:00Z'), [1, 3]),
+    '2026-11-11T01:30:00.000Z',
+  );
+  assert.equal(
+    nextReminderAt('2026-11-09T01:30:00Z', 'custom', at('2026-11-09T01:30:00Z'), [1, 3]),
+    '2026-11-11T01:30:00.000Z',
+  );
+  assert.equal(
+    nextReminderAt('2026-11-09T01:30:00Z', 'custom', at('2026-11-14T01:30:00Z'), [0]),
+    '2026-11-15T01:30:00.000Z',
+  );
+  assert.throws(() => nextReminderAt('2026-11-09T01:30:00Z', 'custom', now, []), /周几/);
+});
+test('China recurrence includes makeup workdays and excludes ordinary weekends from announced holidays', () => {
+  assert.equal(
+    nextReminderAt('2026-01-01T01:00:00Z', 'cn-workday', at('2025-12-31T01:00:00Z')),
+    '2026-01-04T01:00:00.000Z',
+  );
+  assert.equal(
+    nextReminderAt('2026-01-10T01:00:00Z', 'cn-holiday', at('2026-01-09T01:00:00Z')),
+    '2026-02-15T01:00:00.000Z',
+  );
+  assert.equal(
+    nextReminderAt('2026-12-31T01:00:00Z', 'cn-holiday', at('2026-12-30T01:00:00Z')),
+    '2027-01-01T01:00:00.000Z',
+  );
+  assert.throws(
+    () => nextReminderAt('2099-01-01T01:00:00Z', 'cn-workday', at('2098-12-31T00:00:00Z')),
+    /2099.*日历/,
+  );
+});
+test('custom weekdays persist, validate, survive pause and recompute when edited', (t) => {
+  const { repo, template } = fixture(t);
+  const r = repo.create('a', input(template.id, { repeat: 'custom', weekdays: [3, 1] }), now);
+  assert.deepEqual(r.weekdays, [1, 3]);
+  const changed = repo.update('a', r.id, { ...r, weekdays: [5] }, now);
+  assert.equal(changed.nextAt, '2026-11-13T01:01:00.000Z');
+  repo.setEnabled('a', r.id, false, now);
+  assert.deepEqual(repo.setEnabled('a', r.id, true, now).weekdays, [5]);
+  for (const weekdays of [[], [1, 1], [-1], [7], ['1'], [1.5]])
+    assert.throws(() => repo.create('a', input(template.id, { repeat: 'custom', weekdays }), now));
+  assert.throws(() =>
+    repo.create('a', input(template.id, { repeat: 'daily', weekdays: [1] }), now),
+  );
+});
+
+test('weekday summaries compact consecutive selections without hiding which days repeat', async () => {
+  const { reminderRepeatLabel } = await import('../server/domain/reminders.js');
+  assert.equal(reminderRepeatLabel({ repeat: 'custom', weekdays: [1, 2, 3, 4, 5] }), '周一至周五');
+  assert.equal(
+    reminderRepeatLabel({ repeat: 'custom', weekdays: [0, 1, 2, 3, 4, 5, 6] }),
+    '周一至周日',
+  );
+  assert.equal(reminderRepeatLabel({ repeat: 'custom', weekdays: [1, 3, 5] }), '周一、周三、周五');
+});

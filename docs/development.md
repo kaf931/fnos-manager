@@ -90,7 +90,7 @@ AI 支持多个供应商、OpenAI/Claude/Ollama及 Gemini、GLM、MiniMax、Deep
 
 ### 通知中心
 
-通知模板支持14种渠道（含 SMTP 邮箱），可分别启用并同时通知；提醒事项支持记事、待办和一次／日／周／月提醒，可完成、暂停、延期和重新打开。提醒沿用北京时间，投递记录、重试和清理统一管理。详见 [通知渠道与模板](integrations/webhook-notifications.md) 和 [记事与提醒](integrations/reminders.md)。
+通知模板支持八种内置渠道（含 SMTP 邮箱），保存后启用，可用卡片开关停用；提醒事项支持记事、待办、单次／日／周／月、中国大陆法定工作日／节假日及自定义周几，可完成、暂停和重新打开。提醒沿用北京时间，投递记录、重试和清理统一管理。详见 [通知渠道与模板](integrations/webhook-notifications.md) 和 [记事与提醒](integrations/reminders.md)。
 
 ### 配置备份与恢复
 

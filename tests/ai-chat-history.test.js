@@ -188,7 +188,7 @@ test('schema v4 upgrade preserves hidden protocol reasoning independently of vis
   assert.deepEqual(restored.history, record.history);
   assert.equal(restored.messages[0].content, '公开回答');
   assert.equal(new AiHistoryRepository(db).get('b', 'test-chat'), null);
-  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 34);
+  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 35);
   db.close();
 });
 

@@ -174,7 +174,7 @@ test('upgrade migrates a schema 7 database while keeping icon records', async (t
   const result = run('upgrade');
   assert.equal(result.status, 0, result.stderr);
   db = new DatabaseSync(file);
-  assert.equal(db.prepare('PRAGMA user_version').get().user_version, 34);
+  assert.equal(db.prepare('PRAGMA user_version').get().user_version, 35);
   assert.deepEqual(
     { ...db.prepare('SELECT name,menu_page FROM icons WHERE id=?').get('sample01') },
     { name: 'Keep', menu_page: null },

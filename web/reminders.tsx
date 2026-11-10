@@ -2,7 +2,7 @@ import { ReminderBatch } from './reminder-batch.js';
 import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import React, { useEffect, useRef, useState } from 'react';
 import type { Reminder } from '../backend/domain/reminders.js';
-import { REMINDER_REPEAT_LABELS } from '../backend/domain/reminders.js';
+import { reminderRepeatLabel } from '../backend/domain/reminders.js';
 import type { NotificationTemplateSummary } from '../backend/domain/notifications.js';
 import { errorMessage, type ApiClient, type Toast } from './contracts/shared.js';
 import { AppIcon } from './ui/icon-markup.js';
@@ -279,14 +279,16 @@ export function RemindersPanel({
                   (row.status === 'completed'
                     ? '已完成'
                     : row.error
-                      ? '模板不可用'
+                      ? row.error.includes('节假日日历')
+                        ? '等待日历'
+                        : '模板不可用'
                       : row.enabled
                         ? '待提醒'
                         : row.repeat === 'none' && row.lastFiredAt
                           ? '已触发'
                           : '已暂停') +
                   ' · ' +
-                  REMINDER_REPEAT_LABELS[row.repeat],
+                  reminderRepeatLabel(row),
                 metaControl: (row) => (
                   <SwitchControl
                     checked={row.enabled}

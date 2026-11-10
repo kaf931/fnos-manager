@@ -1,3 +1,4 @@
+import { NotificationChannelIcon } from './notification-channel-icon.js';
 import { SortableCards, moveCard } from './ui/sortable-cards.js';
 import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import { ReactDialog } from './ui/react-dialog.js';
@@ -211,7 +212,7 @@ function NotificationTemplatesPanel({
         key={row.id}
         title={row.name}
         description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
-        icon={<AppIcon name="bell" />}
+        icon={<NotificationChannelIcon channel={row.channel} />}
         disabled={busy.has(row.id) || sorting}
         onOpen={() => void act('edit', row)}
         control={
@@ -278,7 +279,7 @@ function NotificationTemplatesPanel({
         key={channel}
         title={NOTIFICATION_CHANNEL_LABELS[channel]}
         description="未配置"
-        icon={<AppIcon name="bell" />}
+        icon={<NotificationChannelIcon channel={channel} />}
         openLabel={'配置 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
         disabled={sorting || (!loaded && loading) || !!error}
         onOpen={() => setEditor({ row: null, channel })}
