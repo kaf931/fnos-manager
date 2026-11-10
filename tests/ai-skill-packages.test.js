@@ -1,4 +1,4 @@
-import {legacyNotificationSchema} from './fixtures/notification-schema.js';
+import { legacyNotificationSchema } from './fixtures/notification-schema.js';
 import { appearanceSchema } from '../server/persistence/schema.js';
 import { rdpSchema } from '../server/persistence/schema.js';
 import { vncCursorSchema } from '../server/persistence/schema.js';
@@ -22,7 +22,7 @@ test('package schema preserves document skills and rejects invalid owner/file re
     });
     assert.equal(item.kind, 'document');
     assert.equal(item.revision, 1);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.throws(() =>
       db.connection
         .prepare(
@@ -79,14 +79,17 @@ test('schema11 migration preserves enabled document definitions and unrelated re
       .replace(vncCursorSchema, '')
       .replace(/INSERT INTO schema_migrations VALUES\(22[^;]*;/, '')
       .replace(appearanceSchema, '')
-      .replace(/CREATE TABLE update_settings[\s\S]*?\) STRICT;/, '').replace(/INSERT INTO schema_migrations VALUES\(26[^;]*;/, '').replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '').replace(/INSERT INTO schema_migrations VALUES\(24[^;]*;/, '')
+      .replace(/CREATE TABLE update_settings[\s\S]*?\) STRICT;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(26[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(24[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
-        .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
-        .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
-        .replace('PRAGMA user_version=30', 'PRAGMA user_version=11'),
+      .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
+      .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
+      .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
+      .replace('PRAGMA user_version=30', 'PRAGMA user_version=11'),
   );
   raw
     .prepare(

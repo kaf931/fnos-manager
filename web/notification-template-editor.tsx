@@ -176,7 +176,7 @@ export function NotificationTemplateEditor({
           <p className="help">在 iPhone 的 Bark 中获取 Device Key，可填写自建推送地址。</p>
         )}
         {settings.channel === 'inapp' && (
-          <p className="help">消息保存在应用内，保留上限与投递记录一致。</p>
+          <p className="help">消息保存在应用内，保留上限可在应用清理中配置。</p>
         )}
         {settings.channel === 'email' && (
           <>

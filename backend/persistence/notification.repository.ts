@@ -333,7 +333,7 @@ export class NotificationRepository {
       invalid('分页参数无效');
     const db = this.database.connection;
     const where =
-      'owner_uid=?' +
+      "owner_uid=? AND channel!='inapp'" +
       (filters.templateId ? ' AND template_id=?' : '') +
       (filters.reminderId
         ? " AND event_type='reminder.due' AND json_extract(payload,'$.reminderId')=?"
@@ -592,10 +592,11 @@ export class NotificationRepository {
     });
   }
   private trim(owner: string): void {
-    this.database.connection
-      .prepare(
-        "DELETE FROM notification_deliveries WHERE id IN(SELECT id FROM notification_deliveries WHERE owner_uid=? AND status IN ('success','failed','cancelled') ORDER BY created_at DESC,id DESC LIMIT -1 OFFSET ?)",
-      )
-      .run(owner, new RetentionRepository(this.database).limits().deliveries);
+    const retention = new RetentionRepository(this.database),
+      limits = retention.limits();
+    this.database.transaction(() => {
+      retention.trim('deliveries', limits.deliveries, [], owner);
+      retention.trim('appMessages', limits.appMessages, [], owner);
+    });
   }
 }

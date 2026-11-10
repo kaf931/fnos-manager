@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import { BackupService } from '../server/backup/service.js';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
@@ -21,7 +21,8 @@ test('v22 migration preserves VNC and RDP backup persists through reopen', async
       port: 5900,
     });
     db.connection.exec(
-      legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=22',
+      legacyNotificationReset +
+        'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=22',
     );
     db.close();
     db = new DatabaseService(dir);
@@ -65,7 +66,8 @@ test('schema26 RDP connections retain strict NLA and new policies survive reopen
     };
     const saved = new RdpRepository(db).save('1000', input);
     db.connection.exec(
-      legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE update_settings DROP COLUMN download_route; DELETE FROM schema_migrations WHERE version=28; ALTER TABLE rdp_connections DROP COLUMN security; ALTER TABLE rdp_connections DROP COLUMN certificate_policy; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; PRAGMA user_version=26',
+      legacyNotificationReset +
+        'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE update_settings DROP COLUMN download_route; DELETE FROM schema_migrations WHERE version=28; ALTER TABLE rdp_connections DROP COLUMN security; ALTER TABLE rdp_connections DROP COLUMN certificate_policy; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; PRAGMA user_version=26',
     );
     db.close();
     db = new DatabaseService(dir);
@@ -90,7 +92,7 @@ test('schema26 RDP connections retain strict NLA and new policies survive reopen
     db = new DatabaseService(dir);
     repo = new RdpRepository(db);
     assert.equal(repo.list('1001')[0].certificatePolicy, 'tofu');
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {
     db.close();

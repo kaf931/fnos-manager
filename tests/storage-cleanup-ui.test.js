@@ -102,3 +102,33 @@ test('AI history and attachment management are centralized with their existing b
   assert.equal(cleanupLimitText('aiHistory', defaultHistoryLimits), '50 个会话');
   assert.equal(cleanupLimitText('attachments', defaultHistoryLimits), '按需清理');
 });
+
+test('messages and completed reminder cleanup use shared record pages and separate limits', () => {
+  const { cleanupRecordModes, cleanupLimitText } = compiled.exports;
+  assert.equal(cleanupRecordModes.appMessages, 'app-messages');
+  assert.equal(cleanupRecordModes.completedReminders, 'completed-reminders');
+  assert.equal(cleanupLimitText('appMessages', defaultHistoryLimits), '200 条');
+  assert.equal(cleanupLimitText('completedReminders', defaultHistoryLimits), '100 条');
+  for (const mobile of [false, true]) {
+    const doc = new JSDOM(
+      renderToStaticMarkup(
+        React.createElement(CleanupTable, {
+          data: {
+            limits: defaultHistoryLimits,
+            items: [
+              { kind: 'appMessages', count: 2, protected: 0, bytes: null },
+              { kind: 'completedReminders', count: 1, protected: 1, bytes: null },
+            ],
+          },
+          selected: [],
+          onSelect: () => {},
+          onOpen: () => {},
+          mobile,
+        }),
+      ),
+    ).window.document;
+    assert.ok(doc.querySelector('[aria-label="查看应用消息"]'));
+    assert.ok(doc.querySelector('[aria-label="查看已完成提醒事项"]'));
+    assert.equal(doc.querySelector('[aria-label="选择已完成提醒事项"]').disabled, true);
+  }
+});

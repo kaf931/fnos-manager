@@ -1,4 +1,7 @@
-import {legacyNotificationReset,legacyNotificationSchema} from './fixtures/notification-schema.js';
+import {
+  legacyNotificationReset,
+  legacyNotificationSchema,
+} from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -49,12 +52,13 @@ test('v6 upgrade adds settings without changing saved preferences or business da
   let db = new DatabaseService(dir);
   new PreferencesRepository(db).save('a', { theme: 'dark', commandHints: false });
   db.connection.exec(
-    legacyNotificationReset + "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE user_preferences DROP COLUMN default_page; ALTER TABLE user_preferences DROP COLUMN navigation_motion; DELETE FROM schema_migrations WHERE version=7; ALTER TABLE icons DROP COLUMN menu_page; DELETE FROM schema_migrations WHERE version=8; DROP TABLE ai_skill_authorizations; DROP TABLE ai_skill_package_files; DROP TABLE ai_skill_packages; ALTER TABLE ai_chat_proposals DROP COLUMN action; DELETE FROM schema_migrations WHERE version>=12; DROP TABLE ai_skills; DELETE FROM schema_migrations WHERE version=11; DROP TABLE ai_chat_attachments; DELETE FROM schema_migrations WHERE version>=9; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; DROP TABLE wake_presence; ALTER TABLE wake_devices DROP COLUMN ip; DELETE FROM schema_migrations WHERE version=17; DROP TABLE operation_records; DROP TABLE operation_settings; DELETE FROM schema_migrations WHERE version=16; DROP TABLE notification_deliveries; DROP TABLE notification_settings; DELETE FROM schema_migrations WHERE version=15; DROP TABLE backup_receipts; ALTER TABLE tasks DROP COLUMN pending_reason; DELETE FROM schema_migrations WHERE version=14; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=6; INSERT INTO icons(id,name,url,mode)VALUES('keep01','Keep','http://test','url')",
+    legacyNotificationReset +
+      "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE user_preferences DROP COLUMN default_page; ALTER TABLE user_preferences DROP COLUMN navigation_motion; DELETE FROM schema_migrations WHERE version=7; ALTER TABLE icons DROP COLUMN menu_page; DELETE FROM schema_migrations WHERE version=8; DROP TABLE ai_skill_authorizations; DROP TABLE ai_skill_package_files; DROP TABLE ai_skill_packages; ALTER TABLE ai_chat_proposals DROP COLUMN action; DELETE FROM schema_migrations WHERE version>=12; DROP TABLE ai_skills; DELETE FROM schema_migrations WHERE version=11; DROP TABLE ai_chat_attachments; DELETE FROM schema_migrations WHERE version>=9; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; DROP TABLE wake_presence; ALTER TABLE wake_devices DROP COLUMN ip; DELETE FROM schema_migrations WHERE version=17; DROP TABLE operation_records; DROP TABLE operation_settings; DELETE FROM schema_migrations WHERE version=16; DROP TABLE notification_deliveries; DROP TABLE notification_settings; DELETE FROM schema_migrations WHERE version=15; DROP TABLE backup_receipts; ALTER TABLE tasks DROP COLUMN pending_reason; DELETE FROM schema_migrations WHERE version=14; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=6; INSERT INTO icons(id,name,url,mode)VALUES('keep01','Keep','http://test','url')",
   );
   db.close();
   db = new DatabaseService(dir);
   t.after(() => db.close());
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
   assert.deepEqual(new PreferencesRepository(db).get('a'), {
     theme: 'dark',
     palette: 'classic',
@@ -112,7 +116,8 @@ test('v23 appearance migration preserves previous preferences and enforces palet
   let db = new DatabaseService(dir);
   new PreferencesRepository(db).save('a', { theme: 'dark', navigationMotion: false });
   db.connection.exec(
-    legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE rdp_connections DROP COLUMN security; ALTER TABLE rdp_connections DROP COLUMN certificate_policy; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=23',
+    legacyNotificationReset +
+      'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; ALTER TABLE rdp_connections DROP COLUMN security; ALTER TABLE rdp_connections DROP COLUMN certificate_policy; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=23',
   );
   db.close();
   db = new DatabaseService(dir);
@@ -166,13 +171,13 @@ test('v24 palette expansion keeps preferences and catalog children and accepts o
       .replace(/INSERT INTO schema_migrations VALUES\(26[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '')
       .replace(/ALTER TABLE rdp_connections ADD COLUMN[^;]*;/g, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
-        .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
-        .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
-        .replace('PRAGMA user_version=30', 'PRAGMA user_version=24'),
+      .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
+      .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
+      .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
+      .replace('PRAGMA user_version=30', 'PRAGMA user_version=24'),
   );
   raw.exec(
     "PRAGMA foreign_keys=ON; INSERT INTO user_preferences(owner_uid,theme,catalog_initialized,updated_at,palette) VALUES('a','dark',1,1,'teal'); INSERT INTO command_catalog VALUES('command','a','pwd','Show directory','General',0,1,1)",
@@ -193,6 +198,6 @@ test('v24 palette expansion keeps preferences and catalog children and accepts o
   );
   prefs.save('a', { palette: 'default' });
   assert.equal(prefs.get('a').palette, 'default');
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
   assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
 });

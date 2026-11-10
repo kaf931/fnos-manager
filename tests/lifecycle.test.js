@@ -1,4 +1,4 @@
-import {legacyNotificationSchema} from './fixtures/notification-schema.js';
+import { legacyNotificationSchema } from './fixtures/notification-schema.js';
 import { appearanceSchema } from '../server/persistence/schema.js';
 import { rdpSchema } from '../server/persistence/schema.js';
 import { vncCursorSchema } from '../server/persistence/schema.js';
@@ -159,12 +159,12 @@ test('upgrade migrates a schema 7 database while keeping icon records', async (t
       .replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(24[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
-        .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
-        .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
-        .replace('PRAGMA user_version=30;', 'PRAGMA user_version=7;'),
+      .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
+      .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
+      .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
+      .replace('PRAGMA user_version=30;', 'PRAGMA user_version=7;'),
   );
   db.exec(
     "INSERT INTO icons(id,name,url,mode) VALUES('sample01','Keep','http://example.test/','iframe')",
@@ -174,7 +174,7 @@ test('upgrade migrates a schema 7 database while keeping icon records', async (t
   const result = run('upgrade');
   assert.equal(result.status, 0, result.stderr);
   db = new DatabaseSync(file);
-  assert.equal(db.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(db.prepare('PRAGMA user_version').get().user_version, 36);
   assert.deepEqual(
     { ...db.prepare('SELECT name,menu_page FROM icons WHERE id=?').get('sample01') },
     { name: 'Keep', menu_page: null },

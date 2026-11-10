@@ -7,7 +7,7 @@ import {
 import { DomainError } from '../errors.js';
 const definitions: Record<
   HistoryKind,
-  { table: string; owner: string; time: string; eligible: string }
+  { table: string; owner: string; time: string; eligible: string; scope?: string }
 > = {
   scans: { table: 'scans', owner: 'owner_uid', time: 'created_at', eligible: "status!='running'" },
   renames: {
@@ -23,7 +23,22 @@ const definitions: Record<
     time: 'started_at',
     eligible: "status!='running'",
   },
+  appMessages: {
+    table: 'notification_deliveries',
+    owner: 'owner_uid',
+    time: 'created_at',
+    scope: "channel='inapp'",
+    eligible: "status IN ('success','failed','cancelled')",
+  },
+  completedReminders: {
+    table: 'reminders',
+    owner: 'owner_uid',
+    time: 'completed_at',
+    scope: "status='completed'",
+    eligible: "repeat='none'",
+  },
   deliveries: {
+    scope: "channel!='inapp'",
     table: 'notification_deliveries',
     owner: 'owner_uid',
     time: 'created_at',
@@ -48,6 +63,8 @@ export class RetentionRepository {
           taskRuns: Number(r.task_runs),
           operations: Number(r.operations),
           deliveries: Number(r.deliveries),
+          appMessages: Number(r.app_messages),
+          completedReminders: Number(r.completed_reminders),
           restoreReceipts: Number(r.restore_receipts),
           serviceLogMiB: Number(r.service_log_mib),
         }
@@ -63,7 +80,7 @@ export class RetentionRepository {
         throw new DomainError('保留上限无效');
     this.database.connection
       .prepare(
-        'INSERT INTO history_limits VALUES(1,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET scans=excluded.scans,renames=excluded.renames,task_runs=excluded.task_runs,operations=excluded.operations,deliveries=excluded.deliveries,restore_receipts=excluded.restore_receipts,service_log_mib=excluded.service_log_mib',
+        'INSERT INTO history_limits(id,scans,renames,task_runs,operations,deliveries,restore_receipts,service_log_mib,app_messages,completed_reminders) VALUES(1,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET scans=excluded.scans,renames=excluded.renames,task_runs=excluded.task_runs,operations=excluded.operations,deliveries=excluded.deliveries,restore_receipts=excluded.restore_receipts,service_log_mib=excluded.service_log_mib,app_messages=excluded.app_messages,completed_reminders=excluded.completed_reminders',
       )
       .run(
         input.scans,
@@ -73,6 +90,8 @@ export class RetentionRepository {
         input.deliveries,
         input.restoreReceipts,
         input.serviceLogMiB,
+        input.appMessages,
+        input.completedReminders,
       );
     return this.limits();
   }
@@ -82,6 +101,7 @@ export class RetentionRepository {
       clauses: string[] = [];
     if (kind === 'restoreReceipts') args.push(Date.now() - 7 * 86400000);
     clauses.push(d.eligible);
+    if (d.scope) clauses.push(d.scope);
     // Legacy tasks with no owner are shared administrator tasks, as in the task history API.
     if (owner !== undefined) {
       if (kind === 'taskRuns') {
@@ -109,14 +129,15 @@ export class RetentionRepository {
       kind === 'taskRuns'
         ? 'task_id IN(SELECT id FROM tasks WHERE owner_uid=? OR owner_uid IS NULL)'
         : d.owner + '=?';
+    const totalScope = scope + (d.scope ? ' AND ' + d.scope : '');
     const total = Number(
-      c.prepare(`SELECT count(*) n FROM ${d.table} WHERE ${scope}`).get(owner)?.n,
+      c.prepare(`SELECT count(*) n FROM ${d.table} WHERE ${totalScope}`).get(owner)?.n,
     );
     return { count: total, protected: total - eligible };
   }
-  trim(kind: HistoryKind, limit: number, protectedIds: string[] = []): string[] {
+  trim(kind: HistoryKind, limit: number, protectedIds: string[] = [], owner?: string): string[] {
     const d = definitions[kind],
-      f = this.filter(kind, undefined, protectedIds);
+      f = this.filter(kind, owner, protectedIds);
     // Rank all terminal receipts so protected recent receipts still consume quota.
     const ranking = kind === 'restoreReceipts' ? '1=1' : f.where;
     const rankArgs = kind === 'restoreReceipts' ? [] : f.args;

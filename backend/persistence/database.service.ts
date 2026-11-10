@@ -8,6 +8,7 @@ import {
   rdpBaseSchema,
   rdpSecuritySchema,
   retentionSchema,
+  notificationRetentionSchema,
   vncCursorSchema,
   vncSchema,
   adbSchema,
@@ -84,6 +85,7 @@ export class DatabaseService {
         version !== 32 &&
         version !== 33 &&
         version !== 34 &&
+        version !== 35 &&
         version !== SCHEMA_VERSION
       )
         throw new Error(
@@ -414,6 +416,14 @@ export class DatabaseService {
             .prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(35,?)')
             .run(Date.now());
           this.connection.exec('PRAGMA user_version=35');
+        });
+      if (version !== 0 && version < 36)
+        this.transaction(() => {
+          this.connection.exec(notificationRetentionSchema);
+          this.connection
+            .prepare('INSERT INTO schema_migrations(version,applied_at) VALUES(36,?)')
+            .run(Date.now());
+          this.connection.exec('PRAGMA user_version=36');
         });
       // Remove old files only after the committed BLOB equals the original bytes.
       for (const row of this.connection.prepare('SELECT icon_id,image FROM icon_images').all()) {

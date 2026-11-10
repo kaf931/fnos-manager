@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, access, rm } from 'node:fs/promises';
@@ -57,7 +57,8 @@ test('v5 upgrade imports icon binaries before removing old PNG files and survive
   t.after(() => rm(dir, { recursive: true, force: true }));
   let db = new DatabaseService(dir);
   db.connection.exec(
-    legacyNotificationReset + "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; INSERT INTO icons(id,name,url,mode)VALUES('image01','Icon','http://test','url'); DROP TABLE icon_images; DROP TABLE command_catalog; DROP TABLE user_preferences; DELETE FROM schema_migrations WHERE version>=6; ALTER TABLE icons DROP COLUMN menu_page; DELETE FROM schema_migrations WHERE version=8; DROP TABLE ai_skill_authorizations; DROP TABLE ai_skill_package_files; DROP TABLE ai_skill_packages; ALTER TABLE ai_chat_proposals DROP COLUMN action; DELETE FROM schema_migrations WHERE version>=12; DROP TABLE ai_skills; DELETE FROM schema_migrations WHERE version=11; DROP TABLE ai_chat_attachments; DELETE FROM schema_migrations WHERE version>=9; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; DROP TABLE wake_presence; ALTER TABLE wake_devices DROP COLUMN ip; DELETE FROM schema_migrations WHERE version=17; DROP TABLE operation_records; DROP TABLE operation_settings; DELETE FROM schema_migrations WHERE version=16; DROP TABLE notification_deliveries; DROP TABLE notification_settings; DELETE FROM schema_migrations WHERE version=15; DROP TABLE backup_receipts; ALTER TABLE tasks DROP COLUMN pending_reason; DELETE FROM schema_migrations WHERE version=14; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=5",
+    legacyNotificationReset +
+      "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; INSERT INTO icons(id,name,url,mode)VALUES('image01','Icon','http://test','url'); DROP TABLE icon_images; DROP TABLE command_catalog; DROP TABLE user_preferences; DELETE FROM schema_migrations WHERE version>=6; ALTER TABLE icons DROP COLUMN menu_page; DELETE FROM schema_migrations WHERE version=8; DROP TABLE ai_skill_authorizations; DROP TABLE ai_skill_package_files; DROP TABLE ai_skill_packages; ALTER TABLE ai_chat_proposals DROP COLUMN action; DELETE FROM schema_migrations WHERE version>=12; DROP TABLE ai_skills; DELETE FROM schema_migrations WHERE version=11; DROP TABLE ai_chat_attachments; DELETE FROM schema_migrations WHERE version>=9; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; DROP TABLE wake_presence; ALTER TABLE wake_devices DROP COLUMN ip; DELETE FROM schema_migrations WHERE version=17; DROP TABLE operation_records; DROP TABLE operation_settings; DELETE FROM schema_migrations WHERE version=16; DROP TABLE notification_deliveries; DROP TABLE notification_settings; DELETE FROM schema_migrations WHERE version=15; DROP TABLE backup_receipts; ALTER TABLE tasks DROP COLUMN pending_reason; DELETE FROM schema_migrations WHERE version=14; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=5",
   );
   db.close();
   const image = Buffer.from('89504e470d0a1a0a00000000', 'hex');
@@ -72,7 +73,7 @@ test('v5 upgrade imports icon binaries before removing old PNG files and survive
     image,
   );
   await assert.rejects(access(file));
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
   db.close();
   db = new DatabaseService(dir);
   t.after(() => db.close());

@@ -25,6 +25,6 @@ test('schema34 recurrence migration preserves every existing reminder field and 
     .get();
   assert.deepEqual(stored, { ...original });
   assert.equal(weekdays, '[]');
-  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 35);
+  assert.equal(db.connection.prepare('pragma user_version').get().user_version, 36);
   assert.deepEqual(db.connection.prepare('pragma foreign_key_check').all(), []);
 });

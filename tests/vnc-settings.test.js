@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -115,11 +115,12 @@ test('VNC preferences migrate version 19, survive reopening and enforce SQLite c
   try {
     db = new DatabaseService(dir);
     db.connection.exec(
-      legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; DROP TABLE history_limits; DROP TABLE IF EXISTS vnc_preferences; DELETE FROM schema_migrations WHERE version>19; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=19',
+      legacyNotificationReset +
+        'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; DROP TABLE history_limits; DROP TABLE IF EXISTS vnc_preferences; DELETE FROM schema_migrations WHERE version>19; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=19',
     );
     db.close();
     db = new DatabaseService(dir);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.equal(
       db.connection.prepare('SELECT version FROM schema_migrations WHERE version=20').get().version,
       20,
@@ -169,7 +170,8 @@ test('VNC cursor migration preserves v21 preferences and defaults existing owner
   try {
     new VncRepository(db).saveSettings('1000', custom);
     db.connection.exec(
-      legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; ALTER TABLE vnc_preferences DROP COLUMN cursor_mode; DELETE FROM schema_migrations WHERE version=22; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=21',
+      legacyNotificationReset +
+        'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; ALTER TABLE vnc_preferences DROP COLUMN cursor_mode; DELETE FROM schema_migrations WHERE version=22; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=21',
     );
     db.close();
     db = new DatabaseService(dir);

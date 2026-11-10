@@ -1,3 +1,4 @@
+import { InboxDialog } from './notification-inbox.js';
 import { NotificationChannelIcon } from './notification-channel-icon.js';
 import { SortableCards, moveCard } from './ui/sortable-cards.js';
 import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
@@ -254,7 +255,9 @@ function NotificationTemplatesPanel({
                 >
                   编辑模板
                 </Dropdown.Item>
-                <Dropdown.Item onClick={() => void act('records', row)}>投递记录</Dropdown.Item>
+                <Dropdown.Item onClick={() => void act('records', row)}>
+                  {row.channel === 'inapp' ? '应用消息' : '投递记录'}
+                </Dropdown.Item>
                 <Dropdown.Item
                   type="danger"
                   disabled={busy.has(row.id) || sorting}
@@ -329,14 +332,23 @@ function NotificationTemplatesPanel({
         () => setAllOpen(true),
         allOpen || !!editor || !!recordsTemplate,
       )}
-      {active && recordsTemplate && (
-        <NotificationDeliveryDialog
-          api={api}
-          toast={toast}
-          templateId={recordsTemplate}
-          onClose={() => setRecordsTemplate(null)}
-        />
-      )}
+      {active &&
+        recordsTemplate &&
+        (rows.find((row) => row.id === recordsTemplate)?.channel === 'inapp' ? (
+          <InboxDialog
+            api={api}
+            toast={toast}
+            onClose={() => setRecordsTemplate(null)}
+            onChanged={onChanged}
+          />
+        ) : (
+          <NotificationDeliveryDialog
+            api={api}
+            toast={toast}
+            templateId={recordsTemplate}
+            onClose={() => setRecordsTemplate(null)}
+          />
+        ))}
       {active && allOpen && !editor && !recordsTemplate && (
         <ReactDialog
           open

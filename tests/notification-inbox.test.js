@@ -32,7 +32,7 @@ test('personal providers use native payloads, scoped secrets and business acknow
   assert.equal(notificationAcknowledgement('serverchan', '{"code":0}').error, undefined);
   assert.ok(notificationAcknowledgement('serverchan', '{"code":0,"data":{"errno":1}}').error);
 });
-test('in-app delivery never makes network requests; inbox is isolated, readable, bounded and cleaned with deliveries', async (t) => {
+test('in-app delivery never makes network requests; inbox is isolated, readable, bounded and cleaned independently from external deliveries', async (t) => {
   const dir = mkdtempSync(tmpdir() + '/inbox-'),
     db = new DatabaseService(dir),
     repo = new NotificationRepository(db);
@@ -70,11 +70,13 @@ test('in-app delivery never makes network requests; inbox is isolated, readable,
   assert.equal(repo.inboxUnread('a'), 0);
   assert.equal(repo.inbox('a', 1, 10, 'unread').total, 0);
   const limits = new RetentionRepository(db);
-  limits.save({ ...limits.limits(), deliveries: 1 });
+  limits.save({ ...limits.limits(), appMessages: 1 });
   repo.enqueueTest('a', template.id);
   await service.tick();
   assert.equal(repo.inbox('a', 1, 10, 'all').total, 1);
   limits.clear('deliveries', 'a');
+  assert.equal(repo.inboxUnread('a'), 1);
+  limits.clear('appMessages', 'a');
   assert.equal(repo.inboxUnread('a'), 0);
 });
 
@@ -98,7 +100,7 @@ test('schema32 upgrades once without changing existing templates or delivery met
     .run('keep', 'owner', 'Keep', config);
   raw.close();
   let db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
   assert.equal(
     db.connection.prepare('SELECT config FROM notification_templates').get().config,
     config,
@@ -142,7 +144,8 @@ test('inbox search matches title and content literally and delivery filters rema
   assert.equal(repo.inbox('a', 1, 10, 'all', 'absent').total, 0);
   assert.equal(repo.inbox('b', 1, 10, 'all', 'Unique').total, 0);
   assert.throws(() => repo.inbox('a', 1, 10, 'all', 'x'.repeat(201)));
-  assert.equal(repo.deliveries('a', 1, 10, { templateId: template.id }).items[0].id, first.id);
+  assert.equal(repo.deliveries('a', 1, 10, { templateId: template.id }).total, 0);
+  assert.equal(repo.inbox('a').items[0].id, first.id);
   assert.equal(repo.deliveries('b', 1, 10, { templateId: template.id }).total, 0);
   assert.equal(repo.deliveries('a', 1, 10, { reminderId: 'missing' }).total, 0);
 });

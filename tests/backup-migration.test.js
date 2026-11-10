@@ -1,4 +1,4 @@
-import {legacyNotificationSchema} from './fixtures/notification-schema.js';
+import { legacyNotificationSchema } from './fixtures/notification-schema.js';
 import { appearanceSchema } from '../server/persistence/schema.js';
 import { rdpSchema } from '../server/persistence/schema.js';
 import { vncCursorSchema } from '../server/persistence/schema.js';
@@ -46,10 +46,10 @@ for (const source of ['fresh', 'schema13']) {
             .replace(vncPreferencesSchema, '')
             .replace(/INSERT INTO schema_migrations VALUES\(20[^;]*;/, '')
             .replace(adbSchema, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
-        .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
-        .replace(vncSchema, '')
+            .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
+            .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
+            .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
+            .replace(vncSchema, '')
             .replace(rdpSchema, '')
             .replace(/INSERT INTO schema_migrations VALUES\(23[^;]*;/, '')
             .replace(/INSERT INTO schema_migrations VALUES\(19[^;]*;/, '')
@@ -61,8 +61,8 @@ for (const source of ['fresh', 'schema13']) {
             .replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '')
             .replace(/INSERT INTO schema_migrations VALUES\(24[^;]*;/, '')
             .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
-        .replace('PRAGMA user_version=30;', 'PRAGMA user_version=13;'),
+            .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
+            .replace('PRAGMA user_version=30;', 'PRAGMA user_version=13;'),
         );
         raw.exec(
           `INSERT INTO tasks(id,owner_uid,name,type,enabled,schedule,options,timeout)
@@ -85,7 +85,7 @@ for (const source of ['fresh', 'schema13']) {
     }
     let db = new DatabaseService(dir);
     try {
-      assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+      assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
       assert.equal(
         db.connection.prepare('SELECT COUNT(*) n FROM schema_migrations WHERE version=14').get().n,
         1,

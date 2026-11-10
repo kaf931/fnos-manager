@@ -24,6 +24,8 @@ export type StorageMode =
   | 'attachments'
   | 'operations'
   | 'deliveries'
+  | 'app-messages'
+  | 'completed-reminders'
   | 'cleanup'
   | 'task-runs'
   | 'restore-receipts'

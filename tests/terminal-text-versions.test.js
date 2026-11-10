@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
@@ -88,12 +88,13 @@ test('backup store rejects symlinks and corrupted bytes without following them',
 test('schema17 migration preserves connection records and adds private schema18 exactly once', (t) => {
   const { db, dir } = fixture(t);
   db.connection.exec(
-    legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=17',
+    legacyNotificationReset +
+      'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; DROP TABLE vnc_preferences; DELETE FROM schema_migrations WHERE version=20; DROP TABLE rdp_connections; DROP TABLE vnc_connections; DELETE FROM schema_migrations WHERE version=19; DROP TABLE text_file_versions; DELETE FROM schema_migrations WHERE version=18; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=17',
   );
   db.close();
   const migrated = new DatabaseService(dir);
   t.after(() => migrated.close());
-  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 36);
   assert.equal(migrated.connection.prepare('SELECT COUNT(*) n FROM ssh_connections').get().n, 1);
   assert.equal(migrated.connection.prepare('SELECT COUNT(*) n FROM text_file_versions').get().n, 0);
   assert.equal(

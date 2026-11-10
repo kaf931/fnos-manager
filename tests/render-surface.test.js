@@ -25,7 +25,7 @@ const compiled = await build({
         b.onLoad({ filter: /.*/, namespace: 'inbox-boundary' }, () => ({
           loader: 'js',
           contents:
-            'export function DesktopNotificationInbox(){return null;}export function NotificationInbox(){return null;}',
+            'export function InboxDialog(){return null;}export function DesktopNotificationInbox(){return null;}export function NotificationInbox(){return null;}',
         }));
         b.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (a) => ({
           path: a.path,

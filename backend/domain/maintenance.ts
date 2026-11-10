@@ -4,6 +4,8 @@ export const historyKinds = [
   'taskRuns',
   'operations',
   'deliveries',
+  'appMessages',
+  'completedReminders',
   'restoreReceipts',
 ] as const;
 export type HistoryKind = (typeof historyKinds)[number];
@@ -21,6 +23,8 @@ export interface HistoryLimits {
   taskRuns: number;
   operations: number;
   deliveries: number;
+  appMessages: number;
+  completedReminders: number;
   restoreReceipts: number;
   serviceLogMiB: number;
 }
@@ -30,6 +34,8 @@ export const defaultHistoryLimits: Readonly<HistoryLimits> = {
   taskRuns: 100,
   operations: 1000,
   deliveries: 200,
+  appMessages: 200,
+  completedReminders: 100,
   restoreReceipts: 1000,
   serviceLogMiB: 10,
 };
@@ -39,6 +45,8 @@ export const cleanupLabels: Record<CleanupKind, string> = {
   taskRuns: '任务运行记录',
   operations: '操作记录',
   deliveries: '投递记录',
+  appMessages: '应用消息',
+  completedReminders: '已完成提醒事项',
   restoreReceipts: '配置恢复回执',
   serviceLog: '服务日志',
   aiHistory: 'AI 对话历史',
@@ -51,6 +59,8 @@ export interface CleanupSummary {
 }
 
 export const maintenanceDetailKinds = [
+  'appMessages',
+  'completedReminders',
   'taskRuns',
   'restoreReceipts',
   'serviceLog',

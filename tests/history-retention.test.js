@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -104,12 +104,13 @@ test('v20 migration preserves configuration and creates one empty retention tabl
   const { db } = fixture(t);
   const dir = db.dataDir;
   db.connection.exec(
-    legacyNotificationReset + "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; INSERT INTO icons(id,name,url,mode) VALUES('keep','keep','http://localhost','url'); ALTER TABLE vnc_preferences DROP COLUMN cursor_mode; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=20",
+    legacyNotificationReset +
+      "DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE IF EXISTS adb_connections; DELETE FROM schema_migrations WHERE version=29; INSERT INTO icons(id,name,url,mode) VALUES('keep','keep','http://localhost','url'); ALTER TABLE vnc_preferences DROP COLUMN cursor_mode; DROP TABLE rdp_connections; DELETE FROM schema_migrations WHERE version=23; DROP TABLE history_limits; DELETE FROM schema_migrations WHERE version>=21; ALTER TABLE user_preferences DROP COLUMN palette; ALTER TABLE user_preferences DROP COLUMN terminal_background; DELETE FROM schema_migrations WHERE version=24; DELETE FROM schema_migrations WHERE version=25; DELETE FROM schema_migrations WHERE version=26; DELETE FROM schema_migrations WHERE version=27; DELETE FROM schema_migrations WHERE version=28; DROP TABLE IF EXISTS update_settings; PRAGMA user_version=20",
   );
   db.close();
   const migrated = new DatabaseService(dir);
   t.after(() => migrated.close());
-  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 35);
+  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 36);
   assert.equal(migrated.connection.prepare('SELECT name FROM icons').get().name, 'keep');
   assert.equal(
     migrated.connection.prepare('SELECT count(*) n FROM schema_migrations WHERE version=21').get()

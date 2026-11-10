@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -99,11 +99,12 @@ test('schema28 upgrade preserves existing connections and creates constrained AD
       "INSERT INTO vnc_connections(id,owner_uid,name,host,port,username,password,created_at,updated_at) VALUES('existing','owner','saved','localhost',5900,'user','',1,1)",
     );
     db.connection.exec(
-      legacyNotificationReset + 'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections;DELETE FROM schema_migrations WHERE version=29;PRAGMA user_version=28',
+      legacyNotificationReset +
+        'DROP TABLE IF EXISTS notification_options; DELETE FROM schema_migrations WHERE version=30; DROP TABLE adb_connections;DELETE FROM schema_migrations WHERE version=29;PRAGMA user_version=28',
     );
     db.close();
     db = new DatabaseService(data);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.equal(
       db.connection.prepare("SELECT name FROM vnc_connections WHERE id='existing'").get().name,
       'saved',

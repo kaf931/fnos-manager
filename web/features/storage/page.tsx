@@ -42,6 +42,8 @@ const labels: Record<StorageMode, string> = {
   attachments: '应用附件',
   operations: '操作记录',
   deliveries: '投递记录',
+  'app-messages': '应用消息',
+  'completed-reminders': '已完成提醒事项',
   'task-runs': '任务运行记录',
   'restore-receipts': '配置恢复回执',
   'service-log': '服务日志',

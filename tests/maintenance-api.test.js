@@ -35,13 +35,20 @@ test('cleanup settings and actions validate, persist and enforce admin/CSRF boun
   );
   assert.equal((await call('', 'POST', { kinds: ['operations'], confirmed: true })).status, 200);
   const summary = await (await call()).json();
-  assert.equal(summary.items.length, 10);
+  assert.equal(summary.items.length, 12);
 });
 
 test('cleanup detail routes paginate empty records, bound parameters and enforce admin access', async (t) => {
   const f = await appFixture();
   t.after(f.close);
-  for (const kind of ['taskRuns', 'restoreReceipts', 'serviceLog', 'updateCache']) {
+  for (const kind of [
+    'taskRuns',
+    'restoreReceipts',
+    'serviceLog',
+    'updateCache',
+    'appMessages',
+    'completedReminders',
+  ]) {
     const response = await fetch(
       f.base + '/storage/cleanup/records/' + kind + '?page=1&pageSize=10',
       { headers: f.headers },
@@ -277,4 +284,86 @@ test('selected record deletion is scoped, atomic, confirmation-gated and protect
   } finally {
     closeSync(fd);
   }
+});
+
+test('new cleanup categories validate limits, reuse detail routes, and reject protected selected reminders', async (t) => {
+  const f = await appFixture();
+  t.after(f.close);
+  const call = (path, method = 'GET', body) =>
+    fetch(f.base + '/storage/cleanup' + path, {
+      method,
+      headers: f.headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  const limits = await (await call('/settings')).json();
+  for (const key of ['appMessages', 'completedReminders']) {
+    assert.equal((await call('/settings', 'PUT', { ...limits, [key]: 0 })).status, 400);
+    assert.equal((await call('/settings', 'PUT', { ...limits, [key]: 1 })).status, 200);
+    assert.equal(
+      (await call('/records/' + key + '/delete', 'POST', { ids: ['missing'], confirmed: true }))
+        .status,
+      409,
+    );
+    assert.equal((await call('', 'POST', { kinds: [key], confirmed: false })).status, 400);
+    assert.equal((await call('', 'POST', { kinds: [key], confirmed: true })).status, 200);
+  }
+});
+
+test('cleanup API separates messages from deliveries and preserves recurring and pending reminders', async (t) => {
+  const f = await appFixture();
+  t.after(f.close);
+  const { DatabaseService } = await import('../server/persistence/database.service.js');
+  const c = f.app.get(DatabaseService).connection;
+  for (const owner of ['1000', '1001']) {
+    for (const channel of ['inapp', 'webhook'])
+      c.prepare(
+        "INSERT INTO notification_deliveries(id,owner_uid,channel,event_id,event_type,name,payload,revision,status,created_at) VALUES(?,?,?,?,'test','标题','{\"message\":\"正文\"}',1,'success',1)",
+      ).run(owner + channel, owner, channel, channel);
+    for (const [id, status, repeat] of [
+      ['done', 'completed', 'none'],
+      ['todo', 'open', 'none'],
+      ['repeat', 'completed', 'daily'],
+    ])
+      c.prepare(
+        "INSERT INTO reminders(id,owner_uid,name,content,repeat,template_ids,enabled,status,revision,created_at,updated_at,completed_at) VALUES(?,?,?,'正文',?,'[]',0,?,1,1,1,1)",
+      ).run(id, owner, id, repeat, status);
+  }
+  const call = (path, body) =>
+    fetch(f.base + '/storage/cleanup' + path, {
+      method: body ? 'POST' : 'GET',
+      headers: f.headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  assert.equal(
+    (await call('/records/completedReminders/delete', { ids: ['done', 'repeat'], confirmed: true }))
+      .status,
+    409,
+  );
+  assert.ok(c.prepare("SELECT 1 FROM reminders WHERE owner_uid='1000' AND id='done'").get());
+  assert.equal((await call('', { kinds: ['deliveries'], confirmed: true })).status, 200);
+  assert.ok(c.prepare("SELECT 1 FROM notification_deliveries WHERE id='1000inapp'").get());
+  const messages = await (await call('/records/appMessages')).json();
+  assert.equal(messages.total, 1);
+  assert.equal(messages.items[0].status, 'unread');
+  assert.equal(
+    (await call('/records/appMessages/delete', { ids: ['1001inapp'], confirmed: true })).status,
+    409,
+  );
+  assert.equal(
+    (await call('/records/appMessages/delete', { ids: ['1000inapp'], confirmed: true })).status,
+    200,
+  );
+  assert.equal((await call('', { kinds: ['completedReminders'], confirmed: true })).status, 200);
+  assert.deepEqual(
+    c
+      .prepare("SELECT id FROM reminders WHERE owner_uid='1000' ORDER BY id")
+      .all()
+      .map((r) => r.id),
+    ['repeat', 'todo'],
+  );
+  assert.equal(c.prepare("SELECT count(*) n FROM reminders WHERE owner_uid='1001'").get().n, 3);
+  assert.equal(
+    c.prepare("SELECT count(*) n FROM notification_deliveries WHERE owner_uid='1001'").get().n,
+    2,
+  );
 });

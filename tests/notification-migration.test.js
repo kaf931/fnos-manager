@@ -1,4 +1,4 @@
-import {legacyNotificationSchema} from './fixtures/notification-schema.js';
+import { legacyNotificationSchema } from './fixtures/notification-schema.js';
 import { appearanceSchema } from '../server/persistence/schema.js';
 import { rdpSchema } from '../server/persistence/schema.js';
 import { vncCursorSchema } from '../server/persistence/schema.js';
@@ -63,7 +63,7 @@ test('schema14 upgrade preserves task history and creates empty notification que
     );
     raw.close();
     db = new DatabaseService(dir);
-    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 36);
     assert.equal(
       db.connection.prepare('select pending_reason from tasks where id=?').get('keep')
         .pending_reason,

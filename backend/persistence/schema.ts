@@ -1,5 +1,5 @@
 /** Relational schema. JSON is reserved for task variants and scan statistics. */
-export const SCHEMA_VERSION = 35;
+export const SCHEMA_VERSION = 36;
 const baseSchema = `
 CREATE TABLE schema_migrations (
   version INTEGER PRIMARY KEY NOT NULL,
@@ -670,6 +670,11 @@ CREATE TABLE vnc_preferences (
 ) STRICT;
 `;
 
+export const notificationRetentionSchema = `
+ALTER TABLE history_limits ADD COLUMN app_messages INTEGER NOT NULL DEFAULT 200 CHECK(app_messages BETWEEN 1 AND 10000);
+ALTER TABLE history_limits ADD COLUMN completed_reminders INTEGER NOT NULL DEFAULT 100 CHECK(completed_reminders BETWEEN 1 AND 10000);
+`;
+
 export const retentionSchema = `
 CREATE TABLE history_limits (
  id INTEGER PRIMARY KEY CHECK(id=1),
@@ -751,6 +756,7 @@ export const schema =
   adbSchema +
   vncPreferencesSchema +
   retentionSchema +
+  notificationRetentionSchema +
   vncCursorSchema +
   rdpSchema +
   appearanceSchema +
@@ -785,5 +791,6 @@ INSERT INTO schema_migrations VALUES(32,CAST(unixepoch('subsec')*1000 AS INTEGER
 INSERT INTO schema_migrations VALUES(33,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(34,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(35,CAST(unixepoch('subsec')*1000 AS INTEGER));
-PRAGMA user_version=35;
+INSERT INTO schema_migrations VALUES(36,CAST(unixepoch('subsec')*1000 AS INTEGER));
+PRAGMA user_version=36;
 `;

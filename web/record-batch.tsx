@@ -86,13 +86,17 @@ export function useRecordBatch({
     await confirmAction({
       title: '批量管理',
       text:
-        kind === 'aiHistory'
-          ? '删除所选对话及其附件，使用中的对话不能删除。'
-          : kind === 'updateCache'
-            ? '清理所选更新缓存及回滚备份，之后重试可能需要重新下载。进行中的更新不能清理。'
-            : kind === 'serviceLog'
-              ? '清理所选日志文件。当前日志会继续记录，未选择的日志保持不变。'
-              : '仅删除所选历史记录，不影响实际文件或应用配置。',
+        kind === 'appMessages'
+          ? '删除所选应用消息，未读消息也会移除。'
+          : kind === 'completedReminders'
+            ? '删除所选已完成的单次提醒，待办和重复提醒会保留。'
+            : kind === 'aiHistory'
+              ? '删除所选对话及其附件，使用中的对话不能删除。'
+              : kind === 'updateCache'
+                ? '清理所选更新缓存及回滚备份，之后重试可能需要重新下载。进行中的更新不能清理。'
+                : kind === 'serviceLog'
+                  ? '清理所选日志文件。当前日志会继续记录，未选择的日志保持不变。'
+                  : '仅删除所选历史记录，不影响实际文件或应用配置。',
       accept: kind === 'serviceLog' ? '清理日志' : '删除记录',
       danger: true,
       onAccept: async () => {

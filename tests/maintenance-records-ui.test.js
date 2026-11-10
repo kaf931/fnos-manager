@@ -38,6 +38,8 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
 const { MaintenanceRecordRows, maintenanceRecordModes } = compiled.exports;
 test('remaining cleanup categories use public record destinations and escape log names', () => {
   assert.deepEqual(Object.values(maintenanceRecordModes), [
+    'appMessages',
+    'completedReminders',
     'taskRuns',
     'restoreReceipts',
     'serviceLog',

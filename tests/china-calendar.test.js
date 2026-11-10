@@ -96,7 +96,12 @@ test('a due holiday reminder waits for missing next-year data and resumes withou
   assert.equal(waiting.nextAt, null);
   assert.match(waiting.error, /2028.*日历/);
   assert.equal(repo.dispatchDue(due + 1000), 0);
-  assert.equal(notifications.deliveries('a').total, 1);
+  assert.equal(
+    db.connection
+      .prepare("SELECT count(*) n FROM notification_deliveries WHERE owner_uid='a'")
+      .get().n,
+    1,
+  );
   await calendar.refresh(2028, true);
   repo.refreshCalendarSchedules(due + 1000);
   assert.equal(repo.get('a', reminder.id).nextAt, '2028-01-01T01:00:00.000Z');

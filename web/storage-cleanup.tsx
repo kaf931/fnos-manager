@@ -16,6 +16,8 @@ export const cleanupRecordModes = {
   renames: 'rename-history',
   operations: 'operations',
   deliveries: 'deliveries',
+  appMessages: 'app-messages',
+  completedReminders: 'completed-reminders',
   taskRuns: 'task-runs',
   restoreReceipts: 'restore-receipts',
   serviceLog: 'service-log',
@@ -235,7 +237,7 @@ export function StorageCleanup({
       ticket = lifecycle.current;
     await confirmAction({
       title: '清理应用记录',
-      text: '清理所选记录、附件及更新缓存，不影响 NAS 源文件或应用配置。删除对话会清理附件，删除改名记录后无法撤销；清理更新缓存会移除断点及回滚备份。进行中的任务及保护期内记录会保留。',
+      text: '清理所选记录、附件及更新缓存，不影响 NAS 源文件或应用配置。删除对话会清理附件，删除改名记录后无法撤销；清理更新缓存会移除断点及回滚备份。应用消息会同步移除，待办、重复提醒、进行中的任务及保护期内记录会保留。',
       accept: '清理',
       danger: true,
       onAccept: async () => {

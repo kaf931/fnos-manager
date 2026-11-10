@@ -22,7 +22,7 @@ test('template ordering migrates from version 33, persists and rejects foreign o
     old.close();
     db = new DatabaseService(dir);
     let repo = new NotificationRepository(db);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.deepEqual(repo.templateOrder('a'), { keys: [] });
     const row = repo.createTemplate('a', {
       channel: 'inapp',

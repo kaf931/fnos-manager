@@ -408,7 +408,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
         read = true;
         return { success: true };
       }
-      if (route.includes('/storage/cleanup/records/deliveries/delete')) {
+      if (route.includes('/storage/cleanup/records/appMessages/delete')) {
         removed = true;
         return { success: true };
       }
@@ -447,7 +447,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   assert.ok(
     calls.some(
       (c) =>
-        c.route.includes('/storage/cleanup/records/deliveries/delete') &&
+        c.route.includes('/storage/cleanup/records/appMessages/delete') &&
         c.body.ids[0] === 'message',
     ),
   );

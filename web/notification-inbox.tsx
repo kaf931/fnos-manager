@@ -197,7 +197,7 @@ export function NotificationInbox({
     </>
   );
 }
-function InboxDialog({
+export function InboxDialog({
   initialMessage = null,
   api,
   toast,
@@ -243,7 +243,7 @@ function InboxDialog({
   });
   const selection = useRecordBatch({
     api,
-    kind: 'deliveries',
+    kind: 'appMessages',
     items: model.items,
     active: true,
     scope: search.trim() + '|' + filter + '|' + model.page + '|' + model.pageSize,

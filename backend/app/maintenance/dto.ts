@@ -29,6 +29,8 @@ export class HistoryLimitsDto implements HistoryLimits {
   @IsInt() @Min(1) @Max(10000) taskRuns!: number;
   @IsInt() @Min(1) @Max(10000) operations!: number;
   @IsInt() @Min(1) @Max(10000) deliveries!: number;
+  @IsInt() @Min(1) @Max(10000) appMessages!: number;
+  @IsInt() @Min(1) @Max(10000) completedReminders!: number;
   @IsInt() @Min(1) @Max(10000) restoreReceipts!: number;
   @IsInt() @Min(1) @Max(100) serviceLogMiB!: number;
 }

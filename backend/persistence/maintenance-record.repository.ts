@@ -5,7 +5,7 @@ import type {
   MaintenanceRecordPage,
 } from '../domain/maintenance.js';
 import { DomainError } from '../errors.js';
-type Kind = 'taskRuns' | 'restoreReceipts' | 'aiHistory';
+type Kind = 'taskRuns' | 'restoreReceipts' | 'aiHistory' | 'appMessages' | 'completedReminders';
 const resultCounts = (value: unknown) => {
   const parsed: unknown = JSON.parse(String(value));
   const row = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
@@ -16,6 +16,22 @@ const resultCounts = (value: unknown) => {
 export class MaintenanceRecordRepository {
   constructor(private readonly database: DatabaseService) {}
   private spec(kind: Exclude<Kind, 'aiHistory'>) {
+    if (kind === 'appMessages')
+      return {
+        table: 'notification_deliveries',
+        id: 'id',
+        time: 'created_at',
+        where: "owner_uid=? AND channel='inapp'",
+        fields: 'id,name,status,created_at,read_at,payload,template_name',
+      };
+    if (kind === 'completedReminders')
+      return {
+        table: 'reminders',
+        id: 'id',
+        time: 'completed_at',
+        where: "owner_uid=? AND status='completed'",
+        fields: 'id,name,content,repeat,completed_at',
+      };
     return kind === 'taskRuns'
       ? {
           table: 'task_runs',
@@ -36,6 +52,26 @@ export class MaintenanceRecordRepository {
     kind: Exclude<Kind, 'aiHistory'>,
     row: Record<string, unknown>,
   ): MaintenanceRecord {
+    if (kind === 'appMessages')
+      return {
+        id: String(row.id),
+        name: String(row.name),
+        status:
+          row.status === 'success' ? (row.read_at == null ? 'unread' : 'read') : String(row.status),
+        createdAt: new Date(Number(row.created_at)).toISOString(),
+        summary: String(row.template_name),
+        bytes: null,
+      };
+    if (kind === 'completedReminders')
+      return {
+        id: String(row.id),
+        name: String(row.name),
+        status: row.repeat === 'none' ? 'completed' : 'protected',
+        createdAt:
+          row.completed_at == null ? null : new Date(Number(row.completed_at)).toISOString(),
+        summary: row.repeat === 'none' ? '单次提醒' : '重复提醒保留',
+        bytes: null,
+      };
     return kind === 'taskRuns'
       ? {
           id: String(row.id),
@@ -144,9 +180,13 @@ export class MaintenanceRecordRepository {
       stderr = Buffer.from(String(row.stderr ?? '')),
       outputLimit = 30 * 1024;
     const content =
-      kind === 'taskRuns'
-        ? `标准输出\n${stdout.subarray(0, outputLimit).toString('utf8') || '（无）'}\n\n错误输出\n${stderr.subarray(0, outputLimit).toString('utf8') || '（无）'}`
-        : `请求编号：${record.id}\n处理结果：${record.summary}\n完成时间：${record.createdAt}`;
+      kind === 'appMessages'
+        ? String(JSON.parse(String(row.payload)).message ?? '')
+        : kind === 'completedReminders'
+          ? String(row.content)
+          : kind === 'taskRuns'
+            ? `标准输出\n${stdout.subarray(0, outputLimit).toString('utf8') || '（无）'}\n\n错误输出\n${stderr.subarray(0, outputLimit).toString('utf8') || '（无）'}`
+            : `请求编号：${record.id}\n处理结果：${record.summary}\n完成时间：${record.createdAt}`;
     const bytes = Buffer.from(content);
     const truncated =
       bytes.length > 65536 ||

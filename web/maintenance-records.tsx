@@ -17,6 +17,8 @@ import { useRecordPage, RecordFooter, RecordList } from './record-list.js';
 import { ReactDialog } from './ui/react-dialog.js';
 import { errorMessage, type ApiClient } from './contracts/shared.js';
 export const maintenanceRecordModes = {
+  'app-messages': 'appMessages',
+  'completed-reminders': 'completedReminders',
   'task-runs': 'taskRuns',
   'restore-receipts': 'restoreReceipts',
   'service-log': 'serviceLog',
@@ -32,9 +34,15 @@ const statuses: Record<string, string> = {
   failed: '失败',
   timeout: '超时',
   interrupted: '已中断',
-  protected: '保护期内',
+  protected: '受保护',
   'in-use': '使用中',
   available: '可查看',
+  read: '已读',
+  unread: '未读',
+  pending: '待发送',
+  sending: '发送中',
+  cancelled: '已取消',
+  completed: '已完成',
 };
 const date = (value: string | null) =>
   value

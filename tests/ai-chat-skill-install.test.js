@@ -1,4 +1,4 @@
-import {legacyNotificationSchema} from './fixtures/notification-schema.js';
+import { legacyNotificationSchema } from './fixtures/notification-schema.js';
 import {
   rdpSchema,
   vncSchema,
@@ -177,12 +177,12 @@ test('schema12 attachment migration preserves files and accepts ZIP metadata aft
       .replace(/INSERT INTO schema_migrations VALUES\(25[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(24[^;]*;/, '')
       .replace(/INSERT INTO schema_migrations VALUES\(27[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
-        .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
-        .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
-        .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
-        .replace('PRAGMA user_version=30', 'PRAGMA user_version=12'),
+      .replace(/INSERT INTO schema_migrations VALUES\(28[^;]*;/, '')
+      .replace(/CREATE TABLE adb_connections[\s\S]*?CREATE INDEX adb_connections_owner[^;]*;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(29[^;]*;/, '')
+      .replace(/CREATE TABLE IF NOT EXISTS notification_options[\s\S]*?\) STRICT;/, '')
+      .replace(/INSERT INTO schema_migrations VALUES\(30[^;]*;/, '')
+      .replace('PRAGMA user_version=30', 'PRAGMA user_version=12'),
   );
   const history = new AiHistoryRepository({
     connection: raw,
@@ -218,7 +218,7 @@ test('schema12 attachment migration preserves files and accepts ZIP metadata aft
     const restored = new AiHistoryRepository(db).get('owner', 'chat');
     assert.equal(restored.history[0].attachments[0].data, 'keep this');
     assert.equal(restored.messages[0].attachments[0].name, 'keep.md');
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 35);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 36);
     assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {
     db.close();
