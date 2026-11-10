@@ -5,9 +5,11 @@ import { AppIcon } from './icon-markup.js';
 export function CompactCardStrip({
   children,
   label = '卡片',
+  desktopOnly = false,
 }: {
   children: ReactNode;
   label?: string;
+  desktopOnly?: boolean;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const [canRight, setCanRight] = useState(false);
@@ -73,7 +75,7 @@ export function CompactCardStrip({
     });
   }
   return (
-    <div className="compact-card-strip-shell">
+    <div className={'compact-card-strip-shell' + (desktopOnly ? ' desktop-only' : '')}>
       <button
         type="button"
         className="icon-button compact-card-strip-previous"
@@ -84,12 +86,7 @@ export function CompactCardStrip({
       >
         <AppIcon name="triangle-left" />
       </button>
-      <div
-        ref={viewport}
-        className="compact-card-strip"
-        data-scroll-inset
-        onScroll={measure}
-      >
+      <div ref={viewport} className="compact-card-strip" data-scroll-inset onScroll={measure}>
         {children}
       </div>
       <button

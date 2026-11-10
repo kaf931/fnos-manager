@@ -747,3 +747,13 @@ p.help:empty {
 .compact-card-strip-next {
   right: 0;
 }
+
+/* Shared visibility utility for content with a separate mobile entry point. */
+@media (max-width: 620px) {
+  .desktop-only {
+    display: none;
+  }
+  .compact-card-section:has(> .desktop-only) > .toolbar {
+    margin-bottom: 0;
+  }
+}

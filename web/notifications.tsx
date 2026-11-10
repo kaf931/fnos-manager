@@ -239,7 +239,9 @@ function NotificationTemplatesPanel({
           {error}
         </p>
       )}
-      <CompactCardStrip label="通知模板">{entries.map(renderCard)}</CompactCardStrip>
+      <CompactCardStrip label="通知模板" desktopOnly>
+        {entries.map(renderCard)}
+      </CompactCardStrip>
       {active && allOpen && !editor && (
         <ReactDialog
           open
