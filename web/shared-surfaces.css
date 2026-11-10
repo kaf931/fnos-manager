@@ -700,9 +700,9 @@ p.help:empty {
   height: 36px;
   border-radius: 9px;
 }
-.compact-card-open .terminal-card-icon svg {
-  width: 22px;
-  height: 22px;
+.compact-card-open .terminal-card-icon :is(svg, img) {
+  width: 32px;
+  height: 32px;
 }
 .compact-card-open .card-info {
   line-height: 16px;

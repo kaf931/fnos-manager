@@ -17,8 +17,10 @@ const artwork: Partial<Record<NotificationChannel, string>> = {
 export function NotificationChannelIcon({ channel }: { channel: NotificationChannel }) {
   const source = artwork[channel];
   return source ? (
-    <img src={source} alt="" aria-hidden="true" width={24} height={24} />
+    <img src={source} alt="" aria-hidden="true" />
   ) : (
-    <AppIcon name={channel === 'email' ? 'mail' : channel === 'webhook' ? 'link' : 'bell'} />
+    <AppIcon
+      name={channel === 'email' ? 'color-mail' : channel === 'webhook' ? 'color-link' : 'bell'}
+    />
   );
 }

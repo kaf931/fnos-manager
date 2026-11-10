@@ -3,6 +3,10 @@ import { navigationIcon, bellIcon, messageIcon } from '../navigation-icons.js';
 const paths: Readonly<Record<string, string>> = {
   bell: bellIcon,
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/>',
+  'color-mail':
+    '<rect x="5" y="2" width="14" height="14" rx="2" fill="#FDE68A" stroke="none"/><rect x="2" y="7" width="20" height="15" rx="3" fill="#3B82F6" stroke="none"/><path d="m3 8 9 7 9-7" fill="#38BDF8" stroke="#38BDF8" stroke-width="2"/><path d="m3 20 7-6h4l7 6" fill="#6366F1" stroke="none"/>',
+  'color-link':
+    '<path d="m10 8 3-3a5 5 0 0 1 7 7l-3 3" stroke="#8B5CF6" stroke-width="3.2"/><path d="m14 16-3 3a5 5 0 0 1-7-7l3-3" stroke="#06B6D4" stroke-width="3.2"/><path d="m9 15 6-6" stroke="#3B82F6" stroke-width="3.2"/>',
   message: messageIcon,
   phone: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4m-3 14h2"/>',
   ai: '<path d="m10 3 2.3 6.7L19 12l-6.7 2.3L10 21l-2.3-6.7L1 12l6.7-2.3L10 3Zm10-1 .7 2.3L23 5l-2.3.7L20 8l-.7-2.3L17 5l2.3-.7L20 2Z"/>',
