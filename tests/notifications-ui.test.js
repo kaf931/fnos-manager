@@ -26,7 +26,7 @@ const stubs = {
 const built = await build({
   stdin: {
     contents:
-      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {NotificationDeliveryDialog} from './web/notification-delivery-dialog.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
     resolveDir: process.cwd(),
     loader: 'tsx',
   },
@@ -81,7 +81,13 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { NotificationSettingsPage, NotificationInbox, dndBridge, MobileMore } = module.exports;
+const {
+  NotificationSettingsPage,
+  NotificationInbox,
+  NotificationDeliveryDialog,
+  dndBridge,
+  MobileMore,
+} = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
 function fixture(t, api, mobile = false) {
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
@@ -1322,4 +1328,42 @@ test('mobile app messages reuse compact inline records and retain navigation bet
   await act(() => button('返回消息').click());
   assert.ok(document.querySelector('.history-compact-list'));
   assert.equal(document.querySelector('dialog').className, dialogClasses);
+});
+
+test('mobile delivery records share storage management layout and scoped selection', async (t) => {
+  const calls = [];
+  const row = {
+    id: 'delivery-mobile',
+    name: '移动端投递',
+    templateName: '应用通知',
+    status: 'failed',
+    channel: 'webhook',
+    attempts: 3,
+    createdAt: '2030-11-10T00:00:00Z',
+    httpStatus: 500,
+    error: '连接超时',
+  };
+  const f = fixture(
+    t,
+    async (path, method, data) => {
+      calls.push({ path, method, data });
+      return path.startsWith('/notifications/deliveries?')
+        ? { items: [row], total: 1 }
+        : { success: true };
+    },
+    true,
+  );
+  await f.open(NotificationDeliveryDialog, { templateId: 'selected-template', onClose() {} });
+  const dialog = document.querySelector('dialog');
+  assert.ok(dialog.classList.contains('list-management-dialog'));
+  assert.ok(dialog.querySelector('.storage-inline-toolbar'));
+  assert.equal(!!dialog.querySelector('.history-mobile-list'), false);
+  assert.ok(dialog.querySelector('.history-compact-list'));
+  assert.equal(!!dialog.querySelector('table'), false);
+  assert.ok(calls.some((call) => call.path.includes('templateId=selected-template')));
+  assert.equal(button('批量删除投递记录').disabled, true);
+  await act(() => dialog.querySelector('[aria-label="选择 移动端投递"]').click());
+  assert.equal(button('批量删除投递记录').disabled, false);
+  await act(() => button('刷新投递记录').click());
+  assert.ok(calls.filter((call) => call.path.startsWith('/notifications/deliveries?')).length > 1);
 });

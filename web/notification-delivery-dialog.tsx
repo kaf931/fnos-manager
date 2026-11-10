@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { StorageToolbar } from './storage-toolbar.js';
 import { ReactDialog } from './ui/react-dialog.js';
 import { AppIcon } from './ui/icon-markup.js';
 import { RecordBatchControl } from './record-batch.js';
@@ -24,28 +25,38 @@ export function NotificationDeliveryDialog({
     (templateId ? '&templateId=' + encodeURIComponent(templateId) : '') +
     (reminderId ? '&reminderId=' + encodeURIComponent(reminderId) : '');
   return (
-    <ReactDialog open title="投递记录" size="large" layout="workspace" onClose={onClose}>
+    <ReactDialog
+      open
+      title="投递记录"
+      size="large"
+      layout="workspace"
+      className="list-management-dialog dialog-scroll-surface"
+      onClose={onClose}
+    >
       <div className="task-form-body tool-page record-content">
-        <header className="toolbar task-toolbar">
-          <div className="toolbar-actions">
-            <button
-              type="button"
-              disabled={!batch.selectionCount()}
-              onClick={() => void batch.manage().catch((e) => toast(errorMessage(e)))}
-            >
-              <AppIcon name="trash" />
-              批量删除
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="刷新投递记录"
-              onClick={() => setRevision((v) => v + 1)}
-            >
-              <AppIcon name="refresh" />
-            </button>
-          </div>
-        </header>
+        <StorageToolbar>
+          <button
+            type="button"
+            className="toolbar-manage"
+            aria-label="批量删除投递记录"
+            title="批量删除"
+            disabled={!batch.selectionCount()}
+            onClick={() => void batch.manage().catch((e) => toast(errorMessage(e)))}
+          >
+            <AppIcon name="trash" />
+            <span className="toolbar-action-label">批量删除</span>
+          </button>
+          <button
+            type="button"
+            className="toolbar-manage"
+            aria-label="刷新投递记录"
+            title="刷新"
+            onClick={() => setRevision((v) => v + 1)}
+          >
+            <AppIcon name="refresh" />
+            <span className="toolbar-action-label">刷新</span>
+          </button>
+        </StorageToolbar>
         <NotificationRecords api={api} active revision={revision} batch={batch} filters={filters} />
       </div>
     </ReactDialog>

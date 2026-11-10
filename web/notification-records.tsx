@@ -76,10 +76,7 @@ export function NotificationRecords({
           {error}
         </p>
       )}
-      <div
-        className={'table-wrap storage-history-list' + (mobile ? ' history-mobile-list' : '')}
-        aria-busy={loading}
-      >
+      <div className="table-wrap storage-history-list" aria-busy={loading}>
         {mobile ? (
           <RecordList
             entries={records.items.map((row) => ({
