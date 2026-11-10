@@ -228,7 +228,7 @@ export function RemindersPanel({
                 title="批量管理"
                 onClick={() => setBatchOpen(true)}
               >
-                <AppIcon name="grid" />
+                <AppIcon name="checklist" />
                 <span className="toolbar-action-label">批量管理</span>
               </button>
               <button

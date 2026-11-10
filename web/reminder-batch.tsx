@@ -100,25 +100,26 @@ export function ReminderBatch({
         </>
       }
     >
-      <div className="task-form-body tool-page record-content">
-        <label id="reminder-batch-action-label">处理方式</label>
-        <NativeSelect
-          aria-labelledby="reminder-batch-action-label"
-          value={action}
-          disabled={busy}
-          optionList={[
-            { value: 'complete', label: '标记完成' },
-            { value: 'pause', label: '暂停提醒' },
-            { value: 'delete', label: '删除事项' },
-          ]}
-          onChange={setAction}
-        />
+      <div className="task-form-body tool-page record-content storage-history-inline">
+        <div className="record-toolbar" role="group" aria-label="批量处理方式">
+          <NativeSelect
+            aria-label="处理方式"
+            value={action}
+            disabled={busy}
+            optionList={[
+              { value: 'complete', label: '标记完成' },
+              { value: 'pause', label: '暂停提醒' },
+              { value: 'delete', label: '删除事项' },
+            ]}
+            onChange={setAction}
+          />
+        </div>
         {error && (
           <p className="notice error" role="alert">
             {error}
           </p>
         )}
-        <div className={'table-wrap storage-history-list' + (mobile ? ' history-mobile-list' : '')}>
+        <div className="table-wrap storage-history-list">
           {mobile ? (
             <RecordList
               entries={rows.map((row) => ({

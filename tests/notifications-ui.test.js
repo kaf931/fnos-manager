@@ -1244,3 +1244,36 @@ test('mobile More places application messages below settings and closes the menu
   assert.equal(requests, 1);
   assert.equal(openStates.at(-1), false);
 });
+
+test('mobile reminder batch reuses inline record layout and has a distinct checklist icon', async (t) => {
+  const row = {
+    id: 'mobile-batch',
+    name: '移动端提醒',
+    content: '',
+    status: 'open',
+    enabled: true,
+    repeat: 'none',
+    dueAt: '2030-11-10T00:00:00Z',
+    nextAt: null,
+    templateIds: [],
+  };
+  const f = fixture(t, async (route) => (route === '/notifications/reminders' ? [row] : []), true);
+  await f.open();
+  assert.notEqual(
+    button('批量管理提醒').querySelector('svg').innerHTML,
+    button('全部模板').querySelector('svg').innerHTML,
+  );
+  await act(() => button('批量管理提醒').click());
+  const body = document.querySelector('dialog .task-form-body');
+  assert.ok(body.classList.contains('storage-history-inline'));
+  assert.ok(body.querySelector('.record-toolbar .native-select, .record-toolbar select'));
+  assert.ok(body.querySelector('.history-compact-list'));
+  assert.equal(!!body.querySelector('table'), false);
+  const item = body.querySelector('.history-compact-row:not(.history-compact-select-all)');
+  assert.ok(
+    item.firstElementChild.querySelector('input') || item.firstElementChild.matches('input'),
+  );
+  await act(() => body.querySelector('[aria-label="选择 移动端提醒"]').click());
+  assert.equal(button('执行').disabled, false);
+  assert.ok(document.querySelector('.dialog-footer').textContent.includes('已选择 1 项'));
+});
