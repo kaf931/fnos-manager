@@ -18,17 +18,44 @@ export function NotificationInbox({
   api,
   toast,
   active,
+  menu = false,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
+  menu?: boolean;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [preview, setPreview] = useState<InboxMessage[]>([]);
+  const [previewError, setPreviewError] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [initialMessage, setInitialMessage] = useState<InboxMessage | null>(null);
+  useEffect(() => {
+    if (!active || !menuOpen) return;
+    let live = true;
+    setPreviewLoading(true);
+    setPreviewError('');
+    void api<{ items: InboxMessage[] }>('/notifications/inbox?page=1&pageSize=5&filter=all')
+      .then((value) => {
+        if (live) setPreview(value.items);
+      })
+      .catch((e) => {
+        if (live) setPreviewError(errorMessage(e));
+      })
+      .finally(() => {
+        if (live) setPreviewLoading(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, [active, menuOpen, api]);
   const [open, setOpen] = useState(false),
     [count, setCount] = useState(0),
     [revision, setRevision] = useState(0);
   useEffect(() => {
     if (!active) {
       setOpen(false);
+      setMenuOpen(false);
       return;
     }
     let live = true;
@@ -47,27 +74,81 @@ export function NotificationInbox({
       clearInterval(timer);
     };
   }, [api, active, revision]);
+  const trigger = (
+    <button
+      type="button"
+      title="应用内消息"
+      className={menu ? 'icon-button activity-badge-host' : 'activity-badge-host'}
+      aria-label={count ? `应用内消息，${count} 条未读` : '应用内消息'}
+      onClick={() => {
+        if (!menu) {
+          setInitialMessage(null);
+          setOpen(true);
+        }
+      }}
+    >
+      <AppIcon name="bell" />
+      {!menu && <span className="toolbar-action-label">消息</span>}
+      {count > 0 && (
+        <span className="activity-badge" aria-hidden="true">
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
+    </button>
+  );
   return (
     <>
-      <button
-        type="button"
-        title="应用内消息"
-        className="activity-badge-host"
-        aria-label={count ? `应用内消息，${count} 条未读` : '应用内消息'}
-        onClick={() => setOpen(true)}
-      >
-        <AppIcon name="bell" />
-        <span className="toolbar-action-label">消息</span>
-        {count > 0 && (
-          <span className="activity-badge" aria-hidden="true">
-            {count > 99 ? '99+' : count}
-          </span>
-        )}
-      </button>
+      {menu ? (
+        <Dropdown
+          trigger="click"
+          position="topRight"
+          visible={menuOpen}
+          onVisibleChange={setMenuOpen}
+          render={
+            <Dropdown.Menu>
+              {previewLoading ? (
+                <Dropdown.Item disabled>正在读取消息…</Dropdown.Item>
+              ) : previewError ? (
+                <Dropdown.Item disabled>{previewError}</Dropdown.Item>
+              ) : preview.length ? (
+                preview.map((message) => (
+                  <Dropdown.Item
+                    key={message.id}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setInitialMessage(message);
+                      setOpen(true);
+                    }}
+                  >
+                    {message.readAt ? '' : '• '}
+                    {message.name}
+                  </Dropdown.Item>
+                ))
+              ) : (
+                <Dropdown.Item disabled>暂无消息</Dropdown.Item>
+              )}
+              <Dropdown.Item
+                onClick={() => {
+                  setMenuOpen(false);
+                  setInitialMessage(null);
+                  setOpen(true);
+                }}
+              >
+                查看全部消息
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          }
+        >
+          {trigger}
+        </Dropdown>
+      ) : (
+        trigger
+      )}
       {active && open && (
         <InboxDialog
           api={api}
           toast={toast}
+          initialMessage={initialMessage}
           onClose={() => setOpen(false)}
           onChanged={() => setRevision((v) => v + 1)}
         />
@@ -76,20 +157,25 @@ export function NotificationInbox({
   );
 }
 function InboxDialog({
+  initialMessage = null,
   api,
   toast,
   onClose,
   onChanged,
 }: {
+  initialMessage?: InboxMessage | null;
   api: ApiClient;
   toast: Toast;
   onClose: () => void;
   onChanged: () => void;
 }) {
+  useEffect(() => {
+    if (initialMessage && !initialMessage.readAt) void read([initialMessage.id]);
+  }, [initialMessage]);
   const [filter, setFilter] = useState('all'),
     [menuOpen, setMenuOpen] = useState(false),
     [busy, setBusy] = useState(false),
-    [detail, setDetail] = useState<InboxMessage | null>(null),
+    [detail, setDetail] = useState<InboxMessage | null>(initialMessage),
     [, rerender] = useState(0);
   const container = useRef<HTMLDivElement>(null);
   const alive = useRef(true),
@@ -347,4 +433,15 @@ function InboxDialog({
       </div>
     </ReactDialog>
   );
+}
+
+export function DesktopNotificationInbox(props: { api: ApiClient; toast: Toast; active: boolean }) {
+  const [mobile, setMobile] = useState(() => matchMedia('(max-width:620px)').matches);
+  useEffect(() => {
+    const media = matchMedia('(max-width:620px)');
+    const sync = () => setMobile(media.matches);
+    media.addEventListener?.('change', sync);
+    return () => media.removeEventListener?.('change', sync);
+  }, []);
+  return mobile ? null : <NotificationInbox {...props} menu />;
 }

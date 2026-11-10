@@ -18,6 +18,15 @@ const compiled = await build({
     {
       name: 'feature-boundaries',
       setup(b) {
+        b.onResolve({ filter: /notification-inbox\.js$/ }, () => ({
+          path: 'inbox',
+          namespace: 'inbox-boundary',
+        }));
+        b.onLoad({ filter: /.*/, namespace: 'inbox-boundary' }, () => ({
+          loader: 'js',
+          contents:
+            'export function DesktopNotificationInbox(){return null;}export function NotificationInbox(){return null;}',
+        }));
         b.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (a) => ({
           path: a.path,
           external: true,
@@ -67,6 +76,7 @@ async function fixture(t, search = '', fetcher) {
   });
   const values = {
     window: dom.window,
+    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
     document: dom.window.document,
     location: dom.window.location,
     Event: dom.window.Event,

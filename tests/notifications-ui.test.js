@@ -11,7 +11,7 @@ const stubs = {
   pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
   checkbox: `import React from 'react';export default function Checkbox({children,onChange,...props}){return React.createElement('label',null,React.createElement('input',{...props,type:'checkbox',onChange}),children);}`,
 
-  dropdown: `import React from 'react';const Dropdown=({children,render})=>React.createElement('div',null,children,render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
+  dropdown: `import React from 'react';const Dropdown=({children,render,onVisibleChange,visible})=>React.createElement('div',null,React.cloneElement(children,{onClick:e=>{children.props.onClick?.(e);onVisibleChange?.(!visible);}}),render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
   'native-select.js': `import React from 'react';export function NativeSelect({optionList,onChange,...props}){return React.createElement('select',{...props,onChange:e=>onChange(e.target.value)},optionList.map(o=>React.createElement('option',{key:o.value,value:o.value},o.label)))}`,
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
@@ -19,7 +19,12 @@ const stubs = {
   'confirmation.js': `export const confirmAction=async(options)=>{await options.onAccept?.();return true;};`,
 };
 const built = await build({
-  entryPoints: ['web/notifications.tsx'],
+  stdin: {
+    contents:
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx';",
+    resolveDir: process.cwd(),
+    loader: 'tsx',
+  },
   bundle: true,
   write: false,
   format: 'cjs',
@@ -60,7 +65,7 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { NotificationSettingsPage } = module.exports;
+const { NotificationSettingsPage, NotificationInbox } = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
 function fixture(t, api, mobile = false) {
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
@@ -93,9 +98,9 @@ function fixture(t, api, mobile = false) {
     }
   });
   return {
-    async open() {
+    async open(Component = NotificationSettingsPage, extra = {}) {
       await act(async () => {
-        root.render(React.createElement(NotificationSettingsPage, { api, toast: () => {} }));
+        root.render(React.createElement(Component, { api, toast: () => {}, ...extra }));
         await tick();
       });
     },
@@ -348,25 +353,29 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
     templateName: 'App',
     status: 'success',
   };
-  const f = fixture(t, async (route, method, body) => {
-    calls.push({ route, method, body });
-    if (route === '/notifications/inbox/unread') return { count: read || removed ? 0 : 1 };
-    if (route.startsWith('/notifications/inbox?'))
-      return {
-        items: removed ? [] : [{ ...message, readAt: read ? new Date().toISOString() : null }],
-        total: removed ? 0 : 1,
-      };
-    if (route === '/notifications/inbox/read') {
-      read = true;
-      return { success: true };
-    }
-    if (route.includes('/storage/cleanup/records/deliveries/delete')) {
-      removed = true;
-      return { success: true };
-    }
-    return [];
-  });
-  await f.open();
+  const f = fixture(
+    t,
+    async (route, method, body) => {
+      calls.push({ route, method, body });
+      if (route === '/notifications/inbox/unread') return { count: read || removed ? 0 : 1 };
+      if (route.startsWith('/notifications/inbox?'))
+        return {
+          items: removed ? [] : [{ ...message, readAt: read ? new Date().toISOString() : null }],
+          total: removed ? 0 : 1,
+        };
+      if (route === '/notifications/inbox/read') {
+        read = true;
+        return { success: true };
+      }
+      if (route.includes('/storage/cleanup/records/deliveries/delete')) {
+        removed = true;
+        return { success: true };
+      }
+      return [];
+    },
+    false,
+  );
+  await f.open(NotificationInbox, { active: true });
   await act(async () => {
     button('应用内消息，1 条未读').click();
     await tick();
@@ -591,4 +600,36 @@ test('mobile template and message actions share the reminder add toolbar without
   );
   await act(() => button('全部模板').click());
   assert.equal(document.querySelector('dialog .cards').children.length, 8);
+});
+
+test('desktop inbox trigger opens a recent-message menu before opening message details', async (t) => {
+  const item = {
+    id: 'm1',
+    name: 'Desktop message',
+    content: 'Body',
+    createdAt: new Date().toISOString(),
+    readAt: null,
+  };
+  const calls = [];
+  const f = fixture(t, async (route, method, body) => {
+    calls.push({ route, method, body });
+    return route.endsWith('/unread')
+      ? { count: 1 }
+      : route.includes('/inbox?')
+        ? { items: [item], total: 1 }
+        : {};
+  });
+  await f.open(NotificationInbox, { active: true, menu: true });
+  await act(async () => {
+    button('应用内消息，1 条未读').click();
+    await tick();
+  });
+  assert.equal(!!document.querySelector('dialog'), false);
+  assert.ok(button('• Desktop message'));
+  await act(async () => {
+    button('• Desktop message').click();
+    await tick();
+  });
+  assert.ok(document.querySelector('dialog').textContent.includes('Body'));
+  assert.ok(calls.some((c) => c.route === '/notifications/inbox/read' && c.body.ids[0] === 'm1'));
 });

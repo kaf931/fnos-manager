@@ -1,3 +1,4 @@
+import { DesktopNotificationInbox } from './notification-inbox.js';
 import { useUpdateCheck, useUpdateActivity } from './update-check.js';
 import {
   Component,
@@ -247,6 +248,7 @@ export function App() {
               >
                 <AppIcon name="settings" />
               </button>
+              <DesktopNotificationInbox api={api} toast={toast} active={ready} />
             </div>
           </div>
         </aside>

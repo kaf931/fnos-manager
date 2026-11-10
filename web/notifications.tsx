@@ -217,7 +217,7 @@ function NotificationTemplatesPanel({
     );
   const actions = (
     <>
-      <NotificationInbox api={api} toast={toast} active={active} />
+      {mobile && <NotificationInbox api={api} toast={toast} active={active} />}
       <button type="button" aria-label="全部模板" title="全部模板" onClick={() => setAllOpen(true)}>
         <AppIcon name="grid" />
         <span className="toolbar-action-label">全部</span>

@@ -19,6 +19,15 @@ const built = await build({
     {
       name: 'page-boundaries',
       setup(b) {
+        b.onResolve({ filter: /notification-inbox\.js$/ }, () => ({
+          path: 'inbox',
+          namespace: 'inbox-boundary',
+        }));
+        b.onLoad({ filter: /.*/, namespace: 'inbox-boundary' }, () => ({
+          loader: 'js',
+          contents:
+            'export function DesktopNotificationInbox(){return null;}export function NotificationInbox(){return null;}',
+        }));
         b.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (a) => ({
           path: a.path,
           external: true,
