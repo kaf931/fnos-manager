@@ -243,10 +243,12 @@ function NotificationTemplatesPanel({
             hidden={!active}
             aria-label="通知模板"
           >
+            <h2 className="section-label workspace-section-title">通知模板</h2>
             <CompactCardStrip label="通知模板" desktopOnly>
               {entries.map(renderCard)}
             </CompactCardStrip>
           </section>
+          <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
         </>,
         load,
       )}
