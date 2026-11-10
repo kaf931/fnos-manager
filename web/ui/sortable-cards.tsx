@@ -15,7 +15,7 @@ export function SortableCards({
   onMove,
   disabled = false,
 }: {
-  items: { id: string; name: string; content: ReactNode }[];
+  items: { id: string; name: string; content: (handle: ReactNode) => ReactNode }[];
   onMove: (from: string, to: string) => void;
   disabled?: boolean;
 }) {
@@ -78,81 +78,82 @@ export function SortableCards({
             finish();
           }}
         >
-          {item.content}
-          <button
-            type="button"
-            className="icon-button sortable-card-handle"
-            draggable={!disabled}
-            disabled={disabled}
-            aria-label={'拖动排序 ' + item.name}
-            title="拖动排序，或使用方向键调整位置"
-            onDragStart={(e) => {
-              if (disabled) {
-                e.preventDefault();
-                return;
-              }
-              clearTimeout(press.current);
-              touch.current = false;
-              begin(item.id);
-              e.dataTransfer.effectAllowed = 'move';
-              e.dataTransfer.setData('text/plain', item.id);
-            }}
-            onDragEnd={clear}
-            onKeyDown={(e) => {
-              const direction = ['ArrowLeft', 'ArrowUp'].includes(e.key)
-                ? -1
-                : ['ArrowRight', 'ArrowDown'].includes(e.key)
-                  ? 1
-                  : 0;
-              if (!direction) return;
-              e.preventDefault();
-              const next = items[index + direction];
-              if (next && !disabled) onMove(item.id, next.id);
-            }}
-            onPointerDown={(e) => {
-              if (disabled || e.pointerType === 'mouse') return;
-              start.current = { x: e.clientX, y: e.clientY };
-              const element = e.currentTarget,
-                pointer = e.pointerId;
-              press.current = setTimeout(() => {
-                touch.current = true;
+          {item.content(
+            <button
+              type="button"
+              className="icon-button sortable-card-handle"
+              draggable={!disabled}
+              disabled={disabled}
+              aria-label={'拖动排序 ' + item.name}
+              title="拖动排序，或使用方向键调整位置"
+              onDragStart={(e) => {
+                if (disabled) {
+                  e.preventDefault();
+                  return;
+                }
+                clearTimeout(press.current);
+                touch.current = false;
                 begin(item.id);
-                element.setPointerCapture(pointer);
-              }, 250);
-            }}
-            onPointerMove={(e) => {
-              if (!touch.current) {
-                if (Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 8)
-                  clearTimeout(press.current);
-                return;
-              }
-              e.preventDefault();
-              const node = document
-                .elementFromPoint(e.clientX, e.clientY)
-                ?.closest<HTMLElement>('[data-sortable-id]');
-              if (node && host.current?.contains(node)) {
-                target.current = node.dataset.sortableId || null;
-                setOver(target.current);
-              }
-              const scroller = host.current?.closest<HTMLElement>('.task-form-body');
-              if (scroller) {
-                const rect = scroller.getBoundingClientRect();
-                if (e.clientY < rect.top + 32) scroller.scrollBy({ top: -16 });
-                else if (e.clientY > rect.bottom - 32) scroller.scrollBy({ top: 16 });
-              }
-            }}
-            onPointerUp={(e) => {
-              clearTimeout(press.current);
-              if (touch.current) {
-                finish();
-                if (e.currentTarget.hasPointerCapture(e.pointerId))
-                  e.currentTarget.releasePointerCapture(e.pointerId);
-              }
-            }}
-            onPointerCancel={clear}
-          >
-            <AppIcon name="move" />
-          </button>
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', item.id);
+              }}
+              onDragEnd={clear}
+              onKeyDown={(e) => {
+                const direction = ['ArrowLeft', 'ArrowUp'].includes(e.key)
+                  ? -1
+                  : ['ArrowRight', 'ArrowDown'].includes(e.key)
+                    ? 1
+                    : 0;
+                if (!direction) return;
+                e.preventDefault();
+                const next = items[index + direction];
+                if (next && !disabled) onMove(item.id, next.id);
+              }}
+              onPointerDown={(e) => {
+                if (disabled || e.pointerType === 'mouse') return;
+                start.current = { x: e.clientX, y: e.clientY };
+                const element = e.currentTarget,
+                  pointer = e.pointerId;
+                press.current = setTimeout(() => {
+                  touch.current = true;
+                  begin(item.id);
+                  element.setPointerCapture(pointer);
+                }, 250);
+              }}
+              onPointerMove={(e) => {
+                if (!touch.current) {
+                  if (Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 8)
+                    clearTimeout(press.current);
+                  return;
+                }
+                e.preventDefault();
+                const node = document
+                  .elementFromPoint(e.clientX, e.clientY)
+                  ?.closest<HTMLElement>('[data-sortable-id]');
+                if (node && host.current?.contains(node)) {
+                  target.current = node.dataset.sortableId || null;
+                  setOver(target.current);
+                }
+                const scroller = host.current?.closest<HTMLElement>('.task-form-body');
+                if (scroller) {
+                  const rect = scroller.getBoundingClientRect();
+                  if (e.clientY < rect.top + 32) scroller.scrollBy({ top: -16 });
+                  else if (e.clientY > rect.bottom - 32) scroller.scrollBy({ top: 16 });
+                }
+              }}
+              onPointerUp={(e) => {
+                clearTimeout(press.current);
+                if (touch.current) {
+                  finish();
+                  if (e.currentTarget.hasPointerCapture(e.pointerId))
+                    e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+              }}
+              onPointerCancel={clear}
+            >
+              <AppIcon name="move" />
+            </button>,
+          )}
         </div>
       ))}
     </div>

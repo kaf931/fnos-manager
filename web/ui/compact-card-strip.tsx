@@ -112,6 +112,7 @@ export function CompactCard({
   onOpen,
   disabled,
   openLabel = '编辑 ' + title,
+  leading,
 }: {
   title: string;
   description: string;
@@ -121,9 +122,11 @@ export function CompactCard({
   onOpen: () => void;
   disabled?: boolean;
   openLabel?: string;
+  leading?: ReactNode;
 }) {
   return (
     <article className="card compact-card">
+      {leading}
       <button
         type="button"
         className="compact-card-open"

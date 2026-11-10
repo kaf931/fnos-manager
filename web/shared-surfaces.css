@@ -774,14 +774,9 @@ p.help:empty {
   min-width: 0;
 }
 .sortable-card-handle.icon-button {
-  position: absolute;
-  top: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 24px;
-  min-height: 24px;
-  min-width: 24px;
+  flex: 0 0 28px;
+  width: 28px;
+  min-width: 28px;
   padding: 4px;
   cursor: grab;
   touch-action: none;

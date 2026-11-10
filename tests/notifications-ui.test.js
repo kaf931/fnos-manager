@@ -513,6 +513,10 @@ test('all templates dialog uses shared cards and returns after editing without s
   assert.ok(document.querySelector('.compact-card-strip-shell.desktop-only'));
   assert.equal(dialog.dataset.dialogSize, 'large');
   assert.equal(dialog.querySelectorAll('.cards .compact-card').length, 8);
+  const card = dialog.querySelector('.compact-card');
+  assert.ok(card.firstElementChild.matches('.sortable-card-handle'));
+  assert.ok(card.firstElementChild.nextElementSibling.matches('.compact-card-open'));
+
   await act(() => dialog.querySelector('[aria-label="配置 邮箱（SMTP）"]').click());
   assert.equal(document.querySelectorAll('dialog').length, 1);
   assert.ok(document.querySelector('#smtp-user'));

@@ -207,9 +207,10 @@ function NotificationTemplatesPanel({
       if (alive.current) setSorting(false);
     }
   }
-  const renderCard = ({ channel, row }: (typeof entries)[number]) =>
+  const renderCard = ({ channel, row }: (typeof entries)[number], leading?: React.ReactNode) =>
     row ? (
       <CompactCard
+        leading={leading}
         key={row.id}
         title={row.name}
         description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
@@ -269,6 +270,7 @@ function NotificationTemplatesPanel({
       />
     ) : (
       <CompactCard
+        leading={leading}
         key={channel}
         title={NOTIFICATION_CHANNEL_LABELS[channel]}
         description="未配置"
@@ -311,7 +313,7 @@ function NotificationTemplatesPanel({
           >
             <h2 className="section-label workspace-section-title">通知模板</h2>
             <CompactCardStrip label="通知模板" desktopOnly>
-              {entries.map(renderCard)}
+              {entries.map((entry) => renderCard(entry))}
             </CompactCardStrip>
           </section>
           <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
@@ -343,7 +345,7 @@ function NotificationTemplatesPanel({
               items={entries.map((entry) => ({
                 id: entryKey(entry),
                 name: entry.row?.name || NOTIFICATION_CHANNEL_LABELS[entry.channel],
-                content: renderCard(entry),
+                content: (handle) => renderCard(entry, handle),
               }))}
               disabled={sorting || loading || !loaded}
               onMove={(from, to) => void reorder(from, to)}
