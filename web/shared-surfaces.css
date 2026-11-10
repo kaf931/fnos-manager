@@ -679,8 +679,8 @@ p.help:empty {
   gap: 12px;
   flex: 1;
   min-width: 0;
-  padding: 8px;
-  margin: -8px;
+  padding: 4px;
+  margin: -4px;
   border: 0;
   background: transparent;
   text-align: left;
