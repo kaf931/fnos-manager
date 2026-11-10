@@ -167,6 +167,18 @@ export class ReminderRepository {
     });
   }
   setEnabled(owner: string, id: string, enabled: boolean, now = Date.now()): Reminder {
+    if (!enabled) {
+      return this.database.transaction(() => {
+        this.get(owner, id);
+        this.cancel(owner, id, now);
+        this.database.connection
+          .prepare(
+            'UPDATE reminders SET enabled=0,next_at=NULL,revision=revision+1,error=NULL,updated_at=? WHERE owner_uid=? AND id=?',
+          )
+          .run(now, owner, id);
+        return this.get(owner, id);
+      });
+    }
     const current = this.get(owner, id);
     return this.update(
       owner,

@@ -502,3 +502,46 @@ test('all templates dialog uses shared cards and returns after editing without s
   await act(() => dialog.querySelector('[aria-label="关闭"]').click());
   assert.equal(document.querySelector('dialog'), null);
 });
+
+test('editing a reminder drops unavailable template ids while saving the selected ready template', async (t) => {
+  const template = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'ready',
+    name: 'Ready',
+    channel: 'inapp',
+    enabled: true,
+    ready: true,
+  };
+  const row = {
+    id: 'reminder',
+    name: 'Existing',
+    content: '',
+    dueAt: '2030-11-10T01:00:00.000Z',
+    repeat: 'none',
+    templateIds: ['deleted', 'ready'],
+    enabled: false,
+    status: 'open',
+    nextAt: null,
+    error: null,
+  };
+  const calls = [];
+  const f = fixture(t, async (route, method, body) => {
+    calls.push({ route, method, body });
+    return route === '/notifications/templates'
+      ? [template]
+      : route === '/notifications/reminders'
+        ? [row]
+        : {};
+  });
+  await f.open();
+  await act(() =>
+    [...document.querySelectorAll('[aria-label="提醒事项"] button')]
+      .find((e) => e.textContent === '编辑模板')
+      .click(),
+  );
+  await act(async () => {
+    Simulate.submit(document.querySelector('#reminder-form'));
+    await tick();
+  });
+  assert.deepEqual(calls.find((c) => c.method === 'PUT').body.templateIds, ['ready']);
+});

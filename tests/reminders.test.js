@@ -202,3 +202,17 @@ test('saving even a paused reminder requires a time and an enabled ready templat
   notifications.setTemplateEnabled('a', template.id, false);
   assert.throws(() => repo.create('a', input(template.id, { enabled: false }), now), /通知模板/);
 });
+
+test('pausing a legacy reminder never requires its deleted template or missing schedule', (t) => {
+  const { repo, db } = fixture(t);
+  db.connection
+    .prepare(
+      "INSERT INTO reminders(id,owner_uid,name,content,due_at,repeat,template_ids,enabled,status,next_at,revision,created_at,updated_at) VALUES('legacy','a','Legacy','',NULL,'none','[\"deleted\"]',0,'open',?,1,?,?)",
+    )
+    .run(now + 60000, now, now);
+  const paused = repo.setEnabled('a', 'legacy', false, now);
+  assert.equal(paused.enabled, false);
+  assert.equal(paused.nextAt, null);
+  assert.throws(() => repo.setEnabled('b', 'legacy', false, now));
+  assert.throws(() => repo.setEnabled('a', 'legacy', true, now));
+});

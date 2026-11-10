@@ -55,7 +55,12 @@ export function ReminderEditor({
       await api(
         '/notifications/reminders' + (initial ? '/' + initial.id : ''),
         initial ? 'PUT' : 'POST',
-        value,
+        {
+          ...value,
+          templateIds: value.templateIds.filter((id) =>
+            available.some((template) => template.id === id),
+          ),
+        },
       );
       toast('提醒事项已保存');
       onSaved();
