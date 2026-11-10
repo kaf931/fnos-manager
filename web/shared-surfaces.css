@@ -762,15 +762,4 @@ p.help:empty {
 .content-surface-menu,
 .semi-dropdown-wrapper:has(.content-surface-menu) {
   border-radius: var(--app-content-radius, 12px);
-  box-shadow: none;
-}
-
-.content-surface-menu {
-  width: 320px;
-  max-width: calc(100vw - 32px);
-}
-.content-surface-menu .semi-dropdown-item {
-  min-height: 40px;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
