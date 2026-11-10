@@ -7,6 +7,8 @@ import type { ApiClient, Toast } from './contracts/shared.js';
 import { errorMessage } from './contracts/shared.js';
 import { NativeSelect } from './native-select.js';
 import { ReactDialog } from './ui/react-dialog.js';
+type ReminderDraft = Omit<ReminderInput, 'enabled'>;
+
 export function ReminderEditor({
   initial,
   open = true,
@@ -26,18 +28,17 @@ export function ReminderEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [value, setValue] = useState<ReminderInput>({
+  const [value, setValue] = useState<ReminderDraft>({
     name: initial?.name || '',
     content: initial?.content || '',
     dueAt: initial?.dueAt || null,
     repeat: initial?.repeat || 'none',
     templateIds: initial?.templateIds || [],
-    enabled: initial?.enabled ?? true,
   });
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   const lock = useRef(false);
-  const patch = (v: Partial<ReminderInput>) => setValue((old) => ({ ...old, ...v }));
+  const patch = (v: Partial<ReminderDraft>) => setValue((old) => ({ ...old, ...v }));
   const available = templates.filter((template) => template.enabled && template.ready);
   const selectionTouched = useRef(false);
   const single = available.length === 1 ? available[0].id : null;
@@ -68,6 +69,7 @@ export function ReminderEditor({
         initial ? 'PUT' : 'POST',
         {
           ...value,
+          enabled: initial?.status !== 'completed',
           templateIds: value.templateIds.filter((id) =>
             available.some((template) => template.id === id),
           ),
@@ -207,17 +209,6 @@ export function ReminderEditor({
             )}
           </div>
         )}
-        <div className="form-check-row">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={value.enabled}
-              disabled={busy || initial?.status === 'completed'}
-              onChange={(e) => patch({ enabled: e.target.checked })}
-            />
-            启用提醒
-          </label>
-        </div>
       </form>
     </ReactDialog>
   );

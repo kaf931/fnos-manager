@@ -26,7 +26,7 @@ const stubs = {
 const built = await build({
   stdin: {
     contents:
-      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {NotificationDeliveryDialog} from './web/notification-delivery-dialog.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {NotificationDeliveryDialog} from './web/notification-delivery-dialog.tsx'; export {ReminderEditor} from './web/reminder-editor.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
     resolveDir: process.cwd(),
     loader: 'tsx',
   },
@@ -85,6 +85,7 @@ const {
   NotificationSettingsPage,
   NotificationInbox,
   NotificationDeliveryDialog,
+  ReminderEditor,
   dndBridge,
   MobileMore,
 } = module.exports;
@@ -1406,3 +1407,57 @@ test('saving an existing paused built-in template enables it without an editor e
   });
   assert.equal(calls.find((call) => call.method === 'PUT').body.enabled, true);
 });
+
+for (const state of ['new', 'paused', 'completed']) {
+  test(`reminder editor removes the enable checkbox and saves the correct enabled state for ${state} items`, async (t) => {
+    const calls = [];
+    const row = {
+      id: 'edited-reminder',
+      name: '提醒事项',
+      content: '',
+      dueAt: '2035-11-10T00:00:00Z',
+      repeat: 'none',
+      templateIds: ['ready-template'],
+      enabled: false,
+      status: state === 'completed' ? 'completed' : 'open',
+    };
+    const f = fixture(
+      t,
+      async (path, method, body) => {
+        calls.push({ path, method, body });
+        return { success: true };
+      },
+      true,
+    );
+    await f.open(ReminderEditor, {
+      initial: state === 'new' ? null : row,
+      templates: [
+        { id: 'ready-template', name: '可用模板', channel: 'inapp', enabled: true, ready: true },
+      ],
+      onClose() {},
+      onSaved() {},
+    });
+    assert.equal(
+      [...document.querySelectorAll('label')].some(
+        (label) => label.textContent.trim() === '启用提醒',
+      ),
+      false,
+    );
+    if (state === 'new') {
+      await act(() => {
+        Simulate.change(document.querySelector('#reminder-name'), { target: { value: '新提醒' } });
+        Simulate.change(document.querySelector('input[type="datetime-local"]'), {
+          target: { value: '2035-11-10T08:00' },
+        });
+      });
+    }
+    await act(async () => {
+      Simulate.submit(document.querySelector('form'));
+      await tick();
+    });
+    const saved = calls.find((call) => call.method === (state === 'new' ? 'POST' : 'PUT'));
+    assert.ok(saved);
+    assert.equal(saved.body.enabled, state !== 'completed');
+    assert.deepEqual(saved.body.templateIds, ['ready-template']);
+  });
+}
