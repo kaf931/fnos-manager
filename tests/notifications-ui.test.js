@@ -243,7 +243,10 @@ test('notification overview shows templates above reminders and editing preserve
   assert.ok(templates && reminders);
   assert.equal(templates.hidden, false);
   assert.equal(reminders.hidden, false);
-  assert.ok(templates.compareDocumentPosition(reminders) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(
+    templates.compareDocumentPosition(reminders.querySelector('.cards.connection-cards')) &
+      window.Node.DOCUMENT_POSITION_FOLLOWING,
+  );
   assert.ok(templates.querySelector('.compact-card-strip'));
   assert.equal(templates.querySelector('.empty-onboarding'), null);
   const search = document.querySelector('input[aria-label="搜索提醒事项"]');
@@ -545,7 +548,7 @@ test('editing a reminder drops unavailable template ids while saving the selecte
   });
   await f.open();
   await act(() =>
-    [...document.querySelectorAll('[aria-label="提醒事项"] button')]
+    [...document.querySelectorAll('[aria-label="提醒事项"] .cards.connection-cards button')]
       .find((e) => e.textContent === '编辑模板')
       .click(),
   );
@@ -642,4 +645,24 @@ test('desktop inbox trigger opens a recent-message menu before opening message d
   });
   assert.ok(document.querySelector('dialog').textContent.includes('Body'));
   assert.ok(calls.some((c) => c.route === '/notifications/inbox/read' && c.body.ids[0] === 'm1'));
+});
+
+test('notification center unifies template actions and refresh in the top reminder toolbar', async (t) => {
+  const calls = [];
+  const f = fixture(t, async (route) => {
+    calls.push(route);
+    return [];
+  });
+  await f.open();
+  assert.equal(document.querySelectorAll('#notifications-page header.toolbar').length, 1);
+  const toolbar = document.querySelector('#notifications-page header.toolbar');
+  assert.ok(toolbar.querySelector('[aria-label="全部模板"]'));
+  assert.ok(toolbar.querySelector('[aria-label="新增事项"]'));
+  const start = calls.length;
+  await act(async () => {
+    button('刷新通知中心').click();
+    await tick();
+  });
+  assert.ok(calls.slice(start).includes('/notifications/templates'));
+  assert.ok(calls.slice(start).includes('/notifications/reminders'));
 });

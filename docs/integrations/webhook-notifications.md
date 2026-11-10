@@ -123,3 +123,5 @@ Server酱推荐入口：[获取 SendKey](https://sct.ftqq.com/r/29101)。支持 
 协议参考：[Server酱 Node.js 接入](https://sct.ftqq.com/docs/integrations/nodejs/)、[Bark API V2](https://github.com/Finb/bark-server/blob/master/docs/API_V2.md)。
 
 桌面端消息入口位于左下角设置按钮右侧，点击展开最近五条消息菜单；未读消息带标记，点击查看详情并标为已读。“查看全部消息”进入完整消息管理。移动端消息入口暂保留在提醒工具栏。
+
+通知中心顶部统一放置搜索、状态筛选、新增事项、全部模板和刷新入口；刷新同时更新模板及提醒列表，不再单独显示模板和提醒分区工具栏。桌面消息仍位于侧栏左下角，移动端消息并入顶部工具栏。

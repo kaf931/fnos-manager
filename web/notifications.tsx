@@ -28,7 +28,11 @@ function NotificationTemplatesPanel({
   toast: Toast;
   active: boolean;
   onChanged: () => void;
-  renderReminders: (actions?: React.ReactNode) => React.ReactNode;
+  renderReminders: (
+    actions: React.ReactNode,
+    content: React.ReactNode,
+    refreshTemplates: () => Promise<void>,
+  ) => React.ReactNode;
 }) {
   const [mobile, setMobile] = useState(() => matchMedia('(max-width:620px)').matches);
   useEffect(() => {
@@ -226,39 +230,26 @@ function NotificationTemplatesPanel({
   );
   return (
     <>
-      <section className="compact-card-section desktop-only" hidden={!active} aria-label="通知模板">
-        <header className="toolbar task-toolbar">
-          <h2 className="workspace-section-title">通知模板</h2>
-          <div className="toolbar-actions">
-            {!mobile && actions}
-            <button
-              type="button"
-              className="icon-button toolbar-refresh"
-              aria-label="刷新通知模板"
-              title="刷新通知模板"
-              disabled={loading}
-              onClick={() => void load()}
-            >
-              <AppIcon name="refresh" />
-              <span>刷新</span>
-            </button>
-          </div>
-        </header>
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
-        <CompactCardStrip label="通知模板" desktopOnly>
-          {entries.map(renderCard)}
-        </CompactCardStrip>
-      </section>
-      {mobile && error && (
-        <p className="notice error" role="alert">
-          {error}
-        </p>
+      {renderReminders(
+        actions,
+        <>
+          {error && (
+            <p className="notice error" role="alert">
+              {error}
+            </p>
+          )}
+          <section
+            className="compact-card-section desktop-only"
+            hidden={!active}
+            aria-label="通知模板"
+          >
+            <CompactCardStrip label="通知模板" desktopOnly>
+              {entries.map(renderCard)}
+            </CompactCardStrip>
+          </section>
+        </>,
+        load,
       )}
-      {renderReminders(mobile ? actions : undefined)}
       {active && allOpen && !editor && (
         <ReactDialog
           open
@@ -314,15 +305,16 @@ export function NotificationSettingsPage({
         toast={toast}
         active={active}
         onChanged={() => setTemplateRevision((v) => v + 1)}
-        renderReminders={(actions) => (
+        renderReminders={(actions, content, refreshTemplates) => (
           <>
-            <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
             <RemindersPanel
               api={api}
               toast={toast}
               active={active}
               templateRevision={templateRevision}
               actions={actions}
+              headerContent={content}
+              onRefreshTemplates={refreshTemplates}
             />
           </>
         )}

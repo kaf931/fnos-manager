@@ -29,12 +29,16 @@ export function RemindersPanel({
   active,
   templateRevision = 0,
   actions,
+  headerContent,
+  onRefreshTemplates,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
   templateRevision?: number;
   actions?: React.ReactNode;
+  headerContent?: React.ReactNode;
+  onRefreshTemplates?: () => Promise<void>;
 }) {
   const [rows, setRows] = useState<Reminder[]>([]),
     [templates, setTemplates] = useState<NotificationTemplateSummary[]>([]),
@@ -83,6 +87,9 @@ export function RemindersPanel({
     } finally {
       if (alive.current && ticket === epoch.current) setLoading(false);
     }
+  }
+  async function refresh() {
+    await Promise.all([load(), onRefreshTemplates?.()]);
   }
   async function act(action: string, row: Reminder) {
     if (locks.current.has(row.id)) return;
@@ -134,7 +141,7 @@ export function RemindersPanel({
   );
   return (
     <div className="tool-page" hidden={!active} aria-label="提醒事项">
-      <PullRefresh onRefresh={load}>
+      <PullRefresh onRefresh={refresh}>
         <div className="terminal-list-view">
           <header className="toolbar task-toolbar">
             <div className="task-toolbar-filters">
@@ -194,16 +201,17 @@ export function RemindersPanel({
               <button
                 type="button"
                 className="icon-button toolbar-refresh"
-                aria-label="刷新提醒事项"
+                aria-label={onRefreshTemplates ? '刷新通知中心' : '刷新提醒事项'}
                 title="刷新"
                 disabled={loading}
-                onClick={() => void load()}
+                onClick={() => void refresh()}
               >
                 <AppIcon name="refresh" />
                 <span>刷新</span>
               </button>
             </div>
           </header>
+          {headerContent}
           {error && (
             <p className="notice error" role="alert">
               {error}
