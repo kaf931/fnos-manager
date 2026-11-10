@@ -1,5 +1,5 @@
 /** Relational schema. JSON is reserved for task variants and scan statistics. */
-export const SCHEMA_VERSION = 33;
+export const SCHEMA_VERSION = 34;
 const baseSchema = `
 CREATE TABLE schema_migrations (
   version INTEGER PRIMARY KEY NOT NULL,
@@ -540,6 +540,10 @@ DROP TABLE notification_settings;
 CREATE INDEX notification_due ON notification_deliveries(status,next_attempt_at);
 CREATE INDEX notification_owner ON notification_deliveries(owner_uid,created_at);
 `;
+export const notificationTemplateOrderSchema = `CREATE TABLE notification_template_order (
+ owner_uid TEXT PRIMARY KEY NOT NULL CHECK(length(owner_uid)>0),
+ entries TEXT NOT NULL CHECK(json_valid(entries) AND json_type(entries)='array')
+) STRICT;`;
 export const notificationInboxSchema = `ALTER TABLE notification_deliveries ADD COLUMN read_at INTEGER;`;
 export const reminderSchema = `
 CREATE TABLE reminders (
@@ -720,6 +724,7 @@ export const schema =
   notificationTemplatesSchema +
   reminderSchema +
   notificationInboxSchema +
+  notificationTemplateOrderSchema +
   operationSchema +
   reachabilitySchema +
   textVersionsSchema +
@@ -759,5 +764,6 @@ INSERT INTO schema_migrations VALUES(30,CAST(unixepoch('subsec')*1000 AS INTEGER
 INSERT INTO schema_migrations VALUES(31,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(32,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(33,CAST(unixepoch('subsec')*1000 AS INTEGER));
-PRAGMA user_version=33;
+INSERT INTO schema_migrations VALUES(34,CAST(unixepoch('subsec')*1000 AS INTEGER));
+PRAGMA user_version=34;
 `;

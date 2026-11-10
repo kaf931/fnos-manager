@@ -116,6 +116,12 @@ export class NotificationService {
   deleteReminder(owner: string, id: string) {
     return this.reminderRepository().remove(owner, id);
   }
+  templateOrder(owner: string) {
+    return this.repository.templateOrder(owner);
+  }
+  saveTemplateOrder(owner: string, keys: string[]) {
+    return this.repository.saveTemplateOrder(owner, keys);
+  }
   listTemplates(owner: string) {
     return this.repository.listTemplates(owner);
   }

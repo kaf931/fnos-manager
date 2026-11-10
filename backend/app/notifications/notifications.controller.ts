@@ -18,7 +18,7 @@ import {
 import { NotificationService } from '../../notifications/service.js';
 import { TerminalOwnerGuard } from '../common/security.js';
 import type { ApiRequest } from '../common/types.js';
-import { SettingsDto, TemplateDto, TemplateEnabledDto } from './dto.js';
+import { SettingsDto, TemplateDto, TemplateEnabledDto, TemplateOrderDto } from './dto.js';
 @UseGuards(TerminalOwnerGuard)
 @Controller('app/deskicons/api/notifications')
 export class NotificationsController {
@@ -83,6 +83,15 @@ export class NotificationsController {
   @Delete('reminders/:id') deleteReminder(@Req() req: ApiRequest, @Param('id') id: string) {
     this.service.deleteReminder(req.terminalOwner, id);
     return { success: true };
+  }
+  @Get('template-order') templateOrder(@Req() req: ApiRequest) {
+    return this.service.templateOrder(req.terminalOwner);
+  }
+  @Put('template-order') saveTemplateOrder(
+    @Req() req: ApiRequest,
+    @Body() input: TemplateOrderDto,
+  ) {
+    return this.service.saveTemplateOrder(req.terminalOwner, input.keys);
   }
   @Get('templates') list(@Req() req: ApiRequest) {
     return this.service.listTemplates(req.terminalOwner);

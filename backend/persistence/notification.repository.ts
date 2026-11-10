@@ -130,6 +130,48 @@ export class NotificationRepository {
       updatedAt: iso(row.updated_at)!,
     };
   }
+  templateOrder(owner: string): { keys: string[] } {
+    const row = this.database.connection
+      .prepare('SELECT entries FROM notification_template_order WHERE owner_uid=?')
+      .get(owner);
+    return { keys: row ? JSON.parse(String(row.entries)) : [] };
+  }
+  saveTemplateOrder(owner: string, keys: string[]): { keys: string[] } {
+    if (
+      !Array.isArray(keys) ||
+      !keys.length ||
+      keys.length > 100 ||
+      new Set(keys).size !== keys.length ||
+      keys.some((key) => typeof key !== 'string' || key.length > 100)
+    )
+      invalid('模板排序无效');
+    return this.database.transaction(() => {
+      const templates = this.listTemplates(owner);
+      const channels = new Set(NOTIFICATION_CHANNELS.map((channel) => 'channel:' + channel));
+      const templateKeys = new Map(templates.map((row) => ['template:' + row.id, row.channel]));
+      if (keys.some((key) => !channels.has(key) && !templateKeys.has(key)))
+        invalid('模板已变更，请刷新后重试');
+      const saved: string[] = [];
+      for (const key of keys) {
+        if (!saved.includes(key)) saved.push(key);
+        const channel = templateKeys.get(key);
+        const fallback = channel && 'channel:' + channel;
+        if (
+          fallback &&
+          channels.has(fallback) &&
+          !keys.includes(fallback) &&
+          !saved.includes(fallback)
+        )
+          saved.push(fallback);
+      }
+      this.database.connection
+        .prepare(
+          'INSERT INTO notification_template_order(owner_uid,entries) VALUES(?,?) ON CONFLICT(owner_uid) DO UPDATE SET entries=excluded.entries',
+        )
+        .run(owner, JSON.stringify(saved));
+      return { keys: saved };
+    });
+  }
   listTemplates(owner: string): NotificationTemplateSummary[] {
     return this.database.connection
       .prepare('SELECT * FROM notification_templates WHERE owner_uid=? ORDER BY created_at,id')

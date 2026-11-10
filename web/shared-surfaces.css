@@ -767,3 +767,30 @@ p.help:empty {
 .semi-dropdown-wrapper:has(.content-surface-menu) {
   box-shadow: var(--semi-shadow-2);
 }
+
+/* Shared card sorting affordances; the handle leaves normal controls and scrolling available. */
+.sortable-card {
+  position: relative;
+  min-width: 0;
+}
+.sortable-card-handle.icon-button {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  min-width: 24px;
+  padding: 4px;
+  cursor: grab;
+  touch-action: none;
+}
+.sortable-card[data-dragging='true'] {
+  opacity: 0.65;
+}
+.sortable-card[data-drop-target='true'] {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  border-radius: 9px;
+}

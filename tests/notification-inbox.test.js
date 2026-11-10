@@ -98,7 +98,7 @@ test('schema32 upgrades once without changing existing templates or delivery met
     .run('keep', 'owner', 'Keep', config);
   raw.close();
   let db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
   assert.equal(
     db.connection.prepare('SELECT config FROM notification_templates').get().config,
     config,

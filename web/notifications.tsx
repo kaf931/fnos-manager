@@ -1,3 +1,4 @@
+import { SortableCards, moveCard } from './ui/sortable-cards.js';
 import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import { ReactDialog } from './ui/react-dialog.js';
 import { NotificationInbox } from './notification-inbox.js';
@@ -44,6 +45,9 @@ function NotificationTemplatesPanel({
     media.addEventListener?.('change', sync);
     return () => media.removeEventListener?.('change', sync);
   }, []);
+  const [order, setOrder] = useState<string[]>([]),
+    [sorting, setSorting] = useState(false);
+  const sortLock = useRef(false);
   const [loaded, setLoaded] = useState(false);
   const [recordsTemplate, setRecordsTemplate] = useState<string | null>(null);
   const [rows, setRows] = useState<NotificationTemplateSummary[]>([]),
@@ -86,9 +90,13 @@ function NotificationTemplatesPanel({
     const ticket = ++generation.current;
     setLoading(true);
     try {
-      const values = await api<NotificationTemplateSummary[]>('/notifications/templates');
+      const [values, position] = await Promise.all([
+        api<NotificationTemplateSummary[]>('/notifications/templates'),
+        api<{ keys: string[] }>('/notifications/template-order'),
+      ]);
       if (alive.current && activeRef.current && ticket === generation.current) {
         setRows(values);
+        setOrder(Array.isArray(position?.keys) ? position.keys : []);
         setLoaded(true);
         setError('');
       }
@@ -166,6 +174,39 @@ function NotificationTemplatesPanel({
       .filter((row) => !NOTIFICATION_CHANNELS.includes(row.channel))
       .map((row) => ({ channel: row.channel, row })),
   );
+  const entryKey = (entry: (typeof entries)[number]) =>
+    entry.row ? 'template:' + entry.row.id : 'channel:' + entry.channel;
+  const rank = (entry: (typeof entries)[number]) => {
+    const own = order.indexOf(entryKey(entry)),
+      fallback = order.indexOf('channel:' + entry.channel);
+    return own >= 0 ? own : fallback >= 0 ? fallback : Infinity;
+  };
+  entries.sort((a, b) => (rank(a) === rank(b) ? 0 : rank(a) - rank(b)));
+  async function reorder(from: string, to: string) {
+    if (sortLock.current || !activeRef.current) return;
+    const previous = order;
+    const keys = moveCard(entries.map(entryKey), from, to);
+    sortLock.current = true;
+    setSorting(true);
+    setOrder(keys);
+    const ticket = ++generation.current;
+    setLoading(false);
+    try {
+      const result = await api<{ keys: string[] }>('/notifications/template-order', 'PUT', {
+        keys,
+      });
+      if (alive.current && activeRef.current && generation.current === ticket)
+        setOrder(result.keys);
+    } catch (e) {
+      if (alive.current && activeRef.current && generation.current === ticket) {
+        setOrder(previous);
+        toast(errorMessage(e));
+      }
+    } finally {
+      sortLock.current = false;
+      if (alive.current) setSorting(false);
+    }
+  }
   const renderCard = ({ channel, row }: (typeof entries)[number]) =>
     row ? (
       <CompactCard
@@ -173,13 +214,13 @@ function NotificationTemplatesPanel({
         title={row.name}
         description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
         icon={<AppIcon name="bell" />}
-        disabled={busy.has(row.id)}
+        disabled={busy.has(row.id) || sorting}
         onOpen={() => void act('edit', row)}
         control={
           <SwitchControl
             checked={row.enabled}
             loading={busy.has(row.id)}
-            disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
+            disabled={sorting || busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
             aria-label={'启用 ' + row.name}
             onChange={() => void act('toggle', row)}
           />
@@ -194,18 +235,23 @@ function NotificationTemplatesPanel({
             render={
               <Dropdown.Menu>
                 <Dropdown.Item
-                  disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
+                  disabled={
+                    sorting || busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)
+                  }
                   onClick={() => void act('test', row)}
                 >
                   测试通知
                 </Dropdown.Item>
-                <Dropdown.Item disabled={busy.has(row.id)} onClick={() => void act('edit', row)}>
+                <Dropdown.Item
+                  disabled={busy.has(row.id) || sorting}
+                  onClick={() => void act('edit', row)}
+                >
                   编辑模板
                 </Dropdown.Item>
                 <Dropdown.Item onClick={() => void act('records', row)}>投递记录</Dropdown.Item>
                 <Dropdown.Item
                   type="danger"
-                  disabled={busy.has(row.id)}
+                  disabled={busy.has(row.id) || sorting}
                   onClick={() => void act('delete', row)}
                 >
                   删除模板
@@ -216,7 +262,7 @@ function NotificationTemplatesPanel({
             <MobileMoreButton
               aria-label={row.name + '的更多操作'}
               title="更多操作"
-              disabled={busy.has(row.id)}
+              disabled={busy.has(row.id) || sorting}
             />
           </Dropdown>
         }
@@ -228,7 +274,7 @@ function NotificationTemplatesPanel({
         description="未配置"
         icon={<AppIcon name="bell" />}
         openLabel={'配置 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
-        disabled={(!loaded && loading) || !!error}
+        disabled={sorting || (!loaded && loading) || !!error}
         onOpen={() => setEditor({ row: null, channel })}
         control={
           <SwitchControl
@@ -293,7 +339,15 @@ function NotificationTemplatesPanel({
           }}
         >
           <div ref={overview} className="task-form-body">
-            <div className="cards">{entries.map(renderCard)}</div>
+            <SortableCards
+              items={entries.map((entry) => ({
+                id: entryKey(entry),
+                name: entry.row?.name || NOTIFICATION_CHANNEL_LABELS[entry.channel],
+                content: renderCard(entry),
+              }))}
+              disabled={sorting || loading || !loaded}
+              onMove={(from, to) => void reorder(from, to)}
+            />
           </div>
         </ReactDialog>
       )}

@@ -24,6 +24,31 @@ test('notification routes enforce account, admin, CSRF and validation without ex
     assert.equal((await call('', 'PUT', { ...settings, url: 'ftp://host' })).status, 400);
     assert.equal((await call('', 'PUT', settings)).status, 200);
     assert.equal(
+      (
+        await call(
+          '/template-order',
+          'PUT',
+          { keys: ['channel:email'] },
+          { 'x-deskicons-token': 'wrong' },
+        )
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await call('/template-order', 'PUT', { keys: ['channel:email', 'channel:webhook'] })).status,
+      200,
+    );
+    assert.deepEqual(await (await call('/template-order')).json(), {
+      keys: ['channel:email', 'channel:webhook'],
+    });
+    assert.deepEqual(
+      await (await call('/template-order', 'GET', undefined, { 'x-trim-userid': '1001' })).json(),
+      { keys: [] },
+    );
+    for (const keys of [[], ['channel:unknown'], ['channel:email', 'channel:email'], [123]])
+      assert.equal((await call('/template-order', 'PUT', { keys })).status, 400);
+
+    assert.equal(
       (await (await call('', 'GET', undefined, { 'x-trim-userid': '1001' })).json()).url,
       '',
     );

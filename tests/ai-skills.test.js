@@ -389,7 +389,7 @@ test('schema 10 to 11 adds skills without replacing business or attachment recor
   );
   db.close();
   db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
   assert.equal(
     db.connection.prepare('SELECT name FROM icons WHERE id=?').get('keep01').name,
     'Keep',

@@ -218,7 +218,7 @@ test('schema12 attachment migration preserves files and accepts ZIP metadata aft
     const restored = new AiHistoryRepository(db).get('owner', 'chat');
     assert.equal(restored.history[0].attachments[0].data, 'keep this');
     assert.equal(restored.messages[0].attachments[0].name, 'keep.md');
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
     assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {
     db.close();

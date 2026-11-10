@@ -54,7 +54,7 @@ test('v6 upgrade adds settings without changing saved preferences or business da
   db.close();
   db = new DatabaseService(dir);
   t.after(() => db.close());
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
   assert.deepEqual(new PreferencesRepository(db).get('a'), {
     theme: 'dark',
     palette: 'classic',
@@ -193,6 +193,6 @@ test('v24 palette expansion keeps preferences and catalog children and accepts o
   );
   prefs.save('a', { palette: 'default' });
   assert.equal(prefs.get('a').palette, 'default');
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 34);
   assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
 });

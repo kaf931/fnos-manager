@@ -895,3 +895,99 @@ test('inbox search submits a scoped encoded query', async (t) => {
   });
   assert.ok(calls.some((route) => route.includes('&q=' + encodeURIComponent('测试 100%'))));
 });
+
+test('all templates support drag, keyboard ordering and shared strip persistence; failed saves roll back', async (t) => {
+  let saved = [],
+    fail = false;
+  const f = fixture(t, async (route, method, body) => {
+    if (route.endsWith('/template-order')) {
+      if (method === 'PUT') {
+        if (fail) throw new Error('save failed');
+        saved = body.keys;
+      }
+      return { keys: saved };
+    }
+    return [];
+  });
+  await f.open();
+  await act(() => button('全部模板').click());
+  const ids = () =>
+    [...document.querySelectorAll('[data-sortable-id]')].map((e) => e.dataset.sortableId);
+  const initial = ids();
+  const handle = document.querySelector('.sortable-card-handle');
+  const transfer = { setData() {} };
+  await act(() => Simulate.dragStart(handle, { dataTransfer: transfer }));
+  assert.deepEqual(saved, []);
+  await act(async () => {
+    Simulate.drop(document.querySelectorAll('[data-sortable-id]')[2], { dataTransfer: transfer });
+    await tick();
+  });
+  assert.equal(ids()[2], initial[0]);
+  assert.deepEqual(saved, ids());
+  const first = ids()[0];
+  await act(async () => {
+    Simulate.keyDown(document.querySelector('.sortable-card-handle'), { key: 'ArrowRight' });
+    await tick();
+  });
+  assert.equal(ids()[1], first);
+  const prior = ids();
+  assert.deepEqual(
+    [...document.querySelectorAll('.compact-card-strip .compact-card strong')].map(
+      (e) => e.textContent,
+    ),
+    [...document.querySelectorAll('[data-sortable-id] .compact-card strong')].map(
+      (e) => e.textContent,
+    ),
+  );
+  fail = true;
+  await act(async () => {
+    Simulate.keyDown(document.querySelector('.sortable-card-handle'), { key: 'ArrowRight' });
+    await tick();
+  });
+  assert.deepEqual(ids(), prior);
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
+  await act(() => button('全部模板').click());
+  assert.deepEqual(ids(), prior);
+});
+
+test('mobile template handle supports long press drag and cancels without changing order', async (t) => {
+  let saved = [];
+  const f = fixture(
+    t,
+    async (route, method, body) => {
+      if (route.endsWith('/template-order')) {
+        if (method === 'PUT') saved = body.keys;
+        return { keys: saved };
+      }
+      return [];
+    },
+    true,
+  );
+  await f.open();
+  await act(() => button('全部模板').click());
+  const cards = [...document.querySelectorAll('[data-sortable-id]')];
+  const handle = document.querySelector('.sortable-card-handle');
+  handle.setPointerCapture = () => {};
+  handle.hasPointerCapture = () => true;
+  handle.releasePointerCapture = () => {};
+  document.elementFromPoint = () => cards[2];
+  document.querySelector('.task-form-body').scrollBy = () => {};
+  const pointer = { pointerType: 'touch', pointerId: 1, clientX: 40, clientY: 80 };
+  await act(async () => {
+    Simulate.pointerDown(handle, pointer);
+    await new Promise((r) => setTimeout(r, 280));
+  });
+  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 90 }));
+  await act(() => Simulate.pointerCancel(handle, pointer));
+  assert.deepEqual(saved, []);
+  await act(async () => {
+    Simulate.pointerDown(handle, pointer);
+    await new Promise((r) => setTimeout(r, 280));
+  });
+  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 90 }));
+  await act(async () => {
+    Simulate.pointerUp(handle, pointer);
+    await tick();
+  });
+  assert.equal(saved[2], cards[0].dataset.sortableId);
+});

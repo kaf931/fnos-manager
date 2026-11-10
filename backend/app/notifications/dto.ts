@@ -1,5 +1,9 @@
 import {
   IsBoolean,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
+  ArrayUnique,
   IsIn,
   IsString,
   MaxLength,
@@ -39,4 +43,14 @@ export class TemplateDto extends SettingsDto {
 }
 export class TemplateEnabledDto {
   @IsBoolean() enabled!: boolean;
+}
+
+export class TemplateOrderDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(100, { each: true })
+  keys!: string[];
 }
