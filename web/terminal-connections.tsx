@@ -30,17 +30,10 @@ export interface ConnectionCardOptions<T extends CardRow> {
 }
 import Checkbox from '@douyinfe/semi-ui/lib/es/checkbox';
 import { CardAction } from './card-actions.js';
+import { icon as actionIcon } from './ui/icon-markup.js';
 import React from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
 import { MobileMoreButton } from './mobile-more-button.js';
-const actionPaths: Record<string, string> = {
-  power: 'M12 2v10M6 5a9 9 0 1 0 12 0',
-  refresh: 'M20 10a8 8 0 1 0-2 8M20 4v6h-6',
-  edit: 'm15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 15v5Z',
-  trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7',
-};
-const actionIcon = (glyph: string) =>
-  `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="${actionPaths[glyph]}"/></svg>`;
 export function ConnectionCards<T extends CardRow>({
   rows,
   onAction,

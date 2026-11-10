@@ -289,7 +289,7 @@ button.danger:active {
 }
 /* Semi sets a 270px inline list limit; keep it inside the 244px popup including padding. */
 .task-form-dropdown .semi-select-option-list {
-  max-height: 236px !important;
+  max-height: calc(var(--native-select-popup-height, 244px) - 8px) !important;
 }
 .form-error {
   color: var(--semi-color-danger);
