@@ -22,12 +22,21 @@ function NotificationTemplatesPanel({
   toast,
   active,
   onChanged,
+  renderReminders,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
   onChanged: () => void;
+  renderReminders: (actions?: React.ReactNode) => React.ReactNode;
 }) {
+  const [mobile, setMobile] = useState(() => matchMedia('(max-width:620px)').matches);
+  useEffect(() => {
+    const media = matchMedia('(max-width:620px)');
+    const sync = () => setMobile(media.matches);
+    media.addEventListener?.('change', sync);
+    return () => media.removeEventListener?.('change', sync);
+  }, []);
   const [rows, setRows] = useState<NotificationTemplateSummary[]>([]),
     [allOpen, setAllOpen] = useState(false),
     [error, setError] = useState(''),
@@ -206,42 +215,50 @@ function NotificationTemplatesPanel({
         }
       />
     );
+  const actions = (
+    <>
+      <NotificationInbox api={api} toast={toast} active={active} />
+      <button type="button" aria-label="全部模板" title="全部模板" onClick={() => setAllOpen(true)}>
+        <AppIcon name="grid" />
+        <span className="toolbar-action-label">全部</span>
+      </button>
+    </>
+  );
   return (
-    <section className="compact-card-section" hidden={!active} aria-label="通知模板">
-      <header className="toolbar task-toolbar">
-        <h2 className="workspace-section-title">通知模板</h2>
-        <div className="toolbar-actions">
-          <NotificationInbox api={api} toast={toast} active={active} />
-          <button
-            type="button"
-            aria-label="全部模板"
-            title="全部模板"
-            onClick={() => setAllOpen(true)}
-          >
-            <AppIcon name="grid" />
-            <span className="toolbar-action-label">全部</span>
-          </button>
-          <button
-            type="button"
-            className="icon-button toolbar-refresh"
-            aria-label="刷新通知模板"
-            title="刷新通知模板"
-            disabled={loading}
-            onClick={() => void load()}
-          >
-            <AppIcon name="refresh" />
-            <span>刷新</span>
-          </button>
-        </div>
-      </header>
-      {error && (
+    <>
+      <section className="compact-card-section desktop-only" hidden={!active} aria-label="通知模板">
+        <header className="toolbar task-toolbar">
+          <h2 className="workspace-section-title">通知模板</h2>
+          <div className="toolbar-actions">
+            {!mobile && actions}
+            <button
+              type="button"
+              className="icon-button toolbar-refresh"
+              aria-label="刷新通知模板"
+              title="刷新通知模板"
+              disabled={loading}
+              onClick={() => void load()}
+            >
+              <AppIcon name="refresh" />
+              <span>刷新</span>
+            </button>
+          </div>
+        </header>
+        {error && (
+          <p className="notice error" role="alert">
+            {error}
+          </p>
+        )}
+        <CompactCardStrip label="通知模板" desktopOnly>
+          {entries.map(renderCard)}
+        </CompactCardStrip>
+      </section>
+      {mobile && error && (
         <p className="notice error" role="alert">
           {error}
         </p>
       )}
-      <CompactCardStrip label="通知模板" desktopOnly>
-        {entries.map(renderCard)}
-      </CompactCardStrip>
+      {renderReminders(mobile ? actions : undefined)}
       {active && allOpen && !editor && (
         <ReactDialog
           open
@@ -275,7 +292,7 @@ function NotificationTemplatesPanel({
           }}
         />
       )}
-    </section>
+    </>
   );
 }
 
@@ -297,9 +314,19 @@ export function NotificationSettingsPage({
         toast={toast}
         active={active}
         onChanged={() => setTemplateRevision((v) => v + 1)}
+        renderReminders={(actions) => (
+          <>
+            <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
+            <RemindersPanel
+              api={api}
+              toast={toast}
+              active={active}
+              templateRevision={templateRevision}
+              actions={actions}
+            />
+          </>
+        )}
       />
-      <h2 className="section-label workspace-section-title">提醒事项</h2>
-      <RemindersPanel api={api} toast={toast} active={active} templateRevision={templateRevision} />
     </section>
   );
 }

@@ -28,11 +28,13 @@ export function RemindersPanel({
   toast,
   active,
   templateRevision = 0,
+  actions,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
   templateRevision?: number;
+  actions?: React.ReactNode;
 }) {
   const [rows, setRows] = useState<Reminder[]>([]),
     [templates, setTemplates] = useState<NotificationTemplateSummary[]>([]),
@@ -178,6 +180,7 @@ export function RemindersPanel({
               </div>
             </div>
             <div className="toolbar-actions">
+              {actions}
               <button
                 type="button"
                 className="primary"

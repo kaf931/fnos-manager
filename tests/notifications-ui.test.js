@@ -62,7 +62,7 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
 );
 const { NotificationSettingsPage } = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
-function fixture(t, api) {
+function fixture(t, api, mobile = false) {
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
   const prior = {};
   for (const [key, value] of Object.entries({
@@ -71,7 +71,7 @@ function fixture(t, api) {
     HTMLElement: dom.window.HTMLElement,
     Event: dom.window.Event,
     CustomEvent: dom.window.CustomEvent,
-    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+    matchMedia: () => ({ matches: mobile, addEventListener() {}, removeEventListener() {} }),
     IS_REACT_ACT_ENVIRONMENT: true,
   })) {
     prior[key] = Object.getOwnPropertyDescriptor(globalThis, key);
@@ -576,4 +576,19 @@ test('closing template overview ignores a pending template editor response', asy
     await tick();
   });
   assert.equal(!!document.querySelector('dialog'), false);
+});
+
+test('mobile template and message actions share the reminder add toolbar without duplicate entries', async (t) => {
+  const f = fixture(t, async () => [], true);
+  await f.open();
+  const toolbar = document.querySelector('[aria-label="提醒事项"] .toolbar-actions');
+  assert.ok(toolbar.querySelector('[aria-label="全部模板"]'));
+  assert.ok(toolbar.querySelector('[aria-label="应用内消息"]'));
+  assert.ok(toolbar.querySelector('[aria-label="新增事项"]'));
+  assert.equal(document.querySelectorAll('[aria-label="全部模板"]').length, 1);
+  assert.ok(
+    document.querySelector('section[aria-label="通知模板"]').classList.contains('desktop-only'),
+  );
+  await act(() => button('全部模板').click());
+  assert.equal(document.querySelector('dialog .cards').children.length, 8);
 });
