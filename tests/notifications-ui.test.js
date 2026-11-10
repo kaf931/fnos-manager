@@ -685,6 +685,7 @@ test('one available notification template is preselected for new reminders', asy
   const f = fixture(t, async (route) => (route === '/notifications/templates' ? [template] : []));
   await f.open();
   await act(() => button('新增事项').click());
+  assert.equal(document.querySelector('.form-check-row:last-of-type input').checked, true);
   assert.equal(
     document.querySelector('[aria-labelledby="reminder-template-label"] input').checked,
     true,
@@ -769,4 +770,45 @@ test('background reminder sync pauses while hidden or editing', async (t) => {
     await tick();
   });
   assert.equal(reads, before);
+});
+
+test('desktop message menu marks all messages read without opening the full list', async (t) => {
+  let unread = 2;
+  const calls = [];
+  const f = fixture(t, async (route, method) => {
+    calls.push({ route, method });
+    if (route.endsWith('/unread')) return { count: unread };
+    if (route.includes('/inbox?')) return { items: [], total: 0 };
+    if (route.endsWith('/read-all')) unread = 0;
+    return {};
+  });
+  await f.open(NotificationInbox, { active: true, menu: true });
+  await act(async () => {
+    button('应用内消息，2 条未读').click();
+    await tick();
+  });
+  await act(async () => {
+    button('全部已读').click();
+    await tick();
+  });
+  assert.ok(calls.some((c) => c.route === '/notifications/inbox/read-all' && c.method === 'POST'));
+  assert.ok(button('应用内消息'));
+  assert.equal(!!document.querySelector('dialog'), false);
+});
+test('message entry points share one unread polling subscription per API', async (t) => {
+  let reads = 0;
+  const f = fixture(t, async (route) => {
+    if (route.endsWith('/unread')) reads++;
+    return { count: 0 };
+  });
+  function Pair(props) {
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(NotificationInbox, { ...props, active: true }),
+      React.createElement(NotificationInbox, { ...props, active: true }),
+    );
+  }
+  await f.open(Pair);
+  assert.equal(reads, 1);
 });

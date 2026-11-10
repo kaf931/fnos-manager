@@ -32,7 +32,7 @@ export function ReminderEditor({
     dueAt: initial?.dueAt || null,
     repeat: initial?.repeat || 'none',
     templateIds: initial?.templateIds || [],
-    enabled: initial?.enabled || false,
+    enabled: initial?.enabled ?? true,
   });
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -151,7 +151,6 @@ export function ReminderEditor({
                 if (at && !Number.isFinite(+at)) return;
                 patch({
                   dueAt: at?.toISOString() || null,
-                  ...(!at ? { repeat: 'none' as const, enabled: false } : {}),
                 });
               }}
             />

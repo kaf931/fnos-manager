@@ -1,3 +1,4 @@
+import { useNotificationUnread } from './notification-unread.js';
 import { DesktopNotificationInbox } from './notification-inbox.js';
 import { useUpdateCheck, useUpdateActivity } from './update-check.js';
 import {
@@ -98,6 +99,7 @@ export function App() {
       },
     [],
   );
+  const unreadMessages = useNotificationUnread(api, ready);
   const release = useUpdateCheck(api, ready);
   const updateJob = useUpdateActivity(api, ready && !!release?.hasUpdate);
   const updateActive =
@@ -194,6 +196,7 @@ export function App() {
                 page={page}
                 onChange={change}
                 onOpenChange={setMoreOpen}
+                unreadMessages={unreadMessages}
                 updateAvailable={!!release?.hasUpdate}
                 onUpdate={() => {
                   change('settings');

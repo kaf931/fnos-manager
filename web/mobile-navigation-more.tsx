@@ -9,10 +9,12 @@ export function MobileMore({
   onChange,
   onOpenChange,
   updateAvailable = false,
+  unreadMessages = 0,
   onUpdate,
 }: {
   page: PageId;
   updateAvailable?: boolean;
+  unreadMessages?: number;
   onUpdate?: () => void;
   onChange: (page: PageId) => void;
   onOpenChange: (open: boolean) => void;
@@ -48,7 +50,14 @@ export function MobileMore({
                   name={key === 'wake' ? 'power' : key === 'notifications' ? 'bell' : 'settings'}
                 />
               </span>
-              {menuTitles[key]}
+              {key === 'notifications' && unreadMessages > 0 ? (
+                <Space spacing="tight" align="center">
+                  <span>{menuTitles[key]}</span>
+                  <Badge dot type="danger" />
+                </Space>
+              ) : (
+                menuTitles[key]
+              )}
             </Dropdown.Item>
           ))}
           {updateAvailable && onUpdate && (
@@ -78,12 +87,18 @@ export function MobileMore({
             ? ' active'
             : '')
         }
-        aria-label={updateAvailable ? '更多，有可用更新' : '更多'}
+        aria-label={[
+          '更多',
+          unreadMessages > 0 ? '有未读消息' : '',
+          updateAvailable ? '有可用更新' : '',
+        ]
+          .filter(Boolean)
+          .join('，')}
         aria-haspopup="menu"
         aria-expanded={open}
       >
         <span>
-          {updateAvailable ? (
+          {updateAvailable || unreadMessages > 0 ? (
             <Badge dot type="danger">
               <NavigationArtwork page="more" />
             </Badge>

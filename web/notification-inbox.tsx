@@ -1,3 +1,4 @@
+import { useNotificationUnread, refreshNotificationUnread } from './notification-unread.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
 import type { InboxMessage } from '../backend/domain/notifications.js';
@@ -51,31 +52,34 @@ export function NotificationInbox({
       live = false;
     };
   }, [active, menuOpen, api]);
-  const [open, setOpen] = useState(false),
-    [count, setCount] = useState(0),
-    [revision, setRevision] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+  const markLock = useRef(false);
+  const count = useNotificationUnread(api, active);
   useEffect(() => {
     if (!active) {
       setOpen(false);
       setMenuOpen(false);
-      return;
     }
-    let live = true;
-    const read = async () => {
-      try {
-        const v = await api<{ count: number }>('/notifications/inbox/unread');
-        if (live) setCount(Number.isSafeInteger(v.count) ? v.count : 0);
-      } catch {
-        /* Opening the list exposes actionable errors; silent background checks do not repeat toasts. */
-      }
-    };
-    void read();
-    const timer = setInterval(() => void read(), 15000);
-    return () => {
-      live = false;
-      clearInterval(timer);
-    };
-  }, [api, active, revision]);
+  }, [active]);
+  async function markAllRead() {
+    if (markLock.current) return;
+    markLock.current = true;
+    setMarkingAll(true);
+    try {
+      await api('/notifications/inbox/read-all', 'POST', {});
+      setPreview((old) =>
+        old.map((message) => ({ ...message, readAt: message.readAt || new Date().toISOString() })),
+      );
+      refreshNotificationUnread(api);
+      setMenuOpen(false);
+    } catch (e) {
+      toast(errorMessage(e));
+    } finally {
+      markLock.current = false;
+      setMarkingAll(false);
+    }
+  }
   const trigger = (
     <button
       ref={triggerRef}
@@ -151,6 +155,9 @@ export function NotificationInbox({
               ) : (
                 <Dropdown.Item disabled>暂无消息</Dropdown.Item>
               )}
+              <Dropdown.Item disabled={markingAll || !count} onClick={() => void markAllRead()}>
+                {markingAll ? '正在标记…' : '全部已读'}
+              </Dropdown.Item>
               <Dropdown.Item
                 onClick={() => {
                   setMenuOpen(false);
@@ -174,7 +181,7 @@ export function NotificationInbox({
           toast={toast}
           initialMessage={initialMessage}
           onClose={() => setOpen(false)}
-          onChanged={() => setRevision((v) => v + 1)}
+          onChanged={() => refreshNotificationUnread(api)}
         />
       )}
     </>
