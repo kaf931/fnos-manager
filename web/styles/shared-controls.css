@@ -343,12 +343,23 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
   }
 }
 
-/* Shared Switch geometry only; dimensions, colours and loading visuals remain Semi Design's. */
+/* Shared Switch geometry; disabled controls retain their semantics and the common off appearance. */
 .switch-control {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   vertical-align: middle;
+}
+
+.switch-control .semi-switch-disabled:not(.semi-switch-checked) {
+  background-color: var(--semi-color-fill-0);
+  border-color: transparent;
+}
+.switch-control .semi-switch:not(.semi-switch-checked) .semi-switch-knob {
+  border: 0;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.1),
+    0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .surface-error {
