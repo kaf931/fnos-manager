@@ -55,19 +55,17 @@ test('notification routes enforce account, admin, CSRF and validation without ex
       ).status,
       400,
     );
-    const telegram = {
+    const dingtalk = {
       ...settings,
-      channel: 'telegram',
-      url: '',
+      channel: 'dingtalk',
+      url: 'http://localhost/hook',
       token: '123:ABC',
-      telegramChatId: '-123',
       headers: { 'X-Custom': 'value' },
       template: '{{name}}: {{statusText}}',
     };
-    assert.equal((await call('', 'PUT', telegram)).status, 200);
+    assert.equal((await call('', 'PUT', dingtalk)).status, 200);
     const saved = await (await call()).json();
-    assert.equal(saved.channel, 'telegram');
-    assert.equal(saved.telegramChatId, '-123');
+    assert.equal(saved.channel, 'dingtalk');
     assert.equal(saved.headers['x-custom'], 'value');
     assert.equal((await call('/test', 'POST', {})).status, 200);
   } finally {

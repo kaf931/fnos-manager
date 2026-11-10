@@ -4,8 +4,6 @@ import {
   NOTIFICATION_CHANNELS,
   NOTIFICATION_CHANNEL_LABELS,
   NOTIFICATION_TOKEN_LABELS,
-  NOTIFICATION_DEFAULT_URLS,
-  NOTIFICATION_FIXED_ENDPOINTS,
   type NotificationChannel,
   type NotificationTemplate,
   type NotificationTemplateInput,
@@ -27,7 +25,10 @@ export function NotificationTemplateEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const source: Partial<NotificationTemplate> = initial || {};
+  const unavailable = !!initial && !NOTIFICATION_CHANNELS.includes(initial.channel);
+  const source: Partial<NotificationTemplate> = unavailable
+    ? { name: initial.name }
+    : initial || {};
   const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...editable } = source;
   const [settings, setSettings] = useState<
     NotificationTemplateInput & typeof DEFAULT_NOTIFICATION_OPTIONS
@@ -106,6 +107,11 @@ export function NotificationTemplateEditor({
           void save();
         }}
       >
+        {unavailable && (
+          <p className="notice">
+            原通知渠道已移除，请重新选择渠道并保存。旧配置不会自动转为 Webhook 投递。
+          </p>
+        )}
         {error && (
           <p className="notice error" role="alert">
             {error}
@@ -137,7 +143,7 @@ export function NotificationTemplateEditor({
               patch({
                 ...DEFAULT_NOTIFICATION_OPTIONS,
                 channel: value as NotificationChannel,
-                url: NOTIFICATION_DEFAULT_URLS[value as NotificationChannel] || '',
+                url: '',
                 token: '',
               });
               setHeadersText('{}');
@@ -145,31 +151,22 @@ export function NotificationTemplateEditor({
             }}
           />
         </div>
-        {settings.channel !== 'email' &&
-          !NOTIFICATION_FIXED_ENDPOINTS.includes(settings.channel) && (
-            <>
-              <label htmlFor="notification-url">
-                {['bark', 'ntfy', 'gotify'].includes(settings.channel)
-                  ? '服务地址'
-                  : 'Webhook 地址'}
-              </label>
-              <input
-                id="notification-url"
-                type="url"
-                value={settings.url}
-                maxLength={2048}
-                autoComplete="off"
-                name="notification-endpoint"
-                placeholder={
-                  settings.channel === 'gotify'
-                    ? 'https://gotify.example.com/message'
-                    : NOTIFICATION_DEFAULT_URLS[settings.channel] || 'https://example.com/webhook'
-                }
-                disabled={busy}
-                onChange={(e) => patch({ url: e.target.value })}
-              />
-            </>
-          )}
+        {settings.channel !== 'email' && (
+          <>
+            <label htmlFor="notification-url">Webhook 地址</label>
+            <input
+              id="notification-url"
+              type="url"
+              value={settings.url}
+              maxLength={2048}
+              autoComplete="off"
+              name="notification-endpoint"
+              placeholder="https://example.com/webhook"
+              disabled={busy}
+              onChange={(e) => patch({ url: e.target.value })}
+            />
+          </>
+        )}
         {settings.channel !== 'email' && NOTIFICATION_TOKEN_LABELS[settings.channel] && (
           <>
             <label htmlFor="notification-token">
@@ -184,46 +181,6 @@ export function NotificationTemplateEditor({
               value={settings.token}
               disabled={busy}
               onChange={(e) => patch({ token: e.target.value })}
-            />
-          </>
-        )}
-        {settings.channel === 'telegram' && (
-          <>
-            <label htmlFor="notification-chat">Chat ID</label>
-            <input
-              id="notification-chat"
-              value={settings.telegramChatId}
-              maxLength={128}
-              placeholder="例如 -1001234567890 或 @channel"
-              disabled={busy}
-              onChange={(e) => patch({ telegramChatId: e.target.value })}
-            />
-          </>
-        )}
-        {['ntfy', 'pushplus'].includes(settings.channel) && (
-          <>
-            <label htmlFor="notification-topic">
-              {settings.channel === 'ntfy' ? 'Topic' : '群组编码（可选）'}
-            </label>
-            <input
-              id="notification-topic"
-              value={settings.topic}
-              maxLength={settings.channel === 'ntfy' ? 64 : 128}
-              disabled={busy}
-              onChange={(e) => patch({ topic: e.target.value })}
-            />
-          </>
-        )}
-        {settings.channel === 'wxpusher' && (
-          <>
-            <label htmlFor="notification-recipients">接收 UID（AppToken 必填）</label>
-            <input
-              id="notification-recipients"
-              value={settings.recipients}
-              maxLength={2048}
-              placeholder="多个 UID 用逗号分隔；SPT 可留空"
-              disabled={busy}
-              onChange={(e) => patch({ recipients: e.target.value })}
             />
           </>
         )}

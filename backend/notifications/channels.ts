@@ -54,24 +54,9 @@ export function validateNotificationOptions(
     v.template.length > 8000 ||
     typeof v.signingSecret !== 'string' ||
     v.signingSecret.length > 4096 ||
-    /[\x00-\x1f\x7f]/.test(v.signingSecret) ||
-    typeof v.telegramChatId !== 'string' ||
-    v.telegramChatId.length > 128
+    /[\x00-\x1f\x7f]/.test(v.signingSecret)
   )
     invalid('通知渠道配置无效');
-  if (typeof v.topic !== 'string' || v.topic.length > 128 || /[\x00-\x20\x7f]/.test(v.topic))
-    invalid('主题名称无效');
-  if (typeof v.recipients !== 'string' || v.recipients.length > 2048) invalid('接收 UID 无效');
-  if (
-    v.recipients &&
-    (v.recipients.split(',').length > 20 ||
-      v.recipients.split(',').some((uid) => !/^UID_[a-zA-Z0-9_-]+$/.test(uid.trim())))
-  )
-    invalid('接收 UID 需以逗号分隔，最多 20 项');
-  if (v.channel === 'ntfy' && v.topic && (!/^[a-zA-Z0-9_-]+$/.test(v.topic) || v.topic.length > 64))
-    invalid('ntfy Topic 仅支持字母、数字、下划线及连字符');
-  if (v.telegramChatId && !/^(?:-?\d+|@[a-zA-Z0-9_]{5,})$/.test(v.telegramChatId))
-    invalid('Telegram Chat ID 无效');
   if (v.signingSecret && !['webhook', 'dingtalk', 'feishu'].includes(v.channel))
     invalid('当前渠道不使用签名密钥');
   if (
@@ -159,9 +144,6 @@ export function validateNotificationOptions(
     headers,
     template: v.template,
     signingSecret: v.signingSecret,
-    telegramChatId: v.telegramChatId,
-    topic: v.topic,
-    recipients: v.recipients,
     smtpHost: v.smtpHost,
     smtpPort: v.smtpPort,
     smtpSecurity: v.smtpSecurity,
@@ -219,7 +201,6 @@ export function prepareNotification(job: NotificationRequestInput, now = Date.no
   let url = job.url;
   let body: unknown;
   const headers: Record<string, string> = { ...options.headers };
-  const title = [...`NAS 管家 · ${variables.name}`.replace(/[\r\n]/g, ' ')].slice(0, 100).join('');
   switch (options.channel) {
     case 'email':
       body = {
@@ -227,68 +208,6 @@ export function prepareNotification(job: NotificationRequestInput, now = Date.no
         text,
       };
       break;
-    case 'telegram':
-      url = `https://api.telegram.org/bot${job.token}/sendMessage`;
-      body = { chat_id: options.telegramChatId, text };
-      break;
-    case 'bark':
-      body = { device_key: job.token, title, body: text };
-      break;
-    case 'pushplus':
-      url = 'https://www.pushplus.plus/send';
-      body = {
-        token: job.token,
-        title,
-        content: text,
-        template: 'txt',
-        ...(options.topic ? { topic: options.topic } : {}),
-      };
-      break;
-    case 'serverchan': {
-      const key = job.token ?? '',
-        uid = /^sctp(\d+)t/.exec(key)?.[1];
-      url = uid
-        ? `https://${uid}.push.ft07.com/send/${encodeURIComponent(key)}.send`
-        : `https://sctapi.ftqq.com/${encodeURIComponent(key)}.send`;
-      body = { title: [...title].slice(0, 32).join(''), desp: text };
-      break;
-    }
-    case 'wxpusher': {
-      const simple = job.token?.startsWith('SPT_');
-      url = 'https://wxpusher.zjiecode.com/api/send/message' + (simple ? '/simple-push' : '');
-      body = {
-        content: text,
-        summary: [...title].slice(0, 20).join(''),
-        contentType: 1,
-        ...(simple
-          ? { spt: job.token }
-          : { appToken: job.token, uids: options.recipients.split(',').map((uid) => uid.trim()) }),
-      };
-      break;
-    }
-    case 'ntfy':
-      body = { topic: options.topic, title, message: text };
-      if (job.token && !headers.authorization) headers.authorization = `Bearer ${job.token}`;
-      break;
-    case 'gotify':
-      body = { title, message: text, priority: 5 };
-      headers['x-gotify-key'] = job.token ?? '';
-      break;
-    case 'slack':
-      body = {
-        text,
-        blocks: [{ type: 'section', text: { type: 'plain_text', text, emoji: false } }],
-        unfurl_links: false,
-        unfurl_media: false,
-      };
-      break;
-    case 'discord': {
-      const parsed = new URL(url);
-      parsed.searchParams.set('wait', 'true');
-      url = parsed.href;
-      body = { content: text, allowed_mentions: { parse: [] } };
-      break;
-    }
     case 'webhook':
       body = options.template ? templateTree(JSON.parse(options.template), render) : event;
       if (job.token && !headers.authorization) headers.authorization = `Bearer ${job.token}`;
@@ -326,19 +245,11 @@ export function prepareNotification(job: NotificationRequestInput, now = Date.no
     });
   }
   const encoded = JSON.stringify(body);
-  if (options.channel === 'telegram' && [...text].length > 4096)
-    invalid('Telegram 消息超过 4096 字符，请缩短模板');
   if (
     (options.channel === 'wecom' || options.channel === 'dingtalk') &&
     Buffer.byteLength(text) > 2048
   )
     invalid('机器人文本超过 2048 字节，请缩短模板');
-  if (options.channel === 'discord' && text.length > 2000)
-    invalid('Discord 消息超过 2000 字符，请缩短模板');
-  if (options.channel === 'slack' && text.length > 3000)
-    invalid('Slack 消息超过 3000 字符，请缩短模板');
-  if (options.channel === 'ntfy' && Buffer.byteLength(encoded) > 4096)
-    invalid('ntfy 消息超过 4096 字节，请缩短模板');
   if (Buffer.byteLength(encoded) > 32768) invalid('通知内容过长，请缩短模板');
   if (options.signingSecret && options.channel === 'webhook') {
     const timestamp = String(Math.floor(now / 1000));
@@ -356,7 +267,6 @@ export function notificationAcknowledgement(
   text: string,
 ): { error?: string; retryable?: boolean } {
   if (channel === 'webhook') return {};
-  if (channel === 'slack') return text.trim() === 'ok' ? {} : { error: 'Slack 未确认消息成功' };
   let body: Record<string, unknown>;
   try {
     body = JSON.parse(text);
@@ -367,55 +277,9 @@ export function notificationAcknowledgement(
   let success: boolean;
   let code: unknown;
   switch (channel) {
-    case 'telegram':
-      success = body.ok === true;
-      code = body.error_code;
-      break;
     case 'feishu':
       code = body.code ?? body.StatusCode;
       success = code === 0;
-      break;
-    case 'bark':
-    case 'pushplus':
-      code = body.code;
-      success = code === 200;
-      break;
-    case 'serverchan': {
-      code = body.code;
-      success = code === 0;
-      const data = body.data;
-      if (data && typeof data === 'object' && 'errno' in data && data.errno !== 0) {
-        success = false;
-        code = data.errno;
-      }
-      break;
-    }
-    case 'wxpusher':
-      code = body.code;
-      success = code === 1000;
-      if (Array.isArray(body.data)) {
-        const index = body.data.findIndex(
-          (row) => !row || typeof row !== 'object' || row.code !== 1000,
-        );
-        if (index >= 0) {
-          const failure = body.data[index];
-          success = false;
-          code = typeof failure === 'object' ? failure?.code : undefined;
-        }
-      }
-      break;
-    case 'ntfy':
-      success = typeof body.id === 'string' && !!body.id && body.event === 'message';
-      code = body.http;
-      break;
-    case 'gotify':
-      success =
-        Number.isSafeInteger(body.id) && Number(body.id) > 0 && typeof body.message === 'string';
-      code = body.errorCode;
-      break;
-    case 'discord':
-      success = typeof body.id === 'string' && /^\d+$/.test(body.id);
-      code = body.code;
       break;
     default:
       code = body.errcode;
@@ -427,6 +291,5 @@ export function notificationAcknowledgement(
       typeof code === 'number' && Number.isSafeInteger(code)
         ? `平台拒绝消息（${code}）`
         : '平台未确认消息成功',
-    retryable: channel === 'telegram' && code === 429,
   };
 }

@@ -5,6 +5,7 @@ import { RemindersPanel } from './reminders.js';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   NOTIFICATION_CHANNEL_LABELS,
+  NOTIFICATION_CHANNELS,
   type NotificationTemplate,
   type NotificationTemplateSummary,
 } from '../backend/domain/notifications.js';
@@ -144,7 +145,7 @@ function NotificationTemplatesPanel({
           <CompactCard
             key={row.id}
             title={row.name}
-            description={NOTIFICATION_CHANNEL_LABELS[row.channel]}
+            description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
             icon={<AppIcon name="bell" />}
             disabled={busy.has(row.id)}
             onOpen={() => void act('edit', row)}
@@ -152,7 +153,7 @@ function NotificationTemplatesPanel({
               <SwitchControl
                 checked={row.enabled}
                 loading={busy.has(row.id)}
-                disabled={busy.has(row.id)}
+                disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
                 aria-label={'启用 ' + row.name}
                 onChange={() => void act('toggle', row)}
               />
@@ -164,7 +165,7 @@ function NotificationTemplatesPanel({
                 render={
                   <Dropdown.Menu>
                     <Dropdown.Item
-                      disabled={busy.has(row.id)}
+                      disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
                       onClick={() => void act('test', row)}
                     >
                       测试通知

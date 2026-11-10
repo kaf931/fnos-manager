@@ -114,7 +114,10 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   await act(() => button('新增模板').click());
   assert.ok(document.querySelector('dialog[data-react-dialog]'));
   const select = document.querySelector('#notification-channel');
-  assert.equal(select.options.length, 14);
+  assert.deepEqual(
+    [...select.options].map((option) => option.value),
+    ['webhook', 'wecom', 'dingtalk', 'feishu', 'email'],
+  );
   assert.equal(document.querySelector('#notification-token').autocomplete, 'new-password');
   assert.equal(document.querySelector('#notification-url').name, 'notification-endpoint');
   await act(() => {
@@ -248,4 +251,33 @@ test('notification overview shows templates above reminders and editing preserve
   await act(() => button('取消').click());
   assert.equal(document.querySelector('input[aria-label="搜索提醒事项"]'), search);
   assert.equal(search.value, 'Keep query');
+});
+
+test('editing an unavailable channel starts with empty safe configuration and preserves its name', async (t) => {
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'old',
+    name: 'Old template',
+    channel: 'retired',
+    enabled: false,
+    url: 'https://old.example/secret',
+    token: 'PRIVATE',
+    condition: 'all',
+    scanFailures: true,
+    telegramChatId: 'OLD',
+  };
+  const f = fixture(t, async (route) =>
+    route.endsWith('/templates') ? [row] : route.endsWith('/reminders') ? [] : row,
+  );
+  await f.open();
+  assert.equal(document.querySelector('[aria-label="启用 Old template"]').disabled, true);
+  await act(async () => {
+    button('编辑 Old template').click();
+    await tick();
+  });
+  assert.equal(document.querySelector('#notification-name').value, 'Old template');
+  assert.equal(document.querySelector('#notification-channel').value, 'webhook');
+  assert.equal(document.querySelector('#notification-url').value, '');
+  assert.equal(document.querySelector('#notification-token').value, '');
+  assert.ok(document.querySelector('dialog').textContent.includes('原通知渠道已移除'));
 });

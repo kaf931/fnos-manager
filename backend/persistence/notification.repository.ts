@@ -1,7 +1,7 @@
 import {
   DEFAULT_NOTIFICATION_OPTIONS,
   notificationReady,
-  NOTIFICATION_FIXED_ENDPOINTS,
+  NOTIFICATION_CHANNELS,
 } from '../domain/notifications.js';
 import { validateNotificationOptions, prepareNotification } from '../notifications/channels.js';
 import { RetentionRepository } from './retention.repository.js';
@@ -43,37 +43,8 @@ export function validateSettings(input: NotificationSettingsInput): Notification
     invalid('通知设置格式无效');
   const options = validateNotificationOptions(input);
   if (
-    options.channel === 'telegram' &&
-    (input.enabled || input.token || options.telegramChatId) &&
-    (!/^\d+:[A-Za-z0-9_-]+$/.test(input.token) || !options.telegramChatId)
-  )
-    invalid('Telegram 需要有效的 Bot Token 和 Chat ID');
-  if (
-    ['bark', 'pushplus', 'serverchan', 'wxpusher', 'gotify'].includes(options.channel) &&
-    input.enabled &&
-    !input.token
-  )
-    invalid('当前渠道需要填写推送凭据');
-  if (
-    options.channel === 'serverchan' &&
     input.token &&
-    !/^(?:SCT[A-Za-z0-9_-]+|sctp\d+t[A-Za-z0-9_-]+)$/.test(input.token)
-  )
-    invalid('SendKey 格式无效');
-  if (
-    options.channel === 'wxpusher' &&
-    input.token &&
-    !/^(?:SPT_|AT_)[A-Za-z0-9_-]+$/.test(input.token)
-  )
-    invalid('WxPusher 需要 SPT 或 AppToken');
-  if (options.channel === 'wxpusher' && input.token.startsWith('AT_') && !options.recipients.trim())
-    invalid('AppToken 模式需要填写接收 UID');
-  if (options.channel === 'ntfy' && input.enabled && !options.topic) invalid('ntfy 需要填写 Topic');
-  if (options.channel === 'gotify' && input.token && options.headers['x-gotify-key'])
-    invalid('应用 Token 与 X-Gotify-Key 请求头只能设置一项');
-  if (
-    input.token &&
-    ['webhook', 'ntfy'].includes(options.channel) &&
+    options.channel === 'webhook' &&
     Object.keys(options.headers).includes('authorization')
   )
     invalid('Bearer Token 与 Authorization 请求头只能设置一项');
@@ -98,12 +69,7 @@ export function validateSettings(input: NotificationSettingsInput): Notification
     }
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash)
       invalid('通知地址禁止用户信息、片段或非 HTTP(S) 协议');
-  } else if (
-    input.enabled &&
-    options.channel !== 'email' &&
-    !NOTIFICATION_FIXED_ENDPOINTS.includes(options.channel)
-  )
-    invalid('启用通知需要填写地址');
+  } else if (input.enabled && options.channel !== 'email') invalid('启用通知需要填写地址');
   return {
     ...options,
     enabled: input.enabled,
@@ -132,9 +98,13 @@ export class NotificationRepository {
       .get(owner, id);
   }
   private decodeTemplate(row: RecordValue): NotificationTemplate {
+    const stored = JSON.parse(String(row.config));
+    const settings = Object.fromEntries(
+      Object.entries(defaults).map(([key, value]) => [key, stored[key] ?? value]),
+    ) as unknown as NotificationSettings;
     return {
-      ...defaults,
-      ...JSON.parse(String(row.config)),
+      ...settings,
+      enabled: NOTIFICATION_CHANNELS.includes(settings.channel) && settings.enabled,
       id: String(row.id),
       name: String(row.name),
       createdAt: iso(row.created_at)!,
@@ -448,6 +418,11 @@ export class NotificationRepository {
     });
   }
   private cancelStale(): void {
+    this.database.connection
+      .prepare(
+        `UPDATE notification_deliveries SET status='cancelled',finished_at=?,next_attempt_at=NULL,error='通知渠道已移除' WHERE status='pending' AND channel NOT IN (${NOTIFICATION_CHANNELS.map(() => '?').join(',')})`,
+      )
+      .run(Date.now(), ...NOTIFICATION_CHANNELS);
     this.database.connection
       .prepare(
         "UPDATE notification_deliveries SET status='cancelled',finished_at=?,next_attempt_at=NULL,error='模板已变更或删除' WHERE status='pending' AND NOT EXISTS(SELECT 1 FROM notification_templates s WHERE s.owner_uid=notification_deliveries.owner_uid AND s.id=notification_deliveries.template_id AND s.revision=notification_deliveries.revision)",

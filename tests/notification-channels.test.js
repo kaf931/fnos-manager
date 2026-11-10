@@ -1,4 +1,4 @@
-import {legacyNotificationReset} from './fixtures/notification-schema.js';
+import { legacyNotificationReset } from './fixtures/notification-schema.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
@@ -19,10 +19,9 @@ const settings = {
   headers: {},
   template: '',
   signingSecret: '',
-  telegramChatId: '',
 };
 test('all built-in channels encode their native text envelopes', () => {
-  for (const channel of ['wecom', 'dingtalk', 'feishu', 'telegram']) {
+  for (const channel of ['wecom', 'dingtalk', 'feishu']) {
     const request = prepareNotification(
       {
         url: 'https://example.test/hook',
@@ -30,17 +29,11 @@ test('all built-in channels encode their native text envelopes', () => {
         payload,
         ...settings,
         channel,
-        telegramChatId: '-100123',
       },
       1000000,
     );
     const body = JSON.parse(request.body);
-    if (channel === 'telegram') {
-      assert.equal(body.chat_id, '-100123');
-      assert.equal(request.url, 'https://api.telegram.org/bot123:ABC/sendMessage');
-      assert.equal(request.headers.authorization, undefined);
-      assert.match(body.text, /A "quoted" task/);
-    } else if (channel === 'feishu') {
+    if (channel === 'feishu') {
       assert.equal(body.msg_type, 'text');
       assert.match(body.content.text, /失败/);
     } else {
@@ -120,12 +113,7 @@ test('provider acknowledgements never accept HTTP-only success and do not expose
     '平台拒绝消息（310000）',
   );
   assert.equal(notificationAcknowledgement('feishu', '{"code":0}').error, undefined);
-  assert.equal(notificationAcknowledgement('telegram', '{"ok":true}').error, undefined);
-  assert.equal(
-    notificationAcknowledgement('telegram', '{"ok":false,"error_code":429}').retryable,
-    true,
-  );
-  for (const channel of ['wecom', 'dingtalk', 'feishu', 'telegram'])
+  for (const channel of ['wecom', 'dingtalk', 'feishu'])
     assert.ok(notificationAcknowledgement(channel, '{}').error);
 });
 test('platform transport records business failures at HTTP 200 and sends custom headers', async (t) => {
@@ -219,7 +207,8 @@ test('schema29 upgrades without changing existing settings, pending payloads or 
   repo.enqueueTest('a');
   const before = db.connection.prepare('SELECT * FROM notification_deliveries').get();
   db.connection.exec(
-    legacyNotificationReset + 'DROP TABLE notification_options;DELETE FROM schema_migrations WHERE version=30;PRAGMA user_version=29',
+    legacyNotificationReset +
+      'DROP TABLE notification_options;DELETE FROM schema_migrations WHERE version=30;PRAGMA user_version=29',
   );
   db.close();
   db = new DatabaseService(dir);

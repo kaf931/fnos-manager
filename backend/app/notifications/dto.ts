@@ -17,12 +17,9 @@ export class SettingsDto implements NotificationSettingsInput {
   @IsOptional()
   @IsIn(NOTIFICATION_CHANNELS)
   channel?: NotificationSettingsInput['channel'];
-  @IsOptional() @IsString() @MaxLength(128) topic?: string;
-  @IsOptional() @IsString() @MaxLength(2048) recipients?: string;
   @IsOptional() @IsObject() headers?: Record<string, string>;
   @IsOptional() @IsString() @MaxLength(8000) template?: string;
   @IsOptional() @IsString() @MaxLength(4096) signingSecret?: string;
-  @IsOptional() @IsString() @MaxLength(128) telegramChatId?: string;
   @IsOptional() @IsString() @MaxLength(253) smtpHost?: string;
   @IsOptional() @IsInt() @Min(1) @Max(65535) smtpPort?: number;
   @IsOptional() @IsIn(['tls', 'starttls', 'none']) smtpSecurity?: 'tls' | 'starttls' | 'none';

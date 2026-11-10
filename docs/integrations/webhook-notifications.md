@@ -1,8 +1,8 @@
 # 通知中心：通知模板
 
-在 **通知中心 → 通知模板 → 新增模板** 中填写名称并选择渠道，保存后在模板卡片点击“测试通知”。测试会发送真实消息，只使用已保存配置；模板停用时仍可测试。结果在 **存储管理 → 应用清理 → 投递记录** 查看。
+在 **通知中心 → 通知模板 → 新增模板** 中填写名称并选择渠道，保存后在模板卡片的更多菜单点击“测试通知”。测试会发送真实消息，只使用已保存配置；模板停用时仍可测试。结果在 **存储管理 → 应用清理 → 投递记录** 查看。
 
-每个账号最多创建 50 个通知模板，可分别启用并同时通知，支持通用 Webhook、企业微信、钉钉、飞书、Telegram、Bark、PushPlus、Server酱、WxPusher、ntfy、Gotify、Slack、Discord 和 SMTP 邮箱。切换渠道会清空编辑区里的旧地址、凭据和消息内容，保存前不影响已有模板；修改、停用或删除模板只取消该模板待处理的事件，不影响其他模板。历史投递记录保留，并显示模板名称。
+每个账号最多创建 50 个通知模板，可分别启用并同时通知，支持通用 Webhook、企业微信、钉钉、飞书和 SMTP 邮箱。切换渠道会清空编辑区里的旧地址、凭据和消息内容，保存前不影响已有模板；修改、停用或删除模板只取消该模板待处理的事件，不影响其他模板。历史投递记录保留，并显示模板名称。
 
 ## 渠道配置
 
@@ -12,9 +12,8 @@
 | 企业微信 | 群机器人 Webhook 地址 | 文本消息；机器人 key 位于地址中 |
 | 钉钉 | 自定义机器人 Webhook 地址 | 文本消息；可选加签密钥，机器人启用加签时必须填写 |
 | 飞书 | 自定义机器人 Webhook 地址 | 文本消息；可选签名密钥，机器人启用签名校验时必须填写 |
-| Telegram | Bot Token、Chat ID | 调用官方 HTTPS `sendMessage`，发送纯文本；不需要填写 Webhook 地址 |
+| 邮箱（SMTP） | 主机、端口、发件与收件邮箱；按服务商要求填写账号和授权码 | 纯文本邮件，支持 TLS 和 STARTTLS |
 
-Telegram 私聊需要先与机器人开始会话，群／频道需要允许机器人发送消息；NAS 需要能访问 Telegram API。本实现不提供接收机器人指令、图片／文件消息、话题 ID 或自建 Bot API 服务地址配置。
 
 钉钉／飞书机器人配置了关键词或 IP 规则时，消息内容与 NAS 出口也需要符合机器人设置。企业微信、钉钉、飞书按平台协议封装文本，不要求用户手写平台 JSON。
 
@@ -56,7 +55,7 @@ NAS 管家：{{name}}
 
 自定义请求头使用 JSON 字符串键值对象，例如 `{"X-Api-Key":"your-key"}`。最多 20 项、总计 16 KiB；禁止 Host、Content-Type、Content-Length、连接控制和保留签名头。Bearer Token 与自定义 Authorization 不同时设置。地址不允许用户信息、片段或其他协议，不跟随重定向。
 
-消息模板上限 8000 字符、JSON 嵌套最多 32 层；企业微信／钉钉文本最多 2048 UTF-8 字节、Telegram 文本最多 4096 字符、最终 JSON 最多 32 KiB，超限明确失败而不静默截断。
+消息模板上限 8000 字符、JSON 嵌套最多 32 层；企业微信／钉钉文本最多 2048 UTF-8 字节、最终 JSON 最多 32 KiB，超限明确失败而不静默截断。
 
 ## 签名
 
@@ -65,7 +64,7 @@ NAS 管家：{{name}}
 - **钉钉**：毫秒时间戳；`Base64(HMAC-SHA256(secret, timestamp + "\n" + secret))`，通过 URL 的 `timestamp` 和 `sign` 发送，参数由 URL 编码。
 - **飞书**：秒时间戳；以 `timestamp + "\n" + secret` 为 HMAC 密钥，对空字节串计算 SHA256 并 Base64，写入正文的 `timestamp` 和 `sign`。
 - **通用 Webhook**：秒时间戳通过 `X-NAS-Timestamp` 发送；`X-NAS-Signature` 为 `sha256=` 加上 `HMAC-SHA256(secret, timestamp + "." + 最终JSON原文字节)` 的十六进制摘要。接收端按原始请求体校验，并检查时间窗口及 eventId，防止重复处理。它是 NAS 管家定义的协议，不等同于任意服务的签名规范。
-- 企业微信群机器人和 Telegram 使用各自地址 key／Bot Token，不显示不适用的签名字段。
+- 企业微信群机器人使用地址中的 key，不显示不适用的签名字段。
 
 ## 通知范围与投递
 
@@ -73,9 +72,9 @@ NAS 管家：{{name}}
 
 事件为 `task.result`、`scan.failed`、`test`，仅包含结果摘要；扫描事件不包含路径，不发送脚本、终端输出、SSH 密码或 AI Key。
 
-通用 Webhook 以 HTTP 2xx 为成功；内置渠道还校验平台响应中的 `errcode`、`code`／`StatusCode` 或 `ok`。HTTP 200 但平台拒绝时记录固定原因和业务错误码，不保存远端错误原文、密钥或响应正文。
+通用 Webhook 以 HTTP 2xx 为成功；内置渠道还校验平台响应中的 `errcode`、`code`／`StatusCode`。HTTP 200 但平台拒绝时记录固定原因和业务错误码，不保存远端错误原文、密钥或响应正文。
 
-每次请求最多等待 10 秒。网络错误、HTTP 408／429／5xx 及 Telegram 业务限流最多投递 3 次，分别等待 30 秒、120 秒；其他业务拒绝直接失败。响应读取最多 64 KiB。队列存入 SQLite，重启后恢复；网络异常可能造成重复消息，接收端可用 `eventId` 去重。通知失败不会重新执行原任务。
+每次请求最多等待 10 秒。网络错误、HTTP 408／429／5xx 最多投递 3 次，分别等待 30 秒、120 秒；其他业务拒绝直接失败。响应读取最多 64 KiB。队列存入 SQLite，重启后恢复；网络异常可能造成重复消息，接收端可用 `eventId` 去重。通知失败不会重新执行原任务。
 
 每账号最多 500 条进行中的投递。结束记录默认保留 200 条，上限在应用清理中配置。修改投递配置不会撤回已发出的消息，但不会向新渠道重试旧事件。
 
@@ -86,11 +85,10 @@ NAS 管家：{{name}}
 - [企业微信群机器人](https://developer.work.weixin.qq.com/document/path/91770)
 - [钉钉自定义机器人安全设置](https://open.dingtalk.com/document/robots/customize-robot-security-settings)
 - [飞书自定义机器人](https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot)
-- [Telegram Bot API](https://core.telegram.org/bots/api#sendmessage)
 
 ## 新增平台填写说明
 
-通知中心已独立为主菜单，手机通过“更多 → 通知中心”进入；原系统设置入口已移除。首页使用公共筛选栏、连接卡片与启用开关；新增／编辑使用公共弹窗，保存按钮位于公共弹窗底栏；投递记录仍在应用清理中。
+通知中心已独立为主菜单，手机通过“更多 → 通知中心”进入；原系统设置入口已移除。首页顶部显示紧凑模板横排，下方显示提醒事项；模板使用公共卡片、启用开关与更多菜单；新增／编辑使用公共弹窗，保存按钮位于公共弹窗底栏；投递记录仍在应用清理中。
 
 ## SMTP 邮箱
 
@@ -103,23 +101,6 @@ NAS 管家：{{name}}
 
 SMTP 传输使用 [Nodemailer 官方 SMTP transport](https://nodemailer.com/smtp)，邮件内容限制参考其[消息配置](https://nodemailer.com/message)。
 
-| 平台 | 配置 | 请求与成功确认 |
-| --- | --- | --- |
-| Bark | 服务 `/push` 地址、Device Key；默认 `https://api.day.app/push`，支持自建 | JSON `device_key/title/body`；业务码 200 |
-| PushPlus | Token；可选群组编码，留空发给自己 | 官方 `/send`，纯文本模板；业务码 200 表示平台受理 |
-| Server酱 | SendKey | `SCT` 使用 Turbo，`sctp数字t…` 自动选择 Server酱³ 接口；JSON `title/desp`，业务码 0 |
-| WxPusher | SPT 或 AppToken；AppToken 需填写接收 UID | SPT 使用极简推送；AppToken 使用标准文本推送，最多 20 个逗号分隔的 UID；业务码 1000，并检查返回的逐项结果 |
-| ntfy | 服务根地址、Topic，可选 Access Token | JSON 发到根地址；Topic 最多 64 个字母、数字、下划线或连字符；检查消息事件与编号 |
-| Gotify | `/message` 地址、应用 Token | `X-Gotify-Key` 鉴权，JSON 标题／正文、优先级 5；检查返回消息编号 |
-| Slack | Incoming Webhook 地址 | 纯文本区块；响应正文须为 `ok` |
-| Discord | Incoming Webhook 地址 | 禁止自动 @ 提及，使用 `wait=true` 等待消息确认，检查返回消息编号 |
-
-Bark、ntfy、Gotify 可填写 NAS 自建服务地址，不会自动替用户部署服务。PushPlus、Server酱、WxPusher 使用各自官方接口；平台侧的订阅、接收端授权及额度仍需自行配置。
-
-标题由应用名称和任务名称生成，去除换行并按平台限制截取；正文不静默截断。Discord 最多 2000 字符、Slack 纯文本区块最多 3000 字符，ntfy 最终 JSON 最多 4096 字节，其他平台沿用最终 JSON 32 KiB 的应用限制。正文模板不执行代码，已有平台签名和自定义请求头继续支持。
-
-投递记录的成功状态显示为“已接收”，表示服务端已接受请求，不保证微信、手机系统通知或其他终端最终送达。没有为这些平台实现回调监听、异步送达查询或自动执行通知中的指令。
-
-协议参考：[Bark](https://github.com/Finb/Bark/blob/master/docs/tutorial.md)、[PushPlus](https://www.pushplus.plus/doc/guide/api.html)、[Server酱](https://sct.ftqq.com/docs/integrations/nodejs/)、[WxPusher 标准推送](https://wxpusher.zjiecode.com/docs/api-reference.html)／[SPT](https://wxpusher.zjiecode.com/docs/spt.html)、[ntfy](https://docs.ntfy.sh/publish/)、[Gotify](https://gotify.net/docs/pushmsg)、[Slack](https://docs.slack.dev/messaging/sending-messages-using-incoming-webhooks/)、[Discord](https://docs.discord.com/developers/resources/webhook#execute-webhook)。
-
 记事、待办与定时提醒见 [提醒事项说明](reminders.md)。
+
+已移除的渠道不再支持新建、启用或投递。旧配置与历史记录保留，待发送记录会取消；可编辑旧模板，重新填写支持的渠道配置后保存。

@@ -161,7 +161,7 @@ export function ReminderEditor({
                     })
                   }
                 />
-                {template.name} · {NOTIFICATION_CHANNEL_LABELS[template.channel]}
+                {template.name} · {NOTIFICATION_CHANNEL_LABELS[template.channel] || '已移除渠道'}
                 {template.enabled ? '' : '（已停用）'}
               </label>
             ))}

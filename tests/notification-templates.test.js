@@ -91,18 +91,15 @@ test('schema30 notification settings and pending history migrate once into an en
   raw
     .prepare('INSERT INTO notification_settings VALUES(?,?,?,?,?,?,?)')
     .run('owner', 1, 'https://local/hook', 'PRIVATE', 'all', 1, 4);
-  raw
-    .prepare('INSERT INTO notification_options VALUES(?,?)')
-    .run(
-      'owner',
-      JSON.stringify({
-        channel: 'slack',
-        headers: { 'x-key': 'SECRET' },
-        template: '{{name}}',
-        signingSecret: '',
-        telegramChatId: '',
-      }),
-    );
+  raw.prepare('INSERT INTO notification_options VALUES(?,?)').run(
+    'owner',
+    JSON.stringify({
+      channel: 'wecom',
+      headers: { 'x-key': 'SECRET' },
+      template: '{{name}}',
+      signingSecret: '',
+    }),
+  );
   raw
     .prepare(
       "INSERT INTO notification_deliveries(id,owner_uid,event_id,event_type,name,payload,revision,status,created_at,next_attempt_at) VALUES(?,?,?,?,?,?,?,'pending',?,?)",
@@ -128,7 +125,7 @@ test('schema30 notification settings and pending history migrate once into an en
   const s = repo.getTemplate('owner', 'default');
   assert.equal(s.enabled, true);
   assert.equal(s.token, 'PRIVATE');
-  assert.equal(s.channel, 'slack');
+  assert.equal(s.channel, 'wecom');
   assert.equal(s.headers['x-key'], 'SECRET');
   assert.equal(repo.listTemplates('owner').length, 1);
   assert.equal(repo.claim().templateId, 'default');
