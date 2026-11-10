@@ -450,3 +450,46 @@ test('template strip uses separate left and right controls, persistent shared sc
   assert.equal(next.hidden, true);
   assert.equal(previous.hidden, true);
 });
+
+test('vertical wheel scrolls the template row, respects boundaries and preserves native gestures', async (t) => {
+  const f = fixture(t, async () => []);
+  await f.open();
+  const strip = document.querySelector('.compact-card-strip');
+  Object.defineProperties(strip, {
+    clientWidth: { value: 300, configurable: true },
+    scrollWidth: { value: 1000, configurable: true },
+  });
+  const movements = [];
+  strip.scrollBy = (options) => {
+    movements.push(options);
+    strip.scrollLeft = Math.max(0, Math.min(700, strip.scrollLeft + options.left));
+    Simulate.scroll(strip);
+  };
+  async function wheel(options) {
+    const event = new window.WheelEvent('wheel', { bubbles: true, cancelable: true, ...options });
+    await act(() => strip.dispatchEvent(event));
+    return event.defaultPrevented;
+  }
+  assert.equal(await wheel({ deltaY: 120 }), true);
+  assert.equal(strip.scrollLeft, 120);
+  assert.equal(movements[0].behavior, 'auto');
+  assert.equal(await wheel({ deltaY: -60 }), true);
+  assert.equal(strip.scrollLeft, 60);
+  for (const options of [
+    { deltaY: 20, ctrlKey: true },
+    { deltaY: 20, metaKey: true },
+    { deltaY: 20, shiftKey: true },
+    { deltaX: 30, deltaY: 20 },
+  ])
+    assert.equal(await wheel(options), false);
+  assert.equal(strip.scrollLeft, 60);
+  strip.scrollLeft = 700;
+  assert.equal(await wheel({ deltaY: 120 }), false);
+  strip.scrollLeft = 0;
+  assert.equal(await wheel({ deltaY: -120 }), false);
+  assert.equal(await wheel({ deltaY: 1, deltaMode: 2 }), true);
+  assert.equal(strip.scrollLeft, 300);
+  Object.defineProperty(strip, 'scrollWidth', { value: 300, configurable: true });
+  strip.scrollLeft = 0;
+  assert.equal(await wheel({ deltaY: 120 }), false);
+});

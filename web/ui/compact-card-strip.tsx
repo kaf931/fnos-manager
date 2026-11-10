@@ -27,7 +27,39 @@ export function CompactCardStrip({
     const observer = Observer && new Observer(measure);
     observer?.observe(element);
     for (const child of element.children) observer?.observe(child);
-    return () => observer?.disconnect();
+    // React delegates wheel events passively; use one scoped non-passive listener so
+    // the page only stays still when this row can consume the vertical wheel delta.
+    const host = element.parentElement!;
+    const wheel = (event: WheelEvent) => {
+      if (
+        event.defaultPrevented ||
+        !event.cancelable ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.deltaX ||
+        !event.deltaY
+      )
+        return;
+      const unit =
+        event.deltaMode === 1
+          ? parseFloat(element.ownerDocument.defaultView!.getComputedStyle(element).lineHeight) ||
+            16
+          : event.deltaMode === 2
+            ? element.clientWidth
+            : 1;
+      const maximum = Math.max(0, element.scrollWidth - element.clientWidth);
+      const target = Math.max(0, Math.min(maximum, element.scrollLeft + event.deltaY * unit));
+      const movement = target - element.scrollLeft;
+      if (Math.abs(movement) < 0.5) return;
+      event.preventDefault();
+      element.scrollBy({ left: movement, behavior: 'auto' });
+    };
+    host.addEventListener('wheel', wheel, { passive: false });
+    return () => {
+      observer?.disconnect();
+      host.removeEventListener('wheel', wheel);
+    };
   }, [children]);
   function scroll(direction: number) {
     const element = viewport.current;
