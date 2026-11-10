@@ -11,9 +11,13 @@ export function CompactCardStrip({
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const [canRight, setCanRight] = useState(false);
+  const [canLeft, setCanLeft] = useState(false);
   function measure() {
     const element = viewport.current;
-    if (element) setCanRight(element.scrollWidth - element.clientWidth - element.scrollLeft > 1);
+    if (element) {
+      setCanLeft(element.scrollLeft > 1);
+      setCanRight(element.scrollWidth - element.clientWidth - element.scrollLeft > 1);
+    }
   }
   useLayoutEffect(() => {
     const element = viewport.current;
@@ -25,22 +29,32 @@ export function CompactCardStrip({
     for (const child of element.children) observer?.observe(child);
     return () => observer?.disconnect();
   }, [children]);
-  function next() {
+  function scroll(direction: number) {
     const element = viewport.current;
     if (!element) return;
     const reduced = element.ownerDocument.defaultView?.matchMedia?.(
       '(prefers-reduced-motion: reduce)',
     ).matches;
     element.scrollBy({
-      left: Math.max(1, element.clientWidth * 0.85),
+      left: direction * Math.max(1, element.clientWidth * 0.85),
       behavior: reduced ? 'auto' : 'smooth',
     });
   }
   return (
     <div className="compact-card-strip-shell">
+      <button
+        type="button"
+        className="icon-button compact-card-strip-previous"
+        hidden={!canLeft}
+        aria-label={'向左查看更多' + label}
+        title={'向左查看更多' + label}
+        onClick={() => scroll(-1)}
+      >
+        <AppIcon name="triangle-left" />
+      </button>
       <div
         ref={viewport}
-        className="compact-card-strip"
+        className="compact-card-strip scrollbar-visible"
         data-scroll-inset
         onScroll={measure}
       >
@@ -52,7 +66,7 @@ export function CompactCardStrip({
         hidden={!canRight}
         aria-label={'向右查看更多' + label}
         title={'向右查看更多' + label}
-        onClick={next}
+        onClick={() => scroll(1)}
       >
         <AppIcon name="triangle-right" />
       </button>

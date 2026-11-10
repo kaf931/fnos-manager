@@ -24,6 +24,7 @@ const paths: Readonly<Record<string, string>> = {
   history: '<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7"/><path d="M12 7v5l3 2"/>',
   back: '<path d="m14 5-7 7 7 7M7 12h14"/>',
   'chevron-left': '<path d="m15 5-7 7 7 7"/>',
+  'triangle-left': '<path d="m16 5-10 7 10 7Z" fill="currentColor" stroke="none"/>',
   'triangle-right': '<path d="m8 5 10 7-10 7Z" fill="currentColor" stroke="none"/>',
   'chevron-right': '<path d="m9 5 7 7-7 7"/>',
   storage:

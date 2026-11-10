@@ -412,7 +412,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   );
 });
 
-test('template strip shows a right triangle only while more content remains and scrolls within its own row', async (t) => {
+test('template strip uses separate left and right controls, persistent shared scrollbar and edge-aware scrolling', async (t) => {
   const f = fixture(t, async () => []);
   await f.open();
   const strip = document.querySelector('.compact-card-strip');
@@ -421,22 +421,32 @@ test('template strip shows a right triangle only while more content remains and 
     scrollWidth: { value: 1000, configurable: true },
   });
   await act(() => Simulate.scroll(strip));
-  let next = button('向右查看更多通知模板');
-  assert.ok(next);
+  const next = button('向右查看更多通知模板'),
+    previous = button('向左查看更多通知模板');
+  assert.ok(next && previous);
   assert.equal(next.hidden, false);
+  assert.equal(previous.hidden, true);
+  assert.ok(strip.classList.contains('scrollbar-visible'));
   let distance = 0;
   strip.scrollBy = ({ left }) => {
     distance = left;
-    strip.scrollLeft = 700;
+    strip.scrollLeft = Math.max(0, Math.min(700, strip.scrollLeft + left));
     Simulate.scroll(strip);
   };
   await act(() => next.click());
   assert.ok(distance > 0);
-  assert.equal(next.hidden, true);
-  strip.scrollLeft = 0;
-  await act(() => Simulate.scroll(strip));
+  assert.equal(previous.hidden, false);
   assert.equal(next.hidden, false);
+  strip.scrollLeft = 700;
+  await act(() => Simulate.scroll(strip));
+  assert.equal(next.hidden, true);
+  assert.equal(previous.hidden, false);
+  await act(() => previous.click());
+  assert.ok(distance < 0);
+  assert.equal(next.hidden, false);
+  strip.scrollLeft = 0;
   Object.defineProperty(strip, 'scrollWidth', { value: 300, configurable: true });
   await act(() => Simulate.scroll(strip));
   assert.equal(next.hidden, true);
+  assert.equal(previous.hidden, true);
 });
