@@ -11,7 +11,7 @@ const stubs = {
   pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
   checkbox: `import React from 'react';export default function Checkbox({children,onChange,...props}){return React.createElement('label',null,React.createElement('input',{...props,type:'checkbox',onChange}),children);}`,
 
-  dropdown: `import React from 'react';const Dropdown=({children,render,onVisibleChange,visible})=>React.createElement('div',null,React.cloneElement(children,{onClick:e=>{children.props.onClick?.(e);onVisibleChange?.(!visible);}}),render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
+  dropdown: `import React from 'react';const Dropdown=({children,render,onVisibleChange,visible,position,spacing})=>React.createElement('div',{'data-dropdown-position':position,'data-dropdown-spacing':JSON.stringify(spacing)},React.cloneElement(children,{onClick:e=>{children.props.onClick?.(e);onVisibleChange?.(!visible);}}),render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
   'native-select.js': `import React from 'react';export function NativeSelect({optionList,onChange,...props}){return React.createElement('select',{...props,onChange:e=>onChange(e.target.value)},optionList.map(o=>React.createElement('option',{key:o.value,value:o.value},o.label)))}`,
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
@@ -620,11 +620,21 @@ test('desktop inbox trigger opens a recent-message menu before opening message d
         : {};
   });
   await f.open(NotificationInbox, { active: true, menu: true });
+  const layout = document.createElement('div');
+  layout.className = 'layout';
+  const card = document.createElement('main');
+  layout.append(card);
+  document.body.append(layout);
+  card.getBoundingClientRect = () => ({ left: 200, bottom: 650 });
+  button('应用内消息，1 条未读').getBoundingClientRect = () => ({ right: 180, bottom: 630 });
   await act(async () => {
     button('应用内消息，1 条未读').click();
     await tick();
   });
   assert.equal(!!document.querySelector('dialog'), false);
+  const menu = document.querySelector('[data-dropdown-position="rightBottom"]');
+  assert.ok(menu);
+  assert.deepEqual(JSON.parse(menu.dataset.dropdownSpacing), { x: 20, y: 20 });
   assert.ok(button('• Desktop message'));
   await act(async () => {
     button('• Desktop message').click();

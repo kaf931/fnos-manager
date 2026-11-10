@@ -757,3 +757,9 @@ p.help:empty {
     margin-bottom: 0;
   }
 }
+
+/* Menus attached to a workspace share the content surface corner radius. */
+.content-surface-menu,
+.semi-dropdown-wrapper:has(.content-surface-menu) {
+  border-radius: var(--app-content-radius, 12px);
+}

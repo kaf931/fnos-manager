@@ -462,7 +462,7 @@ button.danger:active {
   height: calc(100dvh - 16px);
   min-height: 0;
   max-width: calc(100% - 188px);
-  border-radius: 12px;
+  border-radius: var(--app-content-radius, 12px);
   background: var(--bg);
 }
 @media (max-width: 850px) {

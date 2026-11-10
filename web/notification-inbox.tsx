@@ -25,6 +25,8 @@ export function NotificationInbox({
   active: boolean;
   menu?: boolean;
 }) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [menuSpacing, setMenuSpacing] = useState({ x: 8, y: 4 });
   const [menuOpen, setMenuOpen] = useState(false);
   const [preview, setPreview] = useState<InboxMessage[]>([]);
   const [previewError, setPreviewError] = useState('');
@@ -76,6 +78,7 @@ export function NotificationInbox({
   }, [api, active, revision]);
   const trigger = (
     <button
+      ref={triggerRef}
       type="button"
       title="应用内消息"
       className={menu ? 'icon-button activity-badge-host' : 'activity-badge-host'}
@@ -101,9 +104,19 @@ export function NotificationInbox({
       {menu ? (
         <Dropdown
           trigger="click"
-          position="topRight"
+          position="rightBottom"
+          spacing={menuSpacing}
+          contentClassName="content-surface-menu"
           visible={menuOpen}
-          onVisibleChange={setMenuOpen}
+          onVisibleChange={(visible) => {
+            if (visible) {
+              const card = document.querySelector('.layout main')?.getBoundingClientRect();
+              const trigger = triggerRef.current?.getBoundingClientRect();
+              if (card && trigger)
+                setMenuSpacing({ x: card.left - trigger.right, y: card.bottom - trigger.bottom });
+            }
+            setMenuOpen(visible);
+          }}
           render={
             <Dropdown.Menu>
               {previewLoading ? (
