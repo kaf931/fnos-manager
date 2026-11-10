@@ -411,3 +411,32 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
     ),
   );
 });
+
+test('template strip shows a right triangle only while more content remains and scrolls within its own row', async (t) => {
+  const f = fixture(t, async () => []);
+  await f.open();
+  const strip = document.querySelector('.compact-card-strip');
+  Object.defineProperties(strip, {
+    clientWidth: { value: 300, configurable: true },
+    scrollWidth: { value: 1000, configurable: true },
+  });
+  await act(() => Simulate.scroll(strip));
+  let next = button('向右查看更多通知模板');
+  assert.ok(next);
+  assert.equal(next.hidden, false);
+  let distance = 0;
+  strip.scrollBy = ({ left }) => {
+    distance = left;
+    strip.scrollLeft = 700;
+    Simulate.scroll(strip);
+  };
+  await act(() => next.click());
+  assert.ok(distance > 0);
+  assert.equal(next.hidden, true);
+  strip.scrollLeft = 0;
+  await act(() => Simulate.scroll(strip));
+  assert.equal(next.hidden, false);
+  Object.defineProperty(strip, 'scrollWidth', { value: 300, configurable: true });
+  await act(() => Simulate.scroll(strip));
+  assert.equal(next.hidden, true);
+});

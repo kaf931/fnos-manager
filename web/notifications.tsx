@@ -149,7 +149,7 @@ function NotificationTemplatesPanel({
           {error}
         </p>
       )}
-      <CompactCardStrip>
+      <CompactCardStrip label="通知模板">
         {entries.map(({ channel, row }) =>
           row ? (
             <CompactCard

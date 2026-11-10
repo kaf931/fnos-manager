@@ -720,3 +720,19 @@ p.help:empty {
 .task-table.record-table-compact {
   min-width: 600px;
 }
+
+/* Shared overflow affordance stays outside the scroller so the hint does not move with its content. */
+.compact-card-strip-shell {
+  position: relative;
+  min-width: 0;
+}
+.compact-card-strip-next {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 40px;
+  padding: 4px;
+  background: var(--bg);
+}

@@ -1,10 +1,61 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { AppIcon } from './icon-markup.js';
 
 /** A bounded horizontal collection; cards keep their size on narrow screens. */
-export function CompactCardStrip({ children }: { children: ReactNode }) {
+export function CompactCardStrip({
+  children,
+  label = '卡片',
+}: {
+  children: ReactNode;
+  label?: string;
+}) {
+  const viewport = useRef<HTMLDivElement>(null);
+  const [canRight, setCanRight] = useState(false);
+  function measure() {
+    const element = viewport.current;
+    if (element) setCanRight(element.scrollWidth - element.clientWidth - element.scrollLeft > 1);
+  }
+  useLayoutEffect(() => {
+    const element = viewport.current;
+    if (!element) return;
+    measure();
+    const Observer = element.ownerDocument.defaultView?.ResizeObserver;
+    const observer = Observer && new Observer(measure);
+    observer?.observe(element);
+    for (const child of element.children) observer?.observe(child);
+    return () => observer?.disconnect();
+  }, [children]);
+  function next() {
+    const element = viewport.current;
+    if (!element) return;
+    const reduced = element.ownerDocument.defaultView?.matchMedia?.(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    element.scrollBy({
+      left: Math.max(1, element.clientWidth * 0.85),
+      behavior: reduced ? 'auto' : 'smooth',
+    });
+  }
   return (
-    <div className="compact-card-strip" data-scroll-inset>
-      {children}
+    <div className="compact-card-strip-shell">
+      <div
+        ref={viewport}
+        className="compact-card-strip"
+        data-scroll-inset
+        onScroll={measure}
+      >
+        {children}
+      </div>
+      <button
+        type="button"
+        className="icon-button compact-card-strip-next"
+        hidden={!canRight}
+        aria-label={'向右查看更多' + label}
+        title={'向右查看更多' + label}
+        onClick={next}
+      >
+        <AppIcon name="triangle-right" />
+      </button>
     </div>
   );
 }
