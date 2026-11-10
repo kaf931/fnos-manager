@@ -36,7 +36,7 @@ export default defineConfig({
           if (id.includes('/@xterm/')) return 'terminal-vendor';
           if (/\/(marked|dompurify)\//.test(id)) return 'markdown-vendor';
           if (id.includes('/@trimjs/')) return 'fnos-sdk';
-          if (/\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor';
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor';
           return 'ui-vendor';
         },
       },
