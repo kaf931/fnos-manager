@@ -36,7 +36,7 @@ export function NotificationTemplateEditor({
     NotificationTemplateInput & typeof DEFAULT_NOTIFICATION_OPTIONS
   >({
     ...DEFAULT_NOTIFICATION_OPTIONS,
-    enabled: false,
+    enabled: true,
     url: initialChannel === 'bark' ? 'https://api.day.app/push' : '',
     token: '',
     condition: 'errors',
@@ -67,7 +67,7 @@ export function NotificationTemplateEditor({
       await api(
         '/notifications/templates' + (initial ? '/' + initial.id : ''),
         initial ? 'PUT' : 'POST',
-        { ...settings, headers },
+        { ...settings, headers, enabled: true },
       );
       toast('通知模板已保存');
       onSaved();
@@ -81,7 +81,7 @@ export function NotificationTemplateEditor({
   return (
     <ReactDialog
       open
-      title={initial ? '编辑通知模板' : '新增通知模板'}
+      title="编辑通知模板"
       onClose={onClose}
       busy={busy}
       size="medium"
@@ -360,7 +360,7 @@ export function NotificationTemplateEditor({
             }}
           />
         </div>
-        <div className="form-check-row system-settings-row">
+        <div className="form-check-row">
           <label className="checkbox-label">
             <input
               type="checkbox"
@@ -369,16 +369,6 @@ export function NotificationTemplateEditor({
               onChange={(e) => patch({ scanFailures: e.target.checked })}
             />
             扫描失败或中断时通知
-          </label>
-          <label className="checkbox-label">
-            <input
-              id="notification-enabled"
-              type="checkbox"
-              checked={settings.enabled}
-              disabled={busy}
-              onChange={(e) => patch({ enabled: e.target.checked })}
-            />
-            启用通知
           </label>
         </div>
       </form>

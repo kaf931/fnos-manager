@@ -575,6 +575,9 @@ html.standalone-entry:not(.terminal-focused):not(.storage-focused) .layout main 
   flex-direction: column;
   min-height: 0;
 }
+.record-content > :is(h2, h3) {
+  overflow-wrap: anywhere;
+}
 .record-toolbar {
   margin-bottom: 16px;
   display: flex;

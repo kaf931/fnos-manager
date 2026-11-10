@@ -148,6 +148,9 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
   margin-top: 16px;
 }
 .form-check-row > .checkbox-label {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   margin: 0;
 }
 

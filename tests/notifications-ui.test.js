@@ -147,6 +147,8 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   assert.equal(document.querySelector('#notification-channel'), null);
   await act(() => button('配置 通用 Webhook').click());
   assert.ok(document.querySelector('dialog[data-react-dialog]'));
+  assert.equal(document.querySelector('dialog h2').textContent, '编辑通知模板');
+  assert.equal(document.querySelector('#notification-enabled'), null);
   assert.equal(document.querySelector('#notification-channel'), null);
   assert.equal(document.querySelector('#notification-token').autocomplete, 'new-password');
   assert.equal(document.querySelector('#notification-url').name, 'notification-endpoint');
@@ -166,6 +168,7 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   });
   const saved = calls.find((x) => x.method === 'POST');
   assert.equal(saved.body.channel, 'email');
+  assert.equal(saved.body.enabled, true);
   assert.equal(saved.body.name, 'Mail');
   assert.ok(
     calls.filter((c) => c.route === '/notifications/reminders' && !c.method).length >= 2,
@@ -1366,4 +1369,40 @@ test('mobile delivery records share storage management layout and scoped selecti
   assert.equal(button('批量删除投递记录').disabled, false);
   await act(() => button('刷新投递记录').click());
   assert.ok(calls.filter((call) => call.path.startsWith('/notifications/deliveries?')).length > 1);
+});
+
+test('saving an existing paused built-in template enables it without an editor enable checkbox', async (t) => {
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'paused-inapp',
+    channel: 'inapp',
+    name: '暂停的应用通知',
+    enabled: false,
+    ready: true,
+    createdAt: '',
+    updatedAt: '',
+  };
+  const calls = [];
+  const f = fixture(
+    t,
+    async (path, method, body) => {
+      calls.push({ path, method, body });
+      if (path === '/notifications/templates') return [row];
+      if (path === '/notifications/templates/paused-inapp') return row;
+      return [];
+    },
+    true,
+  );
+  await f.open();
+  await act(async () => {
+    button('编辑 暂停的应用通知').click();
+    await tick();
+  });
+  assert.equal(document.querySelector('dialog h2').textContent, '编辑通知模板');
+  assert.equal(document.querySelector('#notification-enabled'), null);
+  await act(async () => {
+    Simulate.submit(document.querySelector('form'));
+    await tick();
+  });
+  assert.equal(calls.find((call) => call.method === 'PUT').body.enabled, true);
 });
