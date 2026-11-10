@@ -69,12 +69,6 @@ export class NotificationsController {
   ) {
     return this.service.completeReminder(req.terminalOwner, id, input.completed);
   }
-  @Post('reminders/:id/snooze') @HttpCode(200) snoozeReminder(
-    @Req() req: ApiRequest,
-    @Param('id') id: string,
-  ) {
-    return this.service.snoozeReminder(req.terminalOwner, id);
-  }
   @Delete('reminders/:id') deleteReminder(@Req() req: ApiRequest, @Param('id') id: string) {
     this.service.deleteReminder(req.terminalOwner, id);
     return { success: true };

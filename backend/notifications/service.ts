@@ -110,9 +110,6 @@ export class NotificationService {
   completeReminder(owner: string, id: string, completed: boolean) {
     return this.reminderRepository().complete(owner, id, completed);
   }
-  snoozeReminder(owner: string, id: string) {
-    return this.reminderRepository().snooze(owner, id, 15);
-  }
   deleteReminder(owner: string, id: string) {
     return this.reminderRepository().remove(owner, id);
   }

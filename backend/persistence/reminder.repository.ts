@@ -206,22 +206,6 @@ export class ReminderRepository {
       return this.get(owner, id);
     });
   }
-  snooze(owner: string, id: string, minutes: number, now = Date.now()): Reminder {
-    if (minutes !== 15) throw new DomainError('延期时间无效');
-    return this.database.transaction(() => {
-      const v = this.get(owner, id);
-      if (v.status === 'completed') throw new DomainError('请先重新打开已完成事项');
-      this.templates(owner, v.templateIds);
-      this.cancel(owner, id, now);
-      const due = now + minutes * 60000;
-      this.database.connection
-        .prepare(
-          'UPDATE reminders SET due_at=COALESCE(due_at,?),next_at=?,enabled=1,revision=revision+1,error=NULL,updated_at=? WHERE owner_uid=? AND id=?',
-        )
-        .run(due, due, now, owner, id);
-      return this.get(owner, id);
-    });
-  }
   remove(owner: string, id: string, now = Date.now()): void {
     this.database.transaction(() => {
       this.get(owner, id);

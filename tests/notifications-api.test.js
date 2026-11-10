@@ -127,17 +127,15 @@ test('reminder endpoints require time and templates, isolate owners and manage p
         headers: { ...f.headers, ...extra },
         body: body ? JSON.stringify(body) : undefined,
       });
-    const template = f.app
-      .get(NotificationService)
-      .repository.createTemplate('1000', {
-        channel: 'inapp',
-        name: 'App',
-        enabled: true,
-        url: '',
-        token: '',
-        condition: 'all',
-        scanFailures: true,
-      });
+    const template = f.app.get(NotificationService).repository.createTemplate('1000', {
+      channel: 'inapp',
+      name: 'App',
+      enabled: true,
+      url: '',
+      token: '',
+      condition: 'all',
+      scanFailures: true,
+    });
     const note = {
       name: 'Remember',
       content: 'Private note',
@@ -160,7 +158,7 @@ test('reminder endpoints require time and templates, isolate owners and manage p
     assert.equal((await call('/' + r.id, 'PUT', note, { 'x-trim-userid': '1001' })).status, 404);
     assert.equal((await call('/' + r.id + '/enabled', 'PATCH', { enabled: true })).status, 200);
     assert.equal((await call('/' + r.id + '/completed', 'PATCH', { completed: true })).status, 200);
-    assert.equal((await call('/' + r.id + '/snooze', 'POST', {})).status, 400);
+    assert.equal((await call('/' + r.id + '/snooze', 'POST', {})).status, 404);
     assert.equal(
       (await call('/' + r.id + '/completed', 'PATCH', { completed: false })).status,
       200,

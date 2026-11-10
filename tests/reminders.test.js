@@ -75,7 +75,7 @@ test('required schedule, owner isolation, multi-template outbox, due deduplicati
   assert.equal(JSON.parse(job.payload).content, 'Check subscription');
   assert.equal(JSON.parse(job.payload).eventType, 'reminder.due');
 });
-test('pause, completion, deletion and postponement only cancel the source reminder pending deliveries', (t) => {
+test('pause, completion and deletion only cancel the source reminder pending deliveries', (t) => {
   const { repo, notifications, template } = fixture(t);
   const a = repo.create('a', input(template.id), now),
     b = repo.create('a', input(template.id, { name: 'Other' }), now);
@@ -88,14 +88,11 @@ test('pause, completion, deletion and postponement only cancel the source remind
   assert.equal(repo.get('a', a.id).status, 'completed');
   repo.complete('a', a.id, false, now + 60003);
   assert.equal(repo.get('a', a.id).enabled, false);
-  repo.snooze('a', a.id, 15, now + 60004);
-  assert.equal(repo.get('a', a.id).nextAt, new Date(now + 60004 + 900000).toISOString());
   repo.remove('a', b.id);
   assert.equal(
     notifications.deliveries('a').items.filter((r) => r.status === 'cancelled').length,
     2,
   );
-  assert.throws(() => repo.snooze('b', a.id, 15, now));
 });
 test('enabled reminders require valid times and owned active templates; used templates stay protected', (t) => {
   const { repo, notifications, template } = fixture(t);
@@ -167,11 +164,14 @@ test('schema31 upgrade preserves template configuration and delivery metadata', 
   assert.equal(db.connection.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
   assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
 });
-test('editing a postponed one-off reminder keeps the postponed deadline', (t) => {
-  const { repo, template } = fixture(t);
+test('editing a historically postponed one-off reminder keeps its stored deadline', (t) => {
+  const { repo, template, db } = fixture(t);
   const r = repo.create('a', input(template.id), now);
   repo.dispatchDue(now + 60001);
-  const postponed = repo.snooze('a', r.id, 15, now + 120000);
+  db.connection
+    .prepare('UPDATE reminders SET next_at=?,enabled=1 WHERE id=?')
+    .run(now + 1020000, r.id);
+  const postponed = repo.get('a', r.id);
   const edited = repo.update(
     'a',
     r.id,

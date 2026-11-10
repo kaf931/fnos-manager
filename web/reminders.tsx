@@ -115,8 +115,6 @@ export function RemindersPanel({
         await api('/notifications/reminders/' + row.id + '/enabled', 'PATCH', {
           enabled: !row.enabled,
         });
-      else if (action === 'snooze')
-        await api('/notifications/reminders/' + row.id + '/snooze', 'POST', {});
       else
         await api('/notifications/reminders/' + row.id + '/completed', 'PATCH', {
           completed: row.status !== 'completed',
@@ -254,8 +252,6 @@ export function RemindersPanel({
                 busyLabel: '处理中…',
                 editLabel: '编辑事项',
                 deleteLabel: '删除事项',
-                extraActions: (row) =>
-                  row.status === 'completed' ? [] : [['snooze', '延后15分钟', 'refresh']],
               }}
             />
           </div>
