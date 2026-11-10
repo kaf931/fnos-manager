@@ -53,7 +53,7 @@ export function NotificationTemplateEditor({
     setSettings((old) => ({ ...old, ...value }));
   }
   async function save() {
-    if (lock.current) return;
+    if (lock.current || unavailable) return;
     lock.current = true;
     setBusy(true);
     setError('');
@@ -94,7 +94,7 @@ export function NotificationTemplateEditor({
             type="submit"
             form="notification-template-form"
             className="primary"
-            disabled={busy}
+            disabled={busy || unavailable}
           >
             {busy ? '保存中…' : '保存模板'}
           </button>
@@ -111,9 +111,7 @@ export function NotificationTemplateEditor({
         }}
       >
         {unavailable && (
-          <p className="notice">
-            原通知渠道已移除，请重新选择渠道并保存。旧配置不会自动转为 Webhook 投递。
-          </p>
+          <p className="notice">原通知渠道已移除，请从内置模板重新配置。旧模板不会转换渠道。</p>
         )}
         {error && (
           <p className="notice error" role="alert">
@@ -130,30 +128,6 @@ export function NotificationTemplateEditor({
           disabled={busy}
           onChange={(e) => patch({ name: e.target.value })}
         />
-        <label htmlFor="notification-channel">通知渠道</label>
-        <div className="task-form-control">
-          <NativeSelect
-            id="notification-channel"
-            aria-label="通知渠道"
-            value={settings.channel}
-            disabled={busy}
-            optionList={NOTIFICATION_CHANNELS.map((value) => ({
-              value,
-              label: NOTIFICATION_CHANNEL_LABELS[value],
-            }))}
-            onChange={(value) => {
-              if (!NOTIFICATION_CHANNELS.includes(value as NotificationChannel)) return;
-              patch({
-                ...DEFAULT_NOTIFICATION_OPTIONS,
-                channel: value as NotificationChannel,
-                url: value === 'bark' ? 'https://api.day.app/push' : '',
-                token: '',
-              });
-              setHeadersText('{}');
-              setError('');
-            }}
-          />
-        </div>
         {!['email', 'serverchan', 'inapp'].includes(settings.channel) && (
           <>
             <label htmlFor="notification-url">

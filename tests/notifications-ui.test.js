@@ -120,17 +120,11 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   assert.equal(document.querySelector('#notification-channel'), null);
   await act(() => button('配置 通用 Webhook').click());
   assert.ok(document.querySelector('dialog[data-react-dialog]'));
-  const select = document.querySelector('#notification-channel');
-  assert.deepEqual(
-    [...select.options].map((option) => option.value),
-    ['webhook', 'wecom', 'dingtalk', 'feishu', 'email', 'serverchan', 'bark', 'inapp'],
-  );
+  assert.equal(document.querySelector('#notification-channel'), null);
   assert.equal(document.querySelector('#notification-token').autocomplete, 'new-password');
   assert.equal(document.querySelector('#notification-url').name, 'notification-endpoint');
-  await act(() => {
-    select.value = 'email';
-    Simulate.change(select);
-  });
+  await act(() => button('取消').click());
+  await act(() => button('配置 邮箱（SMTP）').click());
   assert.equal(document.querySelector('#notification-url'), null);
   assert.ok(document.querySelector('#smtp-user'));
   assert.ok(document.querySelector('#smtp-subject'));
@@ -283,7 +277,8 @@ test('editing an unavailable channel starts with empty safe configuration and pr
     await tick();
   });
   assert.equal(document.querySelector('#notification-name').value, 'Old template');
-  assert.equal(document.querySelector('#notification-channel').value, 'webhook');
+  assert.equal(document.querySelector('#notification-channel'), null);
+  assert.equal(button('保存模板').disabled, true);
   assert.equal(document.querySelector('#notification-url').value, '');
   assert.equal(document.querySelector('#notification-token').value, '');
   assert.ok(document.querySelector('dialog').textContent.includes('原通知渠道已移除'));
@@ -299,7 +294,7 @@ test('eight built-in channel cards open matching unsaved configurations without 
   const templates = document.querySelector('[aria-label="通知模板"]');
   assert.equal(templates.querySelectorAll('.compact-card').length, 8);
   assert.equal(button('新增模板'), undefined);
-  for (const [channel, label] of [
+  for (const [_channel, label] of [
     ['webhook', '通用 Webhook'],
     ['wecom', '企业微信'],
     ['dingtalk', '钉钉'],
@@ -310,7 +305,7 @@ test('eight built-in channel cards open matching unsaved configurations without 
     ['inapp', '应用内通知'],
   ]) {
     await act(() => button('配置 ' + label).click());
-    assert.equal(document.querySelector('#notification-channel').value, channel);
+    assert.equal(document.querySelector('#notification-channel'), null);
     assert.equal(document.querySelector('#notification-name').value, label);
     await act(() => button('取消').click());
   }
@@ -492,4 +487,22 @@ test('vertical wheel scrolls the template row, respects boundaries and preserves
   Object.defineProperty(strip, 'scrollWidth', { value: 300, configurable: true });
   strip.scrollLeft = 0;
   assert.equal(await wheel({ deltaY: 120 }), false);
+});
+
+test('all templates dialog uses shared cards and returns after editing without stacked dialogs', async (t) => {
+  const f = fixture(t, async () => []);
+  await f.open();
+  await act(() => button('全部模板').click());
+  let dialog = document.querySelector('dialog');
+  assert.equal(dialog.dataset.dialogSize, 'large');
+  assert.equal(dialog.querySelectorAll('.cards .compact-card').length, 8);
+  await act(() => dialog.querySelector('[aria-label="配置 邮箱（SMTP）"]').click());
+  assert.equal(document.querySelectorAll('dialog').length, 1);
+  assert.ok(document.querySelector('#smtp-user'));
+  assert.equal(document.querySelector('#notification-channel'), null);
+  await act(() => button('取消').click());
+  dialog = document.querySelector('dialog');
+  assert.equal(dialog.querySelectorAll('.cards .compact-card').length, 8);
+  await act(() => dialog.querySelector('[aria-label="关闭"]').click());
+  assert.equal(document.querySelector('dialog'), null);
 });
