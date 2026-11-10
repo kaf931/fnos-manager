@@ -304,10 +304,13 @@ function InboxDialog({
       layout="workspace"
       busy={busy || selection.busy}
     >
-      <div ref={container} className="task-form-body tool-page record-content">
+      <div
+        ref={container}
+        className="task-form-body tool-page terminal-list-view record-content storage-history-inline"
+      >
         {detail ? (
           <>
-            <header className="toolbar task-toolbar">
+            <header className="toolbar">
               <button type="button" onClick={() => setDetail(null)}>
                 <AppIcon name="back" />
                 返回消息
@@ -432,12 +435,7 @@ function InboxDialog({
                 {model.error}
               </p>
             )}
-            <div
-              className={
-                'table-wrap storage-history-list' + (model.mobile ? ' history-mobile-list' : '')
-              }
-              aria-busy={model.loading}
-            >
+            <div className="table-wrap storage-history-list" aria-busy={model.loading}>
               {model.mobile ? (
                 <RecordList
                   entries={model.items.map((row) => ({

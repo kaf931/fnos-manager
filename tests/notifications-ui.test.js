@@ -1277,3 +1277,44 @@ test('mobile reminder batch reuses inline record layout and has a distinct check
   assert.equal(button('执行').disabled, false);
   assert.ok(document.querySelector('.dialog-footer').textContent.includes('已选择 1 项'));
 });
+
+test('mobile app messages reuse compact inline records and retain navigation between list and details', async (t) => {
+  const row = {
+    id: 'mobile-message',
+    name: '移动端消息',
+    content: '消息正文\n第二行',
+    createdAt: '2030-11-10T00:00:00Z',
+    readAt: null,
+  };
+  const calls = [];
+  const f = fixture(
+    t,
+    async (path, method) => {
+      calls.push({ path, method });
+      if (path.endsWith('/unread')) return { count: 1 };
+      if (path.includes('/inbox?')) return { items: [row], total: 1 };
+      return { success: true };
+    },
+    true,
+  );
+  await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 1 });
+  const body = document.querySelector('dialog .task-form-body');
+  assert.ok(body.classList.contains('storage-history-inline'));
+  assert.ok(body.classList.contains('terminal-list-view'));
+  assert.equal(!!body.querySelector('.history-mobile-list'), false);
+  assert.equal(!!body.querySelector('table'), false);
+  assert.ok(body.querySelector('.history-compact-list'));
+  await act(() => body.querySelector('[aria-label="选择 移动端消息"]').click());
+  assert.equal(button('批量删除消息').disabled, false);
+  await act(async () => {
+    button('移动端消息').click();
+    await tick();
+  });
+  assert.ok(document.querySelector('dialog').textContent.includes('消息详情'));
+  assert.equal(document.querySelector('.history-run-output').textContent, row.content);
+  assert.ok(
+    calls.some((call) => call.path === '/notifications/inbox/read' && call.method === 'POST'),
+  );
+  await act(() => button('返回消息').click());
+  assert.ok(document.querySelector('.history-compact-list'));
+});

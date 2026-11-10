@@ -49,7 +49,7 @@ export function MobileMore({
             >
               <span className="mobile-navigation-menu-icon">
                 <AppIcon
-                  name={key === 'wake' ? 'power' : key === 'notifications' ? 'bell' : 'settings'}
+                  name={key === 'wake' ? 'power' : key === 'notifications' ? 'message' : 'settings'}
                 />
               </span>
               {menuTitles[key]}

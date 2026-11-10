@@ -1,7 +1,8 @@
-import { navigationIcon, bellIcon } from '../navigation-icons.js';
+import { navigationIcon, bellIcon, messageIcon } from '../navigation-icons.js';
 
 const paths: Readonly<Record<string, string>> = {
   bell: bellIcon,
+  message: messageIcon,
   phone: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4m-3 14h2"/>',
   ai: '<path d="m10 3 2.3 6.7L19 12l-6.7 2.3L10 21l-2.3-6.7L1 12l6.7-2.3L10 3Zm10-1 .7 2.3L23 5l-2.3.7L20 8l-.7-2.3L17 5l2.3-.7L20 2Z"/>',
   transfers: '<path d="M7 3v16m-4-4 4 4 4-4M17 21V5m-4 4 4-4 4 4"/>',
