@@ -919,11 +919,24 @@ test('all templates support drag, keyboard ordering and shared strip persistence
     [...document.querySelectorAll('[data-sortable-id]')].map((e) => e.dataset.sortableId);
   const initial = ids();
   const handle = document.querySelector('.sortable-card-handle');
-  const transfer = { setData() {} };
-  await act(() => Simulate.dragStart(handle, { dataTransfer: transfer }));
+  handle.setPointerCapture = () => {};
+  handle.hasPointerCapture = () => true;
+  handle.releasePointerCapture = () => {};
+  const target = document.querySelectorAll('[data-sortable-id]')[2];
+  document.elementFromPoint = () => target;
+  document.querySelector('.task-form-body').scrollBy = () => {};
+  const pointer = { pointerType: 'mouse', button: 0, pointerId: 1, clientX: 40, clientY: 80 };
+  assert.equal(handle.draggable, false);
+  await act(() => Simulate.pointerDown(handle, pointer));
+  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 100 }));
+  await act(() => Simulate.pointerCancel(handle, pointer));
+  await act(() => Simulate.pointerUp(handle, pointer));
   assert.deepEqual(saved, []);
+  await act(() => Simulate.pointerDown(handle, pointer));
+  assert.deepEqual(saved, []);
+  await act(() => Simulate.pointerMove(handle, { ...pointer, clientX: 100 }));
   await act(async () => {
-    Simulate.drop(document.querySelectorAll('[data-sortable-id]')[2], { dataTransfer: transfer });
+    Simulate.pointerUp(handle, { ...pointer, clientX: 100 });
     await tick();
   });
   assert.equal(ids()[2], initial[0]);

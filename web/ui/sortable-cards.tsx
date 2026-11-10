@@ -9,7 +9,7 @@ export function moveCard(keys: string[], from: string, to: string) {
   result.splice(end, 0, from);
   return result;
 }
-/** Native desktop dragging, touch handles and keyboard sorting share the same commit path. */
+/** Captured pointer gestures and keyboard sorting share the same commit path. */
 export function SortableCards({
   items,
   onMove,
@@ -24,14 +24,14 @@ export function SortableCards({
     target = useRef<string | null>(null),
     press = useRef<ReturnType<typeof setTimeout>>(),
     start = useRef({ x: 0, y: 0 }),
-    touch = useRef(false);
+    pointerActive = useRef(false);
   const [dragging, setDragging] = useState<string | null>(null),
     [over, setOver] = useState<string | null>(null);
   function clear() {
     clearTimeout(press.current);
     drag.current = null;
     target.current = null;
-    touch.current = false;
+    pointerActive.current = false;
     setDragging(null);
     setOver(null);
   }
@@ -47,6 +47,11 @@ export function SortableCards({
     drag.current = id;
     target.current = id;
     setDragging(id);
+  }
+  function updateTarget(x: number, y: number) {
+    const node = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-sortable-id]');
+    target.current = node && host.current?.contains(node) ? node.dataset.sortableId || null : null;
+    setOver(target.current);
   }
   function finish() {
     const from = drag.current,
@@ -64,40 +69,16 @@ export function SortableCards({
           data-sortable-id={item.id}
           data-dragging={dragging === item.id || undefined}
           data-drop-target={over === item.id || undefined}
-          onDragOver={(e) => {
-            if (!drag.current || disabled) return;
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            target.current = item.id;
-            setOver(item.id);
-          }}
-          onDrop={(e) => {
-            if (!drag.current || disabled) return;
-            e.preventDefault();
-            target.current = item.id;
-            finish();
-          }}
         >
           {item.content(
             <button
               type="button"
               className="icon-button sortable-card-handle"
-              draggable={!disabled}
+              draggable={false}
               disabled={disabled}
               aria-label={'拖动排序 ' + item.name}
               title="拖动排序，或使用方向键调整位置"
-              onDragStart={(e) => {
-                if (disabled) {
-                  e.preventDefault();
-                  return;
-                }
-                clearTimeout(press.current);
-                touch.current = false;
-                begin(item.id);
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', item.id);
-              }}
-              onDragEnd={clear}
+              onDragStart={(e) => e.preventDefault()}
               onKeyDown={(e) => {
                 const direction = ['ArrowLeft', 'ArrowUp'].includes(e.key)
                   ? -1
@@ -110,30 +91,31 @@ export function SortableCards({
                 if (next && !disabled) onMove(item.id, next.id);
               }}
               onPointerDown={(e) => {
-                if (disabled || e.pointerType === 'mouse') return;
+                if (
+                  disabled ||
+                  e.isPrimary === false ||
+                  (e.pointerType === 'mouse' && e.button !== 0)
+                )
+                  return;
                 start.current = { x: e.clientX, y: e.clientY };
                 const element = e.currentTarget,
                   pointer = e.pointerId;
-                press.current = setTimeout(() => {
-                  touch.current = true;
+                const activate = () => {
+                  pointerActive.current = true;
                   begin(item.id);
                   element.setPointerCapture(pointer);
-                }, 250);
+                };
+                if (e.pointerType === 'mouse') activate();
+                else press.current = setTimeout(activate, 250);
               }}
               onPointerMove={(e) => {
-                if (!touch.current) {
+                if (!pointerActive.current) {
                   if (Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 8)
                     clearTimeout(press.current);
                   return;
                 }
                 e.preventDefault();
-                const node = document
-                  .elementFromPoint(e.clientX, e.clientY)
-                  ?.closest<HTMLElement>('[data-sortable-id]');
-                if (node && host.current?.contains(node)) {
-                  target.current = node.dataset.sortableId || null;
-                  setOver(target.current);
-                }
+                updateTarget(e.clientX, e.clientY);
                 const scroller = host.current?.closest<HTMLElement>('.task-form-body');
                 if (scroller) {
                   const rect = scroller.getBoundingClientRect();
@@ -143,13 +125,15 @@ export function SortableCards({
               }}
               onPointerUp={(e) => {
                 clearTimeout(press.current);
-                if (touch.current) {
+                if (pointerActive.current) {
+                  updateTarget(e.clientX, e.clientY);
                   finish();
                   if (e.currentTarget.hasPointerCapture(e.pointerId))
                     e.currentTarget.releasePointerCapture(e.pointerId);
                 }
               }}
               onPointerCancel={clear}
+              onLostPointerCapture={clear}
             >
               <AppIcon name="grip" />
             </button>,
