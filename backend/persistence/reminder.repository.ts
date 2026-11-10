@@ -180,6 +180,13 @@ export class ReminderRepository {
       });
     }
     const current = this.get(owner, id);
+    // A paused reminder can outlive a deleted template. Recover only its saved,
+    // still-owned references; ordinary create/update validation remains strict.
+    const existing = new Set(
+      this.notifications.listTemplates(owner).map((template) => template.id),
+    );
+    const templateIds = current.templateIds.filter((templateId) => existing.has(templateId));
+    if (!templateIds.length) throw new DomainError('关联的通知模板已删除，请重新选择通知模板');
     return this.update(
       owner,
       id,
@@ -188,7 +195,7 @@ export class ReminderRepository {
         content: current.content,
         dueAt: current.dueAt,
         repeat: current.repeat,
-        templateIds: current.templateIds,
+        templateIds,
         enabled,
       },
       now,

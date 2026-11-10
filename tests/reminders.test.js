@@ -235,3 +235,72 @@ test('bulk reminders are owner scoped and atomic, and cancel pending deliveries'
   repo.batch('a', [a.id, b.id], 'delete', now + 60004);
   assert.equal(repo.list('a').length, 0);
 });
+
+test('re-enabling a paused reminder removes deleted templates and retains the available channel', (t) => {
+  const { repo, notifications, template } = fixture(t);
+  const second = notifications.createTemplate('a', {
+    name: 'Removed',
+    enabled: true,
+    url: 'http://localhost/second',
+    token: '',
+    condition: 'all',
+    scanFailures: false,
+  });
+  const reminder = repo.create(
+    'a',
+    input(template.id, { enabled: false, templateIds: [template.id, second.id] }),
+    now,
+  );
+  notifications.deleteTemplate('a', second.id);
+  const enabled = repo.setEnabled('a', reminder.id, true, now);
+  assert.equal(enabled.enabled, true);
+  assert.deepEqual(enabled.templateIds, [template.id]);
+  assert.equal(enabled.nextAt, new Date(now + 60000).toISOString());
+  assert.equal(repo.dispatchDue(now + 60001), 1);
+  assert.equal(notifications.deliveries('a').total, 1);
+});
+
+test('re-enabling with no surviving templates gives an actionable error and preserves the paused reminder', (t) => {
+  const { repo, notifications, template } = fixture(t);
+  const reminder = repo.create('a', input(template.id, { enabled: false }), now);
+  notifications.deleteTemplate('a', template.id);
+  assert.throws(() => repo.setEnabled('a', reminder.id, true, now), /重新选择通知模板/);
+  assert.deepEqual(repo.get('a', reminder.id), reminder);
+});
+
+test('reminder recovery retains existing disabled templates and never accepts foreign ids in normal edits', (t) => {
+  const { repo, notifications, template } = fixture(t);
+  const second = notifications.createTemplate('a', {
+    name: 'Paused template',
+    enabled: false,
+    url: 'http://localhost/second',
+    token: '',
+    condition: 'all',
+    scanFailures: false,
+  });
+  const reminder = repo.create(
+    'a',
+    input(template.id, { enabled: false, templateIds: [template.id, second.id] }),
+    now,
+  );
+  assert.deepEqual(repo.setEnabled('a', reminder.id, true, now).templateIds, [
+    template.id,
+    second.id,
+  ]);
+  const foreign = notifications.createTemplate('b', {
+    name: 'Foreign',
+    enabled: true,
+    url: 'http://localhost/foreign',
+    token: '',
+    condition: 'all',
+    scanFailures: false,
+  });
+  assert.throws(() =>
+    repo.update(
+      'a',
+      reminder.id,
+      input(template.id, { templateIds: [template.id, foreign.id] }),
+      now,
+    ),
+  );
+});

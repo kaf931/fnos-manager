@@ -228,6 +228,13 @@ function NotificationTemplatesPanel({
             loading={busy.has(row.id)}
             disabled={sorting || busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
             aria-label={'启用 ' + row.name}
+            title={
+              !NOTIFICATION_CHANNELS.includes(row.channel)
+                ? '此通知渠道已移除'
+                : row.enabled
+                  ? '停用通知模板'
+                  : '启用通知模板'
+            }
             onChange={() => void act('toggle', row)}
           />
         }
@@ -287,6 +294,7 @@ function NotificationTemplatesPanel({
           <SwitchControl
             checked={false}
             disabled
+            title="请先配置通知模板"
             aria-label={'启用 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
           />
         }

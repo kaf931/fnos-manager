@@ -1167,3 +1167,30 @@ test('a failed mark-read request does not discard the next opened message', asyn
   assert.deepEqual(calls, [['a'], ['b']]);
   assert.ok(notices.includes('读取失败'));
 });
+
+test('template switches keep shared controlled behavior and explain disabled or enabled states', async (t) => {
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'switch-template',
+    name: 'Shared toggle',
+    channel: 'inapp',
+    enabled: true,
+    ready: true,
+    url: '',
+    token: '',
+    condition: 'all',
+    scanFailures: true,
+  };
+  const f = fixture(t, async (route) =>
+    route.endsWith('/templates') ? [row] : route.endsWith('/template-order') ? { keys: [] } : [],
+  );
+  await f.open();
+  const enabled = document.querySelector('[aria-label="启用 Shared toggle"]');
+  const unconfigured = document.querySelector('[aria-label="启用 通用 Webhook"]');
+  assert.equal(enabled.checked, true);
+  assert.equal(enabled.disabled, false);
+  assert.equal(enabled.title, '停用通知模板');
+  assert.equal(unconfigured.checked, false);
+  assert.equal(unconfigured.disabled, true);
+  assert.equal(unconfigured.title, '请先配置通知模板');
+});
