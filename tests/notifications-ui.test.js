@@ -545,3 +545,34 @@ test('editing a reminder drops unavailable template ids while saving the selecte
   });
   assert.deepEqual(calls.find((c) => c.method === 'PUT').body.templateIds, ['ready']);
 });
+
+test('closing template overview ignores a pending template editor response', async (t) => {
+  let resolve;
+  const pending = new Promise((r) => {
+    resolve = r;
+  });
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'slow',
+    name: 'Slow',
+    channel: 'inapp',
+    enabled: false,
+    ready: true,
+  };
+  const f = fixture(t, async (route) =>
+    route === '/notifications/templates'
+      ? [row]
+      : route === '/notifications/templates/slow'
+        ? pending
+        : [],
+  );
+  await f.open();
+  await act(() => button('全部模板').click());
+  await act(() => document.querySelector('dialog [aria-label="编辑 Slow"]').click());
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
+  await act(async () => {
+    resolve(row);
+    await tick();
+  });
+  assert.equal(!!document.querySelector('dialog'), false);
+});

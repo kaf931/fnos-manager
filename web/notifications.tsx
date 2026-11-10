@@ -38,6 +38,7 @@ function NotificationTemplatesPanel({
       channel?: NotificationChannel;
     } | null>(null);
   const overview = useRef<HTMLDivElement>(null);
+  const editorRequest = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;
   const alive = useRef(true),
@@ -48,12 +49,14 @@ function NotificationTemplatesPanel({
     return () => {
       alive.current = false;
       ++generation.current;
+      ++editorRequest.current;
     };
   }, []);
   useEffect(() => {
     if (active) void load();
     else {
       ++generation.current;
+      ++editorRequest.current;
       setLoading(false);
       setEditor(null);
       setAllOpen(false);
@@ -82,8 +85,10 @@ function NotificationTemplatesPanel({
     setBusy(new Set(locks.current));
     try {
       if (action === 'edit') {
+        const request = ++editorRequest.current;
         const value = await api<NotificationTemplate>('/notifications/templates/' + row.id);
-        if (alive.current && activeRef.current) setEditor({ row: value });
+        if (alive.current && activeRef.current && request === editorRequest.current)
+          setEditor({ row: value });
         return;
       }
       if (action === 'delete') {
@@ -236,7 +241,15 @@ function NotificationTemplatesPanel({
       )}
       <CompactCardStrip label="通知模板">{entries.map(renderCard)}</CompactCardStrip>
       {active && allOpen && !editor && (
-        <ReactDialog open title="全部模板" size="large" onClose={() => setAllOpen(false)}>
+        <ReactDialog
+          open
+          title="全部模板"
+          size="large"
+          onClose={() => {
+            ++editorRequest.current;
+            setAllOpen(false);
+          }}
+        >
           <div ref={overview} className="task-form-body">
             <div className="cards">{entries.map(renderCard)}</div>
           </div>
@@ -249,7 +262,10 @@ function NotificationTemplatesPanel({
           initialChannel={editor.channel}
           api={api}
           toast={toast}
-          onClose={() => setEditor(null)}
+          onClose={() => {
+            ++editorRequest.current;
+            setEditor(null);
+          }}
           onSaved={() => {
             onChanged();
             setEditor(null);
