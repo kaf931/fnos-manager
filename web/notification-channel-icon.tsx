@@ -20,7 +20,7 @@ export function NotificationChannelIcon({ channel }: { channel: NotificationChan
     <img src={source} alt="" aria-hidden="true" />
   ) : (
     <AppIcon
-      name={channel === 'email' ? 'color-mail' : channel === 'webhook' ? 'color-link' : 'bell'}
+      name={channel === 'email' ? 'color-mail' : channel === 'webhook' ? 'color-webhook' : 'bell'}
     />
   );
 }
