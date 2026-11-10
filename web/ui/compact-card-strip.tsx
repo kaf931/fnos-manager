@@ -86,7 +86,7 @@ export function CompactCardStrip({
       </button>
       <div
         ref={viewport}
-        className="compact-card-strip scrollbar-visible"
+        className="compact-card-strip"
         data-scroll-inset
         onScroll={measure}
       >

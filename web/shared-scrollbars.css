@@ -17,7 +17,6 @@
   scrollbar-width: thin;
   scrollbar-color: var(--app-scrollbar-thumb) transparent;
 }
-.scrollbar-visible,
 .scrollbar-scrolling {
   --app-scrollbar-thumb: var(--semi-color-fill-2);
   transition-duration: 60ms;

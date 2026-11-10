@@ -412,7 +412,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   );
 });
 
-test('template strip uses separate left and right controls, persistent shared scrollbar and edge-aware scrolling', async (t) => {
+test('template strip uses separate left and right controls, fading shared scrollbar and edge-aware scrolling', async (t) => {
   const f = fixture(t, async () => []);
   await f.open();
   const strip = document.querySelector('.compact-card-strip');
@@ -426,7 +426,7 @@ test('template strip uses separate left and right controls, persistent shared sc
   assert.ok(next && previous);
   assert.equal(next.hidden, false);
   assert.equal(previous.hidden, true);
-  assert.ok(strip.classList.contains('scrollbar-visible'));
+  assert.equal(strip.classList.contains('scrollbar-visible'), false);
   let distance = 0;
   strip.scrollBy = ({ left }) => {
     distance = left;

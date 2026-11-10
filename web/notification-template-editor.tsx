@@ -192,7 +192,7 @@ export function NotificationTemplateEditor({
         {settings.channel === 'serverchan' && (
           <p className="help">
             在{' '}
-            <a href="https://sct.ftqq.com/" target="_blank" rel="noopener noreferrer">
+            <a href="https://sct.ftqq.com/r/29101" target="_blank" rel="noopener noreferrer">
               Server酱
             </a>{' '}
             获取 SendKey，支持 SCT 和 sctp。
