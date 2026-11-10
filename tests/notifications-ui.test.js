@@ -412,7 +412,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   );
 });
 
-test('template strip uses separate left and right controls, fading shared scrollbar and edge-aware scrolling', async (t) => {
+test('template strip uses left and right edge controls, fading shared scrollbar and edge-aware scrolling', async (t) => {
   const f = fixture(t, async () => []);
   await f.open();
   const strip = document.querySelector('.compact-card-strip');

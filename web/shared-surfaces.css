@@ -721,29 +721,27 @@ p.help:empty {
   min-width: 600px;
 }
 
-/* Arrow tracks reserve their own space; hiding an edge control never moves the cards. */
+/* Opaque edge masks overlay the scroller without reserving empty arrow tracks. */
 .compact-card-strip-shell {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 28px;
-  gap: 8px;
-  align-items: center;
+  position: relative;
   min-width: 0;
-}
-.compact-card-strip-shell > .compact-card-strip {
-  grid-column: 2;
-  grid-row: 1;
 }
 .compact-card-strip-previous,
 .compact-card-strip-next {
-  grid-row: 1;
-  width: 28px;
-  height: 40px;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: calc(var(--app-scrollbar-size) + 2 * var(--app-scrollbar-inset) + 4px);
+  width: 32px;
+  height: auto;
   padding: 4px;
+  border: 0;
+  border-radius: 0;
   background: var(--bg);
 }
 .compact-card-strip-previous {
-  grid-column: 1;
+  left: 0;
 }
 .compact-card-strip-next {
-  grid-column: 3;
+  right: 0;
 }
