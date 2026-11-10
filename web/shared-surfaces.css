@@ -696,6 +696,7 @@ p.help:empty {
   height: 22px;
 }
 .compact-card-open .card-info {
+  line-height: 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
