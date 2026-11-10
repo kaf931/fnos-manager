@@ -281,3 +281,54 @@ test('editing an unavailable channel starts with empty safe configuration and pr
   assert.equal(document.querySelector('#notification-token').value, '');
   assert.ok(document.querySelector('dialog').textContent.includes('原通知渠道已移除'));
 });
+
+test('five built-in channel cards open matching unsaved configurations without automatic writes', async (t) => {
+  const calls = [];
+  const f = fixture(t, async (route, method, body) => {
+    calls.push({ route, method, body });
+    return [];
+  });
+  await f.open();
+  const templates = document.querySelector('[aria-label="通知模板"]');
+  assert.equal(templates.querySelectorAll('.compact-card').length, 5);
+  for (const [channel, label] of [
+    ['webhook', '通用 Webhook'],
+    ['wecom', '企业微信'],
+    ['dingtalk', '钉钉'],
+    ['feishu', '飞书'],
+    ['email', '邮箱（SMTP）'],
+  ]) {
+    await act(() => button('配置 ' + label).click());
+    assert.equal(document.querySelector('#notification-channel').value, channel);
+    assert.equal(document.querySelector('#notification-name').value, label);
+    await act(() => button('取消').click());
+  }
+  assert.ok(calls.every((c) => !c.method || c.method === 'GET'));
+});
+
+test('configured channel replaces its placeholder and keeps multiple saved templates', async (t) => {
+  const rows = ['one', 'two'].map((id) => ({
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id,
+    name: 'Saved ' + id,
+    enabled: false,
+    url: 'http://localhost/hook',
+    token: '',
+    condition: 'all',
+    scanFailures: true,
+  }));
+  const f = fixture(t, async (route) =>
+    route.endsWith('/templates') ? rows : route.endsWith('/reminders') ? [] : rows[0],
+  );
+  await f.open();
+  const section = document.querySelector('[aria-label="通知模板"]');
+  assert.equal(section.querySelectorAll('.compact-card').length, 6);
+  assert.equal(button('配置 通用 Webhook'), undefined);
+  assert.ok(button('编辑 Saved one'));
+  assert.ok(button('编辑 Saved two'));
+  await act(async () => {
+    button('编辑 Saved one').click();
+    await tick();
+  });
+  assert.equal(document.querySelector('#notification-name').value, 'Saved one');
+});

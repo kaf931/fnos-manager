@@ -14,12 +14,14 @@ import { ReactDialog } from './ui/react-dialog.js';
 import { errorMessage, type ApiClient, type Toast } from './contracts/shared.js';
 export function NotificationTemplateEditor({
   initial,
+  initialChannel,
   api,
   toast,
   onClose,
   onSaved,
 }: {
   initial: NotificationTemplate | null;
+  initialChannel?: NotificationChannel;
   api: ApiClient;
   toast: Toast;
   onClose: () => void;
@@ -39,7 +41,8 @@ export function NotificationTemplateEditor({
     token: '',
     condition: 'errors',
     scanFailures: true,
-    name: '',
+    channel: initialChannel || 'webhook',
+    name: initialChannel ? NOTIFICATION_CHANNEL_LABELS[initialChannel] : '',
     ...editable,
   });
   const [headersText, setHeadersText] = useState(JSON.stringify(settings.headers || {}, null, 2));

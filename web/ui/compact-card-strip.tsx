@@ -17,22 +17,24 @@ export function CompactCard({
   actions,
   onOpen,
   disabled,
+  openLabel = '编辑 ' + title,
 }: {
   title: string;
   description: string;
   icon: ReactNode;
-  control: ReactNode;
-  actions: ReactNode;
+  control?: ReactNode;
+  actions?: ReactNode;
   onOpen: () => void;
   disabled?: boolean;
+  openLabel?: string;
 }) {
   return (
     <article className="card compact-card">
       <button
         type="button"
         className="compact-card-open"
-        aria-label={'编辑 ' + title}
-        title={'编辑 ' + title}
+        aria-label={openLabel}
+        title={openLabel}
         onClick={onOpen}
         disabled={disabled}
       >

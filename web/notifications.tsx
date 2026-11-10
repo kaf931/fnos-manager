@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   NOTIFICATION_CHANNEL_LABELS,
   NOTIFICATION_CHANNELS,
+  type NotificationChannel,
   type NotificationTemplate,
   type NotificationTemplateSummary,
 } from '../backend/domain/notifications.js';
@@ -29,7 +30,10 @@ function NotificationTemplatesPanel({
     [error, setError] = useState(''),
     [loading, setLoading] = useState(false),
     [busy, setBusy] = useState(new Set<string>()),
-    [editor, setEditor] = useState<{ row: NotificationTemplate | null } | null>(null);
+    [editor, setEditor] = useState<{
+      row: NotificationTemplate | null;
+      channel?: NotificationChannel;
+    } | null>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
   const alive = useRef(true),
@@ -108,6 +112,18 @@ function NotificationTemplatesPanel({
       if (alive.current) setBusy(new Set(locks.current));
     }
   }
+  const entries: { channel: NotificationChannel; row: NotificationTemplateSummary | null }[] = [];
+  for (const channel of NOTIFICATION_CHANNELS) {
+    const configured = rows.filter((row) => row.channel === channel);
+    if (configured.length) entries.push(...configured.map((row) => ({ channel, row })));
+    else entries.push({ channel, row: null });
+  }
+  // Retain saved configurations whose provider is no longer supported so they can be edited or removed.
+  entries.push(
+    ...rows
+      .filter((row) => !NOTIFICATION_CHANNELS.includes(row.channel))
+      .map((row) => ({ channel: row.channel, row })),
+  );
   return (
     <section className="compact-card-section" hidden={!active} aria-label="通知模板">
       <header className="toolbar task-toolbar">
@@ -141,68 +157,85 @@ function NotificationTemplatesPanel({
         </p>
       )}
       <CompactCardStrip>
-        {rows.map((row) => (
-          <CompactCard
-            key={row.id}
-            title={row.name}
-            description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
-            icon={<AppIcon name="bell" />}
-            disabled={busy.has(row.id)}
-            onOpen={() => void act('edit', row)}
-            control={
-              <SwitchControl
-                checked={row.enabled}
-                loading={busy.has(row.id)}
-                disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
-                aria-label={'启用 ' + row.name}
-                onChange={() => void act('toggle', row)}
-              />
-            }
-            actions={
-              <Dropdown
-                trigger="click"
-                position="bottomRight"
-                render={
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
-                      onClick={() => void act('test', row)}
-                    >
-                      测试通知
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      disabled={busy.has(row.id)}
-                      onClick={() => void act('edit', row)}
-                    >
-                      编辑模板
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      type="danger"
-                      disabled={busy.has(row.id)}
-                      onClick={() => void act('delete', row)}
-                    >
-                      删除模板
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                }
-              >
-                <MobileMoreButton
-                  aria-label={row.name + '的更多操作'}
-                  title="更多操作"
-                  disabled={busy.has(row.id)}
+        {entries.map(({ channel, row }) =>
+          row ? (
+            <CompactCard
+              key={row.id}
+              title={row.name}
+              description={NOTIFICATION_CHANNEL_LABELS[row.channel] || '已移除渠道'}
+              icon={<AppIcon name="bell" />}
+              disabled={busy.has(row.id)}
+              onOpen={() => void act('edit', row)}
+              control={
+                <SwitchControl
+                  checked={row.enabled}
+                  loading={busy.has(row.id)}
+                  disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
+                  aria-label={'启用 ' + row.name}
+                  onChange={() => void act('toggle', row)}
                 />
-              </Dropdown>
-            }
-          />
-        ))}
-        {!loading && !error && !rows.length && (
-          <p className="help">暂无通知模板，点击右上方新增。</p>
+              }
+              actions={
+                <Dropdown
+                  trigger="click"
+                  position="bottomRight"
+                  render={
+                    <Dropdown.Menu>
+                      <Dropdown.Item
+                        disabled={busy.has(row.id) || !NOTIFICATION_CHANNELS.includes(row.channel)}
+                        onClick={() => void act('test', row)}
+                      >
+                        测试通知
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        disabled={busy.has(row.id)}
+                        onClick={() => void act('edit', row)}
+                      >
+                        编辑模板
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        type="danger"
+                        disabled={busy.has(row.id)}
+                        onClick={() => void act('delete', row)}
+                      >
+                        删除模板
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  }
+                >
+                  <MobileMoreButton
+                    aria-label={row.name + '的更多操作'}
+                    title="更多操作"
+                    disabled={busy.has(row.id)}
+                  />
+                </Dropdown>
+              }
+            />
+          ) : (
+            <CompactCard
+              key={channel}
+              title={NOTIFICATION_CHANNEL_LABELS[channel]}
+              description="未配置"
+              icon={<AppIcon name="bell" />}
+              openLabel={'配置 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
+              disabled={loading || !!error}
+              onOpen={() => setEditor({ row: null, channel })}
+              control={
+                <SwitchControl
+                  checked={false}
+                  disabled
+                  aria-label={'启用 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
+                />
+              }
+            />
+          ),
         )}
       </CompactCardStrip>
       {active && editor && (
         <NotificationTemplateEditor
-          key={editor.row?.id || 'new'}
+          key={editor.row?.id || editor.channel || 'new'}
           initial={editor.row}
+          initialChannel={editor.channel}
           api={api}
           toast={toast}
           onClose={() => setEditor(null)}

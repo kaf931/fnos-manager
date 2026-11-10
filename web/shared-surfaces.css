@@ -665,6 +665,7 @@ p.help:empty {
   padding: 12px 0;
 }
 .compact-card.card {
+  min-height: 96px;
   flex: 0 0 264px;
   display: flex;
   align-items: center;
