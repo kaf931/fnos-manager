@@ -131,15 +131,6 @@ function NotificationTemplatesPanel({
         <div className="toolbar-actions">
           <button
             type="button"
-            aria-label="新增模板"
-            title="新增模板"
-            onClick={() => setEditor({ row: null })}
-          >
-            <AppIcon name="plus" />
-            <span className="toolbar-action-label">新增模板</span>
-          </button>
-          <button
-            type="button"
             className="icon-button toolbar-refresh"
             aria-label="刷新通知模板"
             title="刷新通知模板"

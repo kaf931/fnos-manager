@@ -111,7 +111,7 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   assert.ok(document.querySelector('.terminal-list-view .task-toolbar'));
   assert.ok(document.querySelector('.empty-onboarding .empty-symbol'));
   assert.equal(document.querySelector('#notification-channel'), null);
-  await act(() => button('新增模板').click());
+  await act(() => button('配置 通用 Webhook').click());
   assert.ok(document.querySelector('dialog[data-react-dialog]'));
   const select = document.querySelector('#notification-channel');
   assert.deepEqual(
@@ -246,7 +246,7 @@ test('notification overview shows templates above reminders and editing preserve
   assert.equal(templates.querySelector('.empty-onboarding'), null);
   const search = document.querySelector('input[aria-label="搜索提醒事项"]');
   await act(() => Simulate.change(search, { target: { value: 'Keep query' } }));
-  await act(() => button('新增模板').click());
+  await act(() => button('配置 通用 Webhook').click());
   assert.ok(document.querySelector('#notification-name'));
   await act(() => button('取消').click());
   assert.equal(document.querySelector('input[aria-label="搜索提醒事项"]'), search);
@@ -291,6 +291,7 @@ test('five built-in channel cards open matching unsaved configurations without a
   await f.open();
   const templates = document.querySelector('[aria-label="通知模板"]');
   assert.equal(templates.querySelectorAll('.compact-card').length, 5);
+  assert.equal(button('新增模板'), undefined);
   for (const [channel, label] of [
     ['webhook', '通用 Webhook'],
     ['wecom', '企业微信'],
