@@ -50,61 +50,11 @@
   }
 }
 
-/* Match shared search controls without Semi's filled/default input treatment. */
-.container-picker-dropdown .semi-select-dropdown-search-wrapper {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--line);
-}
-.container-picker-dropdown .semi-input-wrapper {
-  height: 32px;
-  min-height: 32px;
-  background: var(--semi-color-input-DefaultBg);
-  border: 1px solid var(--semi-color-border);
-  border-radius: 6px;
-  box-shadow: none;
-  transition: none;
-}
-.container-picker-dropdown .semi-input-wrapper:hover {
-  border-color: var(--semi-color-border-hover);
-}
-.container-picker-dropdown .semi-input-wrapper:focus-within {
-  border-color: var(--blue);
-  box-shadow: none;
-  outline: none;
-}
-.container-picker-dropdown .semi-input {
-  height: 30px;
-  line-height: 20px;
-  font-size: 14px;
-  color: var(--text);
-  background: transparent;
-  box-shadow: none;
-  outline: none;
-}
-.container-picker-dropdown .semi-input::placeholder {
-  color: var(--muted);
-}
-.container-picker-dropdown .semi-input-prefix {
-  color: var(--muted);
-}
 @media (max-width: 620px) {
-  .container-picker-dropdown .semi-input-wrapper {
-    height: 40px;
-    min-height: 40px;
-    border-radius: 10px;
-  }
-  .container-picker-dropdown .semi-input {
-    height: 38px;
-    font-size: 16px;
-  }
   #editor,
   #entry-form .editor-body {
     overflow-anchor: none;
     scroll-behavior: auto;
-  }
-  .container-picker-dropdown {
-    overflow-anchor: none;
-    transition: none !important;
   }
 }
 

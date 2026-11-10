@@ -125,9 +125,6 @@ html {
   color: var(--muted);
   line-height: 18px;
 }
-.container-picker-dropdown .semi-select-option {
-  min-height: 48px;
-}
 @media (max-width: 620px) {
   #mobile-container-picker {
     display: block;
@@ -146,21 +143,6 @@ html {
   #docker-panel > .search,
   #docker-panel > #container-list {
     display: none;
-  }
-  #mobile-container-picker .native-select {
-    height: 32px;
-    width: 100%;
-    border: 1px solid var(--semi-color-border);
-    border-radius: 6px;
-    background: var(--semi-color-input-DefaultBg);
-  }
-  #mobile-container-picker .native-select.semi-select-focus {
-    border-color: var(--blue);
-    box-shadow: none;
-  }
-  #mobile-container-picker .semi-select-selection {
-    font-size: 14px;
-    color: var(--text);
   }
 }
 #task-mobile-list {

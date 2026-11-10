@@ -138,17 +138,6 @@
   min-height: 0;
   font-size: 14px;
 }
-.task-form-dropdown {
-  max-height: 240px;
-}
-.task-form-dropdown .semi-select-option-list {
-  max-height: 240px;
-}
-.task-form-dropdown .semi-select-option {
-  font-size: 14px;
-  line-height: 20px;
-  min-height: 32px;
-}
 #task-editor .semi-portal {
   pointer-events: auto;
 }
@@ -181,26 +170,6 @@
   height: 30px;
   line-height: 30px;
   background: transparent;
-}
-.task-form-dropdown .semi-select-option-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-.task-form-dropdown,
-.task-form-time-popup,
-.task-form-date-popup {
-  border-radius: 6px;
-  box-shadow: var(--semi-shadow-elevated);
-  background: var(--bg);
-  color: var(--text);
-}
-.task-form-dropdown .semi-select-option-list,
-.task-form-dropdown .semi-select-option-list-wrapper,
-.task-form-time-popup .semi-scrolllist-item,
-.task-form-date-popup .semi-scrolllist-item {
-  overscroll-behavior: contain;
 }
 #editor {
   overflow: visible;
@@ -286,10 +255,6 @@ button.danger:hover {
 }
 button.danger:active {
   background: var(--semi-color-danger-light-active);
-}
-/* Semi sets a 270px inline list limit; keep it inside the 244px popup including padding. */
-.task-form-dropdown .semi-select-option-list {
-  max-height: calc(var(--native-select-popup-height, 244px) - 8px) !important;
 }
 .form-error {
   color: var(--semi-color-danger);

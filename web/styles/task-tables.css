@@ -93,9 +93,6 @@
 .task-pagination-inner .semi-page-item:focus-visible {
   outline: 2px solid var(--blue);
 }
-.task-pagination-inner .semi-select {
-  font-size: 12px;
-}
 .layout main {
   max-width: calc(100% - 180px);
 }
@@ -343,7 +340,6 @@ body {
 }
 /* Use the same Semi Select as the pager instead of a browser-native select menu. */
 /* fnOS-style outlined pagination controls, including the existing Semi quick jumper. */
-.task-pagination-inner .semi-select,
 .task-pagination-inner .semi-page-quickjump .semi-input-wrapper {
   height: 32px;
   background: var(--semi-color-input-DefaultBg);
@@ -351,11 +347,9 @@ body {
   border-radius: 6px;
   box-shadow: none;
 }
-.task-pagination-inner .semi-select:hover,
 .task-pagination-inner .semi-page-quickjump .semi-input-wrapper:hover {
   border-color: var(--semi-color-border-hover);
 }
-.task-pagination-inner .semi-select-focus,
 .task-pagination-inner .semi-page-quickjump .semi-input-wrapper:focus-within {
   border-color: var(--blue);
   box-shadow: 0 0 0 2px var(--semi-color-primary-light-default);
@@ -384,9 +378,6 @@ body {
 .task-pagination-inner .semi-page-item-active {
   background: var(--blue);
   color: white;
-}
-.task-pagination-inner .semi-select-selection {
-  color: var(--semi-color-text-1);
 }
 .task-pagination-inner .semi-page-options {
   align-items: center;

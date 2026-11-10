@@ -1,0 +1,57 @@
+/* One surface for Select (including Pagination) and Dropdown operation menus. */
+body {
+  --menu-surface-radius: var(--app-content-radius, 12px);
+  --menu-surface-shadow: var(--semi-shadow-2);
+}
+.semi-dropdown-wrapper,
+.semi-popover-wrapper:has(.semi-select-option-list) {
+  border: 1px solid var(--line);
+  border-radius: var(--menu-surface-radius);
+  box-shadow: var(--menu-surface-shadow);
+  background: var(--bg);
+  color: var(--text);
+}
+/* Only the outer popover casts a shadow; the option list is not a second surface. */
+.semi-select-option-list-wrapper {
+  padding: 4px;
+  border-radius: inherit;
+  box-shadow: none;
+  background: transparent;
+  color: inherit;
+}
+.semi-dropdown-menu {
+  padding: 4px;
+}
+.semi-select-option,
+.semi-dropdown-item {
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: var(--semi-border-radius-small);
+  font-size: 14px;
+  line-height: 20px;
+}
+.semi-select-option-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.semi-select-option-selected {
+  color: var(--blue);
+}
+/* Include Semi's built-in page-size list in the same bounded scroll area. */
+.semi-select-option-list {
+  max-height: calc(var(--native-select-popup-height, 244px) - 8px) !important;
+  overscroll-behavior: contain;
+}
+.semi-dropdown-wrapper {
+  max-height: min(480px, calc(100svh - 32px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 620px) {
+  .semi-select-option,
+  .semi-dropdown-item {
+    min-height: 40px;
+  }
+}

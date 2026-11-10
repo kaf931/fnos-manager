@@ -70,7 +70,7 @@ export function NativeSelect({
           if (typeof value === 'string' || value === undefined) onChange?.(value ?? '');
         }}
         className={'native-select ' + className}
-        dropdownClassName={'task-form-dropdown native-select-dropdown ' + dropdownClassName}
+        dropdownClassName={'native-select-dropdown ' + dropdownClassName}
         dropdownStyle={
           {
             maxWidth: 'calc(100vw - 32px)',

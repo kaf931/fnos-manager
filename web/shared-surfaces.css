@@ -1,4 +1,5 @@
 @import './styles/modal-sizing.css';
+@import './styles/shared-menus.css';
 /* Destructive menu actions share the same color in custom and Semi menus. */
 .terminal-tree-menu button.danger,
 .semi-dropdown-item-danger:not(.semi-dropdown-item-disabled) {
@@ -638,13 +639,6 @@ p.help:empty {
   width: auto;
 }
 
-/* Shared workspace action menus remain scrollable in short windows and mobile views. */
-.workspace-action-menu {
-  max-height: min(480px, calc(100svh - 32px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 /* Shared compact collections sit above the main workspace without taking its scroll area. */
 .compact-card-section {
   flex: 0 0 auto;
@@ -765,16 +759,6 @@ p.help:empty {
   .compact-card-section:has(> .desktop-only) > .toolbar {
     margin-bottom: 0;
   }
-}
-
-/* Menus attached to a workspace share the content surface corner radius. */
-.content-surface-menu,
-.semi-dropdown-wrapper:has(.content-surface-menu) {
-  border-radius: var(--app-content-radius, 12px);
-}
-
-.semi-dropdown-wrapper:has(.content-surface-menu) {
-  box-shadow: var(--semi-shadow-2);
 }
 
 /* Shared card sorting affordances; the handle leaves normal controls and scrolling available. */

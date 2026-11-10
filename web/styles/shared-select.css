@@ -1,5 +1,6 @@
 /* One Select style for toolbar filters and dialog fields, including keyboard focus. */
 .native-select,
+.task-pagination-inner .semi-select,
 .icon-button.input-icon-button {
   height: 32px;
   border: 1px solid var(--semi-color-border);
@@ -9,33 +10,28 @@
   box-shadow: none;
   font-size: 14px;
 }
-.native-select .semi-select-selection {
+.native-select .semi-select-selection,
+.task-pagination-inner .semi-select-selection {
   font-size: 14px;
   color: var(--text);
   line-height: 20px;
 }
 .native-select:hover,
+.task-pagination-inner .semi-select:hover,
 .icon-button.input-icon-button:not(:disabled):hover {
   border-color: var(--semi-color-border-hover);
 }
 .native-select.semi-select-focus,
+.task-pagination-inner .semi-select-focus,
 .icon-button.input-icon-button:focus-visible {
   border-color: var(--blue);
   box-shadow: none;
   outline: none;
 }
-.native-select .semi-select-arrow {
+.native-select .semi-select-arrow,
+.task-pagination-inner .semi-select-arrow {
   color: var(--muted);
 }
-.native-select-dropdown .semi-select-option {
-  font-size: 14px;
-  line-height: 20px;
-  min-height: 32px;
-}
-.native-select-dropdown .semi-select-option-selected {
-  color: var(--blue);
-}
-
 .form-panel > .native-select,
 .task-form-body > .native-select,
 .task-form-body label > .native-select {

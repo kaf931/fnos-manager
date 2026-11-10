@@ -693,9 +693,6 @@
   .terminal-files-table-wrap {
     padding-right: 20px;
   }
-  .terminal-file-context-menu .semi-dropdown-item {
-    min-height: 40px;
-  }
 }
 .terminal-files-panel {
   min-width: 0;
