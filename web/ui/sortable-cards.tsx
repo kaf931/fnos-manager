@@ -151,7 +151,7 @@ export function SortableCards({
               }}
               onPointerCancel={clear}
             >
-              <AppIcon name="move" />
+              <AppIcon name="grip" />
             </button>,
           )}
         </div>
