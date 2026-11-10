@@ -32,6 +32,8 @@ function NotificationTemplatesPanel({
     actions: React.ReactNode,
     content: React.ReactNode,
     refreshTemplates: () => Promise<void>,
+    configureTemplates: () => void,
+    templateDialogOpen: boolean,
   ) => React.ReactNode;
 }) {
   const [mobile, setMobile] = useState(() => matchMedia('(max-width:620px)').matches);
@@ -251,6 +253,8 @@ function NotificationTemplatesPanel({
           <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
         </>,
         load,
+        () => setAllOpen(true),
+        allOpen || !!editor,
       )}
       {active && allOpen && !editor && (
         <ReactDialog
@@ -307,7 +311,13 @@ export function NotificationSettingsPage({
         toast={toast}
         active={active}
         onChanged={() => setTemplateRevision((v) => v + 1)}
-        renderReminders={(actions, content, refreshTemplates) => (
+        renderReminders={(
+          actions,
+          content,
+          refreshTemplates,
+          configureTemplates,
+          templateDialogOpen,
+        ) => (
           <>
             <RemindersPanel
               api={api}
@@ -317,6 +327,8 @@ export function NotificationSettingsPage({
               actions={actions}
               headerContent={content}
               onRefreshTemplates={refreshTemplates}
+              onConfigureTemplates={configureTemplates}
+              templateDialogOpen={templateDialogOpen}
             />
           </>
         )}

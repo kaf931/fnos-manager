@@ -15,7 +15,7 @@ const stubs = {
   'native-select.js': `import React from 'react';export function NativeSelect({optionList,onChange,...props}){return React.createElement('select',{...props,onChange:e=>onChange(e.target.value)},optionList.map(o=>React.createElement('option',{key:o.value,value:o.value},o.label)))}`,
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
-  'terminal-connections.js': `import React from 'react';export function ConnectionCards({rows,onAction,options}){return rows.map(row=>React.createElement('article',{key:row.id,className:'card'},React.createElement('h3',null,row.name),options.metaControl(row),...['connect','edit','delete'].map(a=>React.createElement('button',{key:a,onClick:()=>onAction(a,row)},a==='connect'?'测试通知':a==='edit'?'编辑模板':'删除模板'))))}`,
+  'terminal-connections.js': `import React from 'react';export function ConnectionCards({rows,onAction,options}){return rows.map(row=>React.createElement('article',{key:row.id,className:'card'},React.createElement('h3',null,row.name),React.createElement('span',null,options.tag?.(row)),options.metaControl(row),...['connect','edit','delete'].map(a=>React.createElement('button',{key:a,onClick:()=>onAction(a,row)},a==='connect'?'测试通知':a==='edit'?'编辑模板':'删除模板'))))}`,
   'confirmation.js': `export const confirmAction=async(options)=>{await options.onAccept?.();return true;};`,
 };
 const built = await build({
@@ -638,9 +638,15 @@ test('desktop inbox trigger opens a recent-message menu before opening message d
   const menu = document.querySelector('[data-dropdown-position="rightBottom"]');
   assert.ok(menu);
   assert.deepEqual(JSON.parse(menu.dataset.dropdownSpacing), { x: 20, y: 20 });
-  assert.ok(button('• Desktop message'));
+  assert.ok(
+    [...document.querySelectorAll('button')].some(
+      (e) => e.textContent.includes('• Desktop message') && e.textContent.includes('Body'),
+    ),
+  );
   await act(async () => {
-    button('• Desktop message').click();
+    [...document.querySelectorAll('button')]
+      .find((e) => e.textContent.includes('• Desktop message'))
+      .click();
     await tick();
   });
   assert.ok(document.querySelector('dialog').textContent.includes('Body'));
@@ -665,4 +671,102 @@ test('notification center unifies template actions and refresh in the top remind
   });
   assert.ok(calls.slice(start).includes('/notifications/templates'));
   assert.ok(calls.slice(start).includes('/notifications/reminders'));
+});
+
+test('one available notification template is preselected for new reminders', async (t) => {
+  const template = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'only',
+    name: 'Only',
+    channel: 'inapp',
+    enabled: true,
+    ready: true,
+  };
+  const f = fixture(t, async (route) => (route === '/notifications/templates' ? [template] : []));
+  await f.open();
+  await act(() => button('新增事项').click());
+  assert.equal(
+    document.querySelector('[aria-labelledby="reminder-template-label"] input').checked,
+    true,
+  );
+});
+test('configuring templates from a reminder preserves its draft and avoids stacked dialogs', async (t) => {
+  const f = fixture(t, async () => []);
+  await f.open();
+  await act(() => button('新增事项').click());
+  await act(() =>
+    Simulate.change(document.querySelector('#reminder-name'), { target: { value: 'Keep draft' } }),
+  );
+  await act(() => button('配置通知模板').click());
+  assert.equal(document.querySelectorAll('dialog[open]').length, 1);
+  assert.ok(document.querySelector('dialog .cards'));
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
+  assert.equal(document.querySelectorAll('dialog[open]').length, 1);
+  assert.equal(document.querySelector('#reminder-name').value, 'Keep draft');
+});
+test('reminder cards show clear delivery and pause states', async (t) => {
+  const rows = [
+    { id: 'wait', enabled: true, status: 'open' },
+    { id: 'paused', enabled: false, status: 'open' },
+    { id: 'done', enabled: false, status: 'completed' },
+    { id: 'error', enabled: false, status: 'open', error: '所选通知模板不可用' },
+    { id: 'sent', enabled: false, status: 'open', lastFiredAt: '2026-11-10T00:00:00Z' },
+  ].map((r) => ({
+    name: r.id,
+    content: '',
+    repeat: 'none',
+    dueAt: '2030-11-10T00:00:00Z',
+    templateIds: [],
+    nextAt: null,
+    ...r,
+  }));
+  const f = fixture(t, async (route) => (route === '/notifications/reminders' ? rows : []));
+  await f.open();
+  assert.ok(document.body.textContent.includes('待提醒 · 单次提醒'));
+  assert.ok(document.body.textContent.includes('已暂停 · 单次提醒'));
+  assert.ok(document.body.textContent.includes('模板不可用 · 单次提醒'));
+  assert.ok(document.body.textContent.includes('已触发 · 单次提醒'));
+});
+
+test('background reminder sync pauses while hidden or editing', async (t) => {
+  const nativeSet = globalThis.setInterval,
+    nativeClear = globalThis.clearInterval;
+  const timers = new Map();
+  let id = 0;
+  globalThis.setInterval = (callback, delay) => {
+    const key = ++id;
+    timers.set(key, { callback, delay });
+    return key;
+  };
+  globalThis.clearInterval = (key) => timers.delete(key);
+  t.after(() => {
+    globalThis.setInterval = nativeSet;
+    globalThis.clearInterval = nativeClear;
+  });
+  let reads = 0;
+  const f = fixture(t, async (route) => {
+    if (route === '/notifications/reminders') reads++;
+    return [];
+  });
+  await f.open();
+  const initial = reads;
+  await act(async () => {
+    for (const timer of [...timers.values()]) timer.callback();
+    await tick();
+  });
+  assert.ok(reads > initial);
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+  const before = reads;
+  await act(async () => {
+    for (const timer of [...timers.values()]) timer.callback();
+    await tick();
+  });
+  assert.equal(reads, before);
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+  await act(() => button('新增事项').click());
+  await act(async () => {
+    for (const timer of [...timers.values()]) timer.callback();
+    await tick();
+  });
+  assert.equal(reads, before);
 });

@@ -31,6 +31,8 @@ export function RemindersPanel({
   actions,
   headerContent,
   onRefreshTemplates,
+  onConfigureTemplates,
+  templateDialogOpen = false,
 }: {
   api: ApiClient;
   toast: Toast;
@@ -39,6 +41,8 @@ export function RemindersPanel({
   actions?: React.ReactNode;
   headerContent?: React.ReactNode;
   onRefreshTemplates?: () => Promise<void>;
+  onConfigureTemplates?: () => void;
+  templateDialogOpen?: boolean;
 }) {
   const [rows, setRows] = useState<Reminder[]>([]),
     [templates, setTemplates] = useState<NotificationTemplateSummary[]>([]),
@@ -51,7 +55,8 @@ export function RemindersPanel({
   const alive = useRef(true),
     activeRef = useRef(active),
     epoch = useRef(0),
-    locks = useRef(new Set<string>());
+    locks = useRef(new Set<string>()),
+    foregroundLoading = useRef(false);
   activeRef.current = active;
   useEffect(() => {
     alive.current = true;
@@ -65,13 +70,27 @@ export function RemindersPanel({
     else {
       ++epoch.current;
       setLoading(false);
+      foregroundLoading.current = false;
       setEditor(null);
     }
   }, [active, api, templateRevision]);
-  async function load() {
-    if (!activeRef.current) return;
+  useEffect(() => {
+    if (!active || editor) return;
+    const sync = () => {
+      if (document.visibilityState !== 'hidden' && !locks.current.size) void load(true);
+    };
+    const timer = setInterval(sync, 15000);
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', sync);
+    };
+  }, [active, api, editor]);
+  async function load(background = false) {
+    if (!activeRef.current || (background && foregroundLoading.current)) return;
+    if (!background) foregroundLoading.current = true;
     const ticket = ++epoch.current;
-    setLoading(true);
+    if (!background) setLoading(true);
     try {
       const [values, channels] = await Promise.all([
         api<Reminder[]>('/notifications/reminders'),
@@ -83,9 +102,13 @@ export function RemindersPanel({
         setError('');
       }
     } catch (e) {
-      if (alive.current && activeRef.current && ticket === epoch.current) setError(errorMessage(e));
+      if (!background && alive.current && activeRef.current && ticket === epoch.current)
+        setError(errorMessage(e));
     } finally {
-      if (alive.current && ticket === epoch.current) setLoading(false);
+      if (!background && alive.current && ticket === epoch.current) {
+        foregroundLoading.current = false;
+        setLoading(false);
+      }
     }
   }
   async function refresh() {
@@ -231,7 +254,17 @@ export function RemindersPanel({
                         ? time(row.dueAt)
                         : '记事') + (row.content ? ' · ' + row.content.split('\n')[0] : ''),
                 tag: (row) =>
-                  row.repeat === 'none' && !row.dueAt ? '记事' : REMINDER_REPEAT_LABELS[row.repeat],
+                  (row.status === 'completed'
+                    ? '已完成'
+                    : row.error
+                      ? '模板不可用'
+                      : row.enabled
+                        ? '待提醒'
+                        : row.repeat === 'none' && row.lastFiredAt
+                          ? '已触发'
+                          : '已暂停') +
+                  ' · ' +
+                  REMINDER_REPEAT_LABELS[row.repeat],
                 metaControl: (row) => (
                   <SwitchControl
                     checked={row.enabled}
@@ -270,6 +303,8 @@ export function RemindersPanel({
       {active && editor && (
         <ReminderEditor
           initial={editor.row}
+          open={!templateDialogOpen}
+          onConfigureTemplates={onConfigureTemplates}
           templates={templates}
           api={api}
           toast={toast}

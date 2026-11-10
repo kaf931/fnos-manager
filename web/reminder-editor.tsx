@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Reminder, ReminderInput } from '../backend/domain/reminders.js';
 import { REMINDER_REPEAT_LABELS, REMINDER_REPEATS } from '../backend/domain/reminders.js';
 import type { NotificationTemplateSummary } from '../backend/domain/notifications.js';
@@ -9,6 +9,8 @@ import { NativeSelect } from './native-select.js';
 import { ReactDialog } from './ui/react-dialog.js';
 export function ReminderEditor({
   initial,
+  open = true,
+  onConfigureTemplates,
   templates,
   api,
   toast,
@@ -16,6 +18,8 @@ export function ReminderEditor({
   onSaved,
 }: {
   initial: Reminder | null;
+  open?: boolean;
+  onConfigureTemplates?: () => void;
   templates: NotificationTemplateSummary[];
   api: ApiClient;
   toast: Toast;
@@ -35,6 +39,13 @@ export function ReminderEditor({
   const lock = useRef(false);
   const patch = (v: Partial<ReminderInput>) => setValue((old) => ({ ...old, ...v }));
   const available = templates.filter((template) => template.enabled && template.ready);
+  const selectionTouched = useRef(false);
+  const single = available.length === 1 ? available[0].id : null;
+  useEffect(() => {
+    if (!initial && single && !selectionTouched.current) {
+      setValue((old) => (old.templateIds.length ? old : { ...old, templateIds: [single] }));
+    }
+  }, [initial, single]);
   const local = value.dueAt
     ? new Date(Date.parse(value.dueAt) + 8 * 3600000).toISOString().slice(0, 16)
     : '';
@@ -73,7 +84,7 @@ export function ReminderEditor({
   }
   return (
     <ReactDialog
-      open
+      open={open}
       title={initial ? '编辑提醒事项' : '新增提醒事项'}
       busy={busy}
       onClose={onClose}
@@ -173,13 +184,14 @@ export function ReminderEditor({
                   type="checkbox"
                   checked={value.templateIds.includes(template.id)}
                   disabled={busy}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    selectionTouched.current = true;
                     patch({
                       templateIds: e.target.checked
                         ? [...value.templateIds, template.id]
                         : value.templateIds.filter((id) => id !== template.id),
-                    })
-                  }
+                    });
+                  }}
                 />
                 {template.name} · {NOTIFICATION_CHANNEL_LABELS[template.channel] || '已移除渠道'}
                 {template.enabled ? '' : '（已停用）'}
@@ -187,7 +199,14 @@ export function ReminderEditor({
             ))}
           </div>
         ) : (
-          <p className="help">请先配置并启用一个通知模板。</p>
+          <div className="form-check-row">
+            <span className="help">请先配置并启用一个通知模板。</span>
+            {onConfigureTemplates && (
+              <button type="button" disabled={busy} onClick={onConfigureTemplates}>
+                配置通知模板
+              </button>
+            )}
+          </div>
         )}
         <div className="form-check-row">
           <label className="checkbox-label">

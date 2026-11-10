@@ -133,8 +133,19 @@ export function NotificationInbox({
                       setOpen(true);
                     }}
                   >
-                    {message.readAt ? '' : '• '}
-                    {message.name}
+                    <div>
+                      <div title={message.name}>
+                        {message.readAt ? '' : '• '}
+                        {message.name}
+                      </div>
+                      <div className="card-url" title={message.content}>
+                        {Array.from(message.content.replace(/\s+/g, ' ').trim())
+                          .slice(0, 36)
+                          .join('')}
+                        {Array.from(message.content.trim()).length > 36 ? '…' : ''}
+                      </div>
+                      <div className="card-url">{compactRecordDate(message.createdAt)}</div>
+                    </div>
                   </Dropdown.Item>
                 ))
               ) : (
