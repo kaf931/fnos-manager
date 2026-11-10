@@ -210,12 +210,14 @@ function InboxDialog({
     [detail, setDetail] = useState<InboxMessage | null>(initialMessage),
     [, rerender] = useState(0);
   const container = useRef<HTMLDivElement>(null);
-  const alive = useRef(true),
-    lock = useRef(false);
+  const alive = useRef(true);
+  const readQueue = useRef({ ids: new Set<string>(), all: false, running: false });
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
+      readQueue.current.ids.clear();
+      readQueue.current.all = false;
     };
   }, []);
   const control = useMemo(
@@ -242,23 +244,40 @@ function InboxDialog({
     },
   });
   async function read(ids?: string[]) {
-    if (lock.current) return;
-    lock.current = true;
+    if (!alive.current) return;
+    const queue = readQueue.current;
+    if (ids) ids.forEach((id) => queue.ids.add(id));
+    else {
+      queue.all = true;
+      queue.ids.clear();
+    }
+    if (queue.running) return;
+    queue.running = true;
     setBusy(true);
     try {
-      await api(
-        ids ? '/notifications/inbox/read' : '/notifications/inbox/read-all',
-        'POST',
-        ids ? { ids } : {},
-      );
-      if (alive.current) {
-        model.refresh();
-        onChanged();
+      while (alive.current && (queue.all || queue.ids.size)) {
+        const batch = queue.all ? undefined : [...queue.ids].slice(0, 200);
+        if (batch) batch.forEach((id) => queue.ids.delete(id));
+        else {
+          queue.all = false;
+          queue.ids.clear();
+        }
+        try {
+          await api(
+            batch ? '/notifications/inbox/read' : '/notifications/inbox/read-all',
+            'POST',
+            batch ? { ids: batch } : {},
+          );
+          if (alive.current) {
+            model.refresh();
+            onChanged();
+          }
+        } catch (e) {
+          if (alive.current) toast(errorMessage(e));
+        }
       }
-    } catch (e) {
-      if (alive.current) toast(errorMessage(e));
     } finally {
-      lock.current = false;
+      queue.running = false;
       if (alive.current) setBusy(false);
     }
   }

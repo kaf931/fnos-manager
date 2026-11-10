@@ -999,3 +999,171 @@ test('canceled and outside drops do not save; animation and sensor configuration
   );
   assert.match(document.querySelector('.sortable-card-handle').title, /Esc/);
 });
+
+test('pending template sorting stays consistent after leaving and returning', async (t) => {
+  let server = [],
+    release;
+  const api = async (route, method, body) => {
+    if (route.endsWith('/template-order')) {
+      if (method === 'PUT')
+        return new Promise((resolve) => {
+          release = () => {
+            server = body.keys;
+            resolve({ keys: server });
+          };
+        });
+      return { keys: server };
+    }
+    return [];
+  };
+  const f = fixture(t, api);
+  await f.open();
+  await act(() => button('全部模板').click());
+  const initial = sortedIds();
+  await finishSort(initial[0], initial[3]);
+  const expected = sortedIds();
+  await f.open(NotificationSettingsPage, { active: false });
+  await f.open(NotificationSettingsPage, { active: true });
+  await act(() => button('全部模板').click());
+  await act(async () => {
+    release();
+    await tick();
+  });
+  assert.deepEqual(server, expected);
+  assert.deepEqual(sortedIds(), server);
+});
+
+test('all templates shows initial loading failure inside the dialog and retries without fake unconfigured cards', async (t) => {
+  let fails = true;
+  const f = fixture(t, async (route) => {
+    if (route.endsWith('/templates') && fails) throw Error('模板读取失败');
+    return route.endsWith('/template-order') ? { keys: [] } : [];
+  });
+  await f.open();
+  await act(() => button('全部模板').click());
+  assert.match(document.querySelector('dialog [role="alert"]')?.textContent || '', /模板读取失败/);
+  assert.equal(document.querySelectorAll('dialog .compact-card').length, 0);
+  assert.equal(document.querySelectorAll('[aria-label="通知模板"] .compact-card').length, 0);
+  fails = false;
+  await act(async () => {
+    button('重试读取通知模板').click();
+    await tick();
+  });
+  assert.equal(document.querySelector('dialog [role="alert"]'), null);
+  assert.equal(document.querySelectorAll('dialog .compact-card').length, 8);
+  assert.doesNotMatch(document.body.textContent, /模板读取失败/);
+});
+
+test('opening multiple messages queues and deduplicates read requests while the first one is pending', async (t) => {
+  const readIds = [];
+  let release;
+  const messages = ['a', 'b'].map((id) => ({
+    id,
+    name: 'Message ' + id,
+    content: 'Content ' + id,
+    createdAt: new Date().toISOString(),
+    readAt: null,
+    templateName: 'App',
+    status: 'success',
+  }));
+  const f = fixture(t, async (route, method, body) => {
+    if (route.endsWith('/inbox/unread')) return { count: 2 };
+    if (route.includes('/inbox?')) return { items: messages, total: 2 };
+    if (route.endsWith('/inbox/read')) {
+      readIds.push(body.ids);
+      if (readIds.length === 1)
+        return new Promise((resolve) => {
+          release = () => resolve({ success: true });
+        });
+      return { success: true };
+    }
+    return [];
+  });
+  await f.open(NotificationInbox, { active: true });
+  await act(async () => {
+    button('应用内消息，2 条未读').click();
+    await tick();
+  });
+  await act(() => button('Message a').click());
+  await act(() => button('返回消息').click());
+  await act(() => button('Message b').click());
+  await act(() => button('返回消息').click());
+  await act(() => button('Message b').click());
+  assert.match(document.querySelector('.history-run-output').textContent, /Content b/);
+  await act(async () => {
+    release();
+    await tick();
+  });
+  assert.deepEqual(readIds, [['a'], ['b']]);
+});
+
+test('a failed pending sort reloads server order after returning and reports the failure', async (t) => {
+  let rejectSave;
+  const notices = [];
+  const api = async (route, method) => {
+    if (route.endsWith('/template-order'))
+      return method === 'PUT'
+        ? new Promise((_, reject) => {
+            rejectSave = reject;
+          })
+        : { keys: [] };
+    return [];
+  };
+  const f = fixture(t, api),
+    props = { toast: (m) => notices.push(m) };
+  await f.open(NotificationSettingsPage, props);
+  await act(() => button('全部模板').click());
+  const initial = sortedIds();
+  await finishSort(initial[0], initial[3]);
+  await f.open(NotificationSettingsPage, { ...props, active: false });
+  await f.open(NotificationSettingsPage, { ...props, active: true });
+  await act(() => button('全部模板').click());
+  await act(async () => {
+    rejectSave(Error('排序保存失败'));
+    await tick();
+  });
+  assert.deepEqual(sortedIds(), initial);
+  assert.ok(notices.includes('排序保存失败'));
+});
+
+test('a failed mark-read request does not discard the next opened message', async (t) => {
+  let rejectFirst;
+  const calls = [],
+    notices = [];
+  const items = ['a', 'b'].map((id) => ({
+    id,
+    name: 'Read ' + id,
+    content: id,
+    createdAt: new Date().toISOString(),
+    readAt: null,
+    templateName: 'App',
+    status: 'success',
+  }));
+  const f = fixture(t, async (route, method, body) => {
+    if (route.endsWith('/inbox/unread')) return { count: 2 };
+    if (route.includes('/inbox?')) return { items, total: 2 };
+    if (route.endsWith('/inbox/read')) {
+      calls.push(body.ids);
+      return calls.length === 1
+        ? new Promise((_, reject) => {
+            rejectFirst = reject;
+          })
+        : { success: true };
+    }
+    return [];
+  });
+  await f.open(NotificationInbox, { active: true, toast: (m) => notices.push(m) });
+  await act(async () => {
+    button('应用内消息，2 条未读').click();
+    await tick();
+  });
+  await act(() => button('Read a').click());
+  await act(() => button('返回消息').click());
+  await act(() => button('Read b').click());
+  await act(async () => {
+    rejectFirst(Error('读取失败'));
+    await tick();
+  });
+  assert.deepEqual(calls, [['a'], ['b']]);
+  assert.ok(notices.includes('读取失败'));
+});

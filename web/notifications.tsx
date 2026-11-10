@@ -48,6 +48,7 @@ function NotificationTemplatesPanel({
   const [order, setOrder] = useState<string[]>([]),
     [sorting, setSorting] = useState(false);
   const sortLock = useRef(false);
+  const sortPending = useRef<Promise<unknown> | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [recordsTemplate, setRecordsTemplate] = useState<string | null>(null);
   const [rows, setRows] = useState<NotificationTemplateSummary[]>([]),
@@ -90,6 +91,9 @@ function NotificationTemplatesPanel({
     const ticket = ++generation.current;
     setLoading(true);
     try {
+      // Reads must follow the pending write, including after a menu change or refresh.
+      await sortPending.current?.catch(() => undefined);
+      if (!alive.current || !activeRef.current || ticket !== generation.current) return;
       const [values, position] = await Promise.all([
         api<NotificationTemplateSummary[]>('/notifications/templates'),
         api<{ keys: string[] }>('/notifications/template-order'),
@@ -192,17 +196,18 @@ function NotificationTemplatesPanel({
     const ticket = ++generation.current;
     setLoading(false);
     try {
-      const result = await api<{ keys: string[] }>('/notifications/template-order', 'PUT', {
-        keys,
-      });
+      const request = api<{ keys: string[] }>('/notifications/template-order', 'PUT', { keys });
+      sortPending.current = request;
+      const result = await request;
       if (alive.current && activeRef.current && generation.current === ticket)
         setOrder(result.keys);
     } catch (e) {
-      if (alive.current && activeRef.current && generation.current === ticket) {
-        setOrder(previous);
+      if (alive.current && activeRef.current) {
+        if (generation.current === ticket) setOrder(previous);
         toast(errorMessage(e));
       }
     } finally {
+      sortPending.current = null;
       sortLock.current = false;
       if (alive.current) setSorting(false);
     }
@@ -312,9 +317,11 @@ function NotificationTemplatesPanel({
             aria-label="通知模板"
           >
             <h2 className="section-label workspace-section-title">通知模板</h2>
-            <CompactCardStrip label="通知模板" desktopOnly>
-              {entries.map((entry) => renderCard(entry))}
-            </CompactCardStrip>
+            {loaded && (
+              <CompactCardStrip label="通知模板" desktopOnly>
+                {entries.map((entry) => renderCard(entry))}
+              </CompactCardStrip>
+            )}
           </section>
           <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
         </>,
@@ -340,16 +347,39 @@ function NotificationTemplatesPanel({
             setAllOpen(false);
           }}
         >
-          <div ref={overview} className="task-form-body">
-            <SortableCards
-              items={entries.map((entry) => ({
-                id: entryKey(entry),
-                name: entry.row?.name || NOTIFICATION_CHANNEL_LABELS[entry.channel],
-                content: (handle) => renderCard(entry, handle),
-              }))}
-              disabled={sorting || loading || !loaded}
-              onMove={(from, to) => void reorder(from, to)}
-            />
+          <div ref={overview} className="task-form-body" aria-busy={loading || sorting}>
+            {error && (
+              <div className="surface-error" role="alert">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  disabled={loading}
+                  aria-label="重试读取通知模板"
+                  onClick={() => {
+                    onChanged();
+                    void load();
+                  }}
+                >
+                  重试
+                </button>
+              </div>
+            )}
+            {!loaded && loading && (
+              <p className="notice" role="status">
+                正在读取模板…
+              </p>
+            )}
+            {loaded && (
+              <SortableCards
+                items={entries.map((entry) => ({
+                  id: entryKey(entry),
+                  name: entry.row?.name || NOTIFICATION_CHANNEL_LABELS[entry.channel],
+                  content: (handle) => renderCard(entry, handle),
+                }))}
+                disabled={sorting || loading || !!error}
+                onMove={(from, to) => void reorder(from, to)}
+              />
+            )}
           </div>
         </ReactDialog>
       )}
