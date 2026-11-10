@@ -28,7 +28,7 @@ export function NativeSelect({
         const rect = trigger.getBoundingClientRect(),
           container = popupContainer();
         const bounds = container === document.body ? null : container.getBoundingClientRect();
-        // Semi adjusts against the viewport; a native dialog can clip sooner.
+        // Keep the requested direction and scroll within the dialog’s remaining space.
         const top = Math.max(0, bounds?.top ?? 0),
           bottom = Math.min(window.innerHeight, bounds?.bottom ?? window.innerHeight),
           gap = (typeof props.spacing === 'number' ? props.spacing : (props.spacing?.y ?? 4)) + 4,
@@ -39,20 +39,12 @@ export function NativeSelect({
             typeof dropdownStyle.maxHeight === 'number' ? dropdownStyle.maxHeight : 244,
           );
         const vertical = position.startsWith('top') || position.startsWith('bottom');
-        let next = position;
-        if (vertical) {
-          const preferTop = position.startsWith('top');
-          if (
-            (preferTop ? above : below) < limit &&
-            (preferTop ? below : above) > (preferTop ? above : below)
-          )
-            next = position.replace(
-              preferTop ? /^top/ : /^bottom/,
-              preferTop ? 'bottom' : 'top',
-            ) as typeof position;
-        }
-        const available = vertical ? (next.startsWith('top') ? above : below) : bottom - top - gap;
-        setPopup({ position: next, maxHeight: Math.max(8, Math.min(limit, available)) });
+        const available = vertical
+          ? position.startsWith('top')
+            ? above
+            : below
+          : bottom - top - gap;
+        setPopup({ position, maxHeight: Math.max(8, Math.min(limit, available)) });
       }
     }
     onDropdownVisibleChange?.(visible);
@@ -67,7 +59,7 @@ export function NativeSelect({
       <Select<string>
         size="default"
         position={popup.position}
-        autoAdjustOverflow
+        autoAdjustOverflow={false}
         showClear={false}
         {...props}
         id={id}

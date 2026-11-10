@@ -84,7 +84,7 @@ async function fixture(t, { top, bottom }, bounds, props = {}) {
   await act(() => document.querySelector('#repeat').click());
   return selectBridge.props;
 }
-test('select flips inside its clipping dialog even when the browser viewport has room below', async (t) => {
+test('select stays below its trigger and shrinks to the clipping dialog space', async (t) => {
   let notified = false;
   const p = await fixture(
     t,
@@ -92,11 +92,12 @@ test('select flips inside its clipping dialog even when the browser viewport has
     { top: 80, bottom: 640 },
     { onDropdownVisibleChange: (v) => (notified = v) },
   );
-  assert.equal(p.position, 'topLeft');
-  assert.equal(p.dropdownStyle.maxHeight, 244);
+  assert.equal(p.position, 'bottomLeft');
+  assert.equal(p.autoAdjustOverflow, false);
+  assert.equal(p.dropdownStyle.maxHeight, 190);
   assert.equal(notified, true);
 });
-test('short dialog bounds cap popup and scroll-list height to the larger available side', async (t) => {
+test('short dialog bounds cap popup height without changing its downward direction', async (t) => {
   const p = await fixture(t, { top: 180, bottom: 212 }, { top: 100, bottom: 320 });
   assert.equal(p.position, 'bottomLeft');
   assert.ok(p.dropdownStyle.maxHeight <= 100);
