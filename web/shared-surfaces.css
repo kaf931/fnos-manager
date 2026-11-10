@@ -715,3 +715,8 @@ p.help:empty {
 .compact-card-controls .mobile-more-button {
   display: flex;
 }
+
+/* Short record tables fit the shared large dialog; wider histories retain their normal minimum. */
+.task-table.record-table-compact {
+  min-width: 600px;
+}

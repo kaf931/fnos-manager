@@ -103,7 +103,7 @@ test('schema28 upgrade preserves existing connections and creates constrained AD
     );
     db.close();
     db = new DatabaseService(data);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
     assert.equal(
       db.connection.prepare("SELECT name FROM vnc_connections WHERE id='existing'").get().name,
       'saved',

@@ -420,7 +420,7 @@ test('version 13 migration preserves configuration and adds pending state/receip
   db = new DatabaseService(dir);
   try {
     assert.equal(new TerminalRepository(db).list('1').length, 1);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
     assert.equal(db.connection.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
     assert.equal(db.connection.prepare('SELECT COUNT(*) n FROM backup_receipts').get().n, 0);
   } finally {

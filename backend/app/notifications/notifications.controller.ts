@@ -1,3 +1,4 @@
+import { InboxPageDto, ReadInboxDto } from './inbox.dto.js';
 import { ReminderDto, ReminderCompleteDto } from './reminder.dto.js';
 import { PageDto } from '../common/page.dto.js';
 import {
@@ -23,6 +24,21 @@ import { SettingsDto, TemplateDto, TemplateEnabledDto } from './dto.js';
 @Controller('app/deskicons/api/notifications')
 export class NotificationsController {
   constructor(@Inject(NotificationService) private readonly service: NotificationService) {}
+  @Get('inbox') inbox(@Req() req: ApiRequest, @Query() query: InboxPageDto) {
+    return this.service.listInbox(req.terminalOwner, query.page, query.pageSize, query.filter);
+  }
+  @Get('inbox/unread') inboxUnread(@Req() req: ApiRequest) {
+    return this.service.inboxUnread(req.terminalOwner);
+  }
+  @Post('inbox/read') @HttpCode(200) readInbox(
+    @Req() req: ApiRequest,
+    @Body() input: ReadInboxDto,
+  ) {
+    return this.service.readInbox(req.terminalOwner, input.ids);
+  }
+  @Post('inbox/read-all') @HttpCode(200) readAllInbox(@Req() req: ApiRequest) {
+    return this.service.readInbox(req.terminalOwner);
+  }
   @Get('reminders') reminders(@Req() req: ApiRequest) {
     return this.service.listReminders(req.terminalOwner);
   }

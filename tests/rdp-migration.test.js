@@ -90,7 +90,7 @@ test('schema26 RDP connections retain strict NLA and new policies survive reopen
     db = new DatabaseService(dir);
     repo = new RdpRepository(db);
     assert.equal(repo.list('1001')[0].certificatePolicy, 'tofu');
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
     assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {
     db.close();

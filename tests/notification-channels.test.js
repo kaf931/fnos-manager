@@ -213,7 +213,7 @@ test('schema29 upgrades without changing existing settings, pending payloads or 
   db.close();
   db = new DatabaseService(dir);
   repo = new NotificationRepository(db);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
   assert.equal(repo.getSettings('a').channel, 'webhook');
   assert.equal(repo.getSettings('a').token, 'bearer');
   const after = db.connection.prepare('SELECT * FROM notification_deliveries').get();

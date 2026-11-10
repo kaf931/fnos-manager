@@ -86,6 +86,15 @@ export class NotificationService {
     if (!this.reminders) throw Object.assign(new Error('提醒服务不可用'), { status: 503 });
     return this.reminders;
   }
+  listInbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all') {
+    return this.repository.inbox(owner, page, pageSize, filter);
+  }
+  inboxUnread(owner: string) {
+    return { count: this.repository.inboxUnread(owner) };
+  }
+  readInbox(owner: string, ids?: string[]) {
+    return this.repository.readInbox(owner, ids);
+  }
   listReminders(owner: string) {
     return this.reminderRepository().list(owner);
   }
@@ -170,7 +179,8 @@ export class NotificationService {
     let failure: string | undefined;
     let retryable = false;
     try {
-      const result = await this.send(job, this.controller.signal);
+      const result =
+        job.options?.channel === 'inapp' ? 204 : await this.send(job, this.controller.signal);
       if (typeof result === 'number') code = result;
       else {
         code = result.httpStatus;

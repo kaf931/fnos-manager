@@ -37,7 +37,7 @@ export function NotificationTemplateEditor({
   >({
     ...DEFAULT_NOTIFICATION_OPTIONS,
     enabled: false,
-    url: '',
+    url: initialChannel === 'bark' ? 'https://api.day.app/push' : '',
     token: '',
     condition: 'errors',
     scanFailures: true,
@@ -146,7 +146,7 @@ export function NotificationTemplateEditor({
               patch({
                 ...DEFAULT_NOTIFICATION_OPTIONS,
                 channel: value as NotificationChannel,
-                url: '',
+                url: value === 'bark' ? 'https://api.day.app/push' : '',
                 token: '',
               });
               setHeadersText('{}');
@@ -154,9 +154,11 @@ export function NotificationTemplateEditor({
             }}
           />
         </div>
-        {settings.channel !== 'email' && (
+        {!['email', 'serverchan', 'inapp'].includes(settings.channel) && (
           <>
-            <label htmlFor="notification-url">Webhook 地址</label>
+            <label htmlFor="notification-url">
+              {settings.channel === 'bark' ? '推送地址' : 'Webhook 地址'}
+            </label>
             <input
               id="notification-url"
               type="url"
@@ -186,6 +188,21 @@ export function NotificationTemplateEditor({
               onChange={(e) => patch({ token: e.target.value })}
             />
           </>
+        )}
+        {settings.channel === 'serverchan' && (
+          <p className="help">
+            在{' '}
+            <a href="https://sct.ftqq.com/" target="_blank" rel="noopener noreferrer">
+              Server酱
+            </a>{' '}
+            获取 SendKey，支持 SCT 和 sctp。
+          </p>
+        )}
+        {settings.channel === 'bark' && (
+          <p className="help">在 iPhone 的 Bark 中获取 Device Key，可填写自建推送地址。</p>
+        )}
+        {settings.channel === 'inapp' && (
+          <p className="help">消息保存在应用内，保留上限与投递记录一致。</p>
         )}
         {settings.channel === 'email' && (
           <>
@@ -316,7 +333,7 @@ export function NotificationTemplateEditor({
             />
           </>
         )}
-        {settings.channel !== 'email' && (
+        {!['email', 'inapp'].includes(settings.channel) && (
           <details className="help-details">
             <summary>自定义消息与请求头</summary>
             <label htmlFor="notification-template">

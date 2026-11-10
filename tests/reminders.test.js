@@ -165,7 +165,9 @@ test('schema31 upgrade preserves template configuration and delivery metadata', 
     db.connection.prepare('SELECT config FROM notification_templates').get().config,
     cfg,
   );
-  assert.deepEqual(db.connection.prepare('SELECT * FROM notification_deliveries').get(), before);
+  const after = db.connection.prepare('SELECT * FROM notification_deliveries').get();
+  for (const key of Object.keys(before)) assert.deepEqual(after[key], before[key]);
+  assert.equal(after.read_at, null);
   assert.equal(db.connection.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
   assert.deepEqual(db.connection.prepare('PRAGMA foreign_key_check').all(), []);
 });

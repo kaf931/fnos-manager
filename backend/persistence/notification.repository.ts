@@ -1,3 +1,4 @@
+import { NotificationInboxRepository } from './notification-inbox.repository.js';
 import {
   DEFAULT_NOTIFICATION_OPTIONS,
   notificationReady,
@@ -42,6 +43,14 @@ export function validateSettings(input: NotificationSettingsInput): Notification
   )
     invalid('通知设置格式无效');
   const options = validateNotificationOptions(input);
+  if (['serverchan', 'bark'].includes(options.channel) && input.enabled && !input.token)
+    invalid('当前渠道需要填写推送凭据');
+  if (
+    options.channel === 'serverchan' &&
+    input.token &&
+    !/^(?:SCT[A-Za-z0-9_-]+|sctp\d+t[A-Za-z0-9_-]+)$/.test(input.token)
+  )
+    invalid('SendKey 格式无效');
   if (
     input.token &&
     options.channel === 'webhook' &&
@@ -69,7 +78,8 @@ export function validateSettings(input: NotificationSettingsInput): Notification
     }
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash)
       invalid('通知地址禁止用户信息、片段或非 HTTP(S) 协议');
-  } else if (input.enabled && options.channel !== 'email') invalid('启用通知需要填写地址');
+  } else if (input.enabled && !['email', 'serverchan', 'inapp'].includes(options.channel))
+    invalid('启用通知需要填写地址');
   return {
     ...options,
     enabled: input.enabled,
@@ -92,6 +102,15 @@ export interface ClaimedDelivery {
 }
 export class NotificationRepository {
   constructor(private readonly database: DatabaseService) {}
+  inbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all') {
+    return new NotificationInboxRepository(this.database).list(owner, page, pageSize, filter);
+  }
+  inboxUnread(owner: string) {
+    return new NotificationInboxRepository(this.database).unread(owner);
+  }
+  readInbox(owner: string, ids?: string[]) {
+    return new NotificationInboxRepository(this.database).read(owner, ids);
+  }
   private row(owner: string, id: string) {
     return this.database.connection
       .prepare('SELECT * FROM notification_templates WHERE owner_uid=? AND id=?')
@@ -311,6 +330,13 @@ export class NotificationRepository {
         id = randomUUID(),
         now = enqueuedAt,
         safeName = name.slice(0, 120);
+      const settings = this.decodeTemplate(setting);
+      const payload = { eventId, eventType, name: safeName, ...summary };
+      const content =
+        settings.channel === 'inapp'
+          ? (JSON.parse(prepareNotification({ ...settings, payload: JSON.stringify(payload) }).body)
+              .text as string)
+          : undefined;
       db.prepare(
         'INSERT INTO notification_deliveries(id,owner_uid,template_id,template_name,channel,event_id,event_type,name,payload,revision,status,created_at,finished_at,next_attempt_at,error) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       ).run(
@@ -322,7 +348,7 @@ export class NotificationRepository {
         eventId,
         eventType,
         safeName,
-        JSON.stringify({ eventId, eventType, name: safeName, ...summary }),
+        JSON.stringify({ ...payload, ...(content === undefined ? {} : { message: content }) }),
         Number(setting.revision),
         overflow ? 'failed' : 'pending',
         now,

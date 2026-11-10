@@ -1,5 +1,5 @@
 /** Relational schema. JSON is reserved for task variants and scan statistics. */
-export const SCHEMA_VERSION = 32;
+export const SCHEMA_VERSION = 33;
 const baseSchema = `
 CREATE TABLE schema_migrations (
   version INTEGER PRIMARY KEY NOT NULL,
@@ -540,6 +540,7 @@ DROP TABLE notification_settings;
 CREATE INDEX notification_due ON notification_deliveries(status,next_attempt_at);
 CREATE INDEX notification_owner ON notification_deliveries(owner_uid,created_at);
 `;
+export const notificationInboxSchema = `ALTER TABLE notification_deliveries ADD COLUMN read_at INTEGER;`;
 export const reminderSchema = `
 CREATE TABLE reminders (
  id TEXT NOT NULL,owner_uid TEXT NOT NULL,name TEXT NOT NULL CHECK(length(name) BETWEEN 1 AND 80),
@@ -718,6 +719,7 @@ export const schema =
   notificationOptionsSchema +
   notificationTemplatesSchema +
   reminderSchema +
+  notificationInboxSchema +
   operationSchema +
   reachabilitySchema +
   textVersionsSchema +
@@ -756,5 +758,6 @@ INSERT INTO schema_migrations VALUES(29,CAST(unixepoch('subsec')*1000 AS INTEGER
 INSERT INTO schema_migrations VALUES(30,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(31,CAST(unixepoch('subsec')*1000 AS INTEGER));
 INSERT INTO schema_migrations VALUES(32,CAST(unixepoch('subsec')*1000 AS INTEGER));
-PRAGMA user_version=32;
+INSERT INTO schema_migrations VALUES(33,CAST(unixepoch('subsec')*1000 AS INTEGER));
+PRAGMA user_version=33;
 `;

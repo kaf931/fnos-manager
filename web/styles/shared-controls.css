@@ -86,6 +86,9 @@
 }
 
 /* Compact activity count shared by icon-only navigation actions. */
+.activity-badge-host {
+  position: relative;
+}
 .activity-badge {
   position: absolute;
   top: 0;

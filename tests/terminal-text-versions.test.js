@@ -93,7 +93,7 @@ test('schema17 migration preserves connection records and adds private schema18 
   db.close();
   const migrated = new DatabaseService(dir);
   t.after(() => migrated.close());
-  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 32);
+  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 33);
   assert.equal(migrated.connection.prepare('SELECT COUNT(*) n FROM ssh_connections').get().n, 1);
   assert.equal(migrated.connection.prepare('SELECT COUNT(*) n FROM text_file_versions').get().n, 0);
   assert.equal(

@@ -57,7 +57,7 @@ test('all API endpoints are explicit Nest controller handlers', async () => {
         key !== 'constructor' && Reflect.hasMetadata(PATH_METADATA, Controller.prototype[key]),
     ).length;
   }
-  assert.equal(routes, 151);
+  assert.equal(routes, 155);
 });
 test('framework errors preserve JSON, auth precedes parsing, and non-API assets stay protected', async () => {
   const dir = await mkdtemp(os.tmpdir() + '/nest-security-'),

@@ -42,7 +42,7 @@ test('v2 to v4 migration preserves rows and is idempotent', async (t) => {
   );
   db.close();
   db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
   assert.equal(db.connection.prepare('SELECT id FROM icons').get().id, 'keep');
   assert.equal(db.connection.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
   assert.equal(db.connection.prepare('PRAGMA foreign_key_check').all().length, 0);

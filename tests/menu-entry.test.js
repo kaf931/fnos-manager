@@ -57,7 +57,7 @@ test('v7 migration preserves icons and menu metadata persists with a database co
   );
   db.close();
   db = new DatabaseService(dir);
-  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+  assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
   const repo = new IconRepository(db);
   assert.equal(repo.find('keep01').name, 'Keep');
   assert.equal(repo.find('keep01').menuPage, null);

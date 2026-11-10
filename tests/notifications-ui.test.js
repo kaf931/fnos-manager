@@ -8,12 +8,15 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DEFAULT_NOTIFICATION_OPTIONS } from '../server/domain/notifications.js';
 const stubs = {
+  pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
+  checkbox: `import React from 'react';export default function Checkbox({children,onChange,...props}){return React.createElement('label',null,React.createElement('input',{...props,type:'checkbox',onChange}),children);}`,
+
   dropdown: `import React from 'react';const Dropdown=({children,render})=>React.createElement('div',null,children,render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
   'native-select.js': `import React from 'react';export function NativeSelect({optionList,onChange,...props}){return React.createElement('select',{...props,onChange:e=>onChange(e.target.value)},optionList.map(o=>React.createElement('option',{key:o.value,value:o.value},o.label)))}`,
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
   'terminal-connections.js': `import React from 'react';export function ConnectionCards({rows,onAction,options}){return rows.map(row=>React.createElement('article',{key:row.id,className:'card'},React.createElement('h3',null,row.name),options.metaControl(row),...['connect','edit','delete'].map(a=>React.createElement('button',{key:a,onClick:()=>onAction(a,row)},a==='connect'?'测试通知':a==='edit'?'编辑模板':'删除模板'))))}`,
-  'confirmation.js': `export const confirmAction=async()=>true;`,
+  'confirmation.js': `export const confirmAction=async(options)=>{await options.onAccept?.();return true;};`,
 };
 const built = await build({
   entryPoints: ['web/notifications.tsx'],
@@ -33,6 +36,10 @@ const built = await build({
         }));
         b.onResolve({ filter: /@douyinfe\/semi-ui\/lib\/es\/dropdown$/ }, () => ({
           path: 'dropdown',
+          namespace: 'stub',
+        }));
+        b.onResolve({ filter: /@douyinfe\/semi-ui\/lib\/es\/(pagination|checkbox)$/ }, (a) => ({
+          path: a.path.split('/').at(-1),
           namespace: 'stub',
         }));
         b.onResolve({ filter: /\.js$/ }, (a) => {
@@ -116,7 +123,7 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   const select = document.querySelector('#notification-channel');
   assert.deepEqual(
     [...select.options].map((option) => option.value),
-    ['webhook', 'wecom', 'dingtalk', 'feishu', 'email'],
+    ['webhook', 'wecom', 'dingtalk', 'feishu', 'email', 'serverchan', 'bark', 'inapp'],
   );
   assert.equal(document.querySelector('#notification-token').autocomplete, 'new-password');
   assert.equal(document.querySelector('#notification-url').name, 'notification-endpoint');
@@ -282,7 +289,7 @@ test('editing an unavailable channel starts with empty safe configuration and pr
   assert.ok(document.querySelector('dialog').textContent.includes('原通知渠道已移除'));
 });
 
-test('five built-in channel cards open matching unsaved configurations without automatic writes', async (t) => {
+test('eight built-in channel cards open matching unsaved configurations without automatic writes', async (t) => {
   const calls = [];
   const f = fixture(t, async (route, method, body) => {
     calls.push({ route, method, body });
@@ -290,7 +297,7 @@ test('five built-in channel cards open matching unsaved configurations without a
   });
   await f.open();
   const templates = document.querySelector('[aria-label="通知模板"]');
-  assert.equal(templates.querySelectorAll('.compact-card').length, 5);
+  assert.equal(templates.querySelectorAll('.compact-card').length, 8);
   assert.equal(button('新增模板'), undefined);
   for (const [channel, label] of [
     ['webhook', '通用 Webhook'],
@@ -298,6 +305,9 @@ test('five built-in channel cards open matching unsaved configurations without a
     ['dingtalk', '钉钉'],
     ['feishu', '飞书'],
     ['email', '邮箱（SMTP）'],
+    ['serverchan', '个人微信（Server酱）'],
+    ['bark', '手机推送（Bark）'],
+    ['inapp', '应用内通知'],
   ]) {
     await act(() => button('配置 ' + label).click());
     assert.equal(document.querySelector('#notification-channel').value, channel);
@@ -323,7 +333,7 @@ test('configured channel replaces its placeholder and keeps multiple saved templ
   );
   await f.open();
   const section = document.querySelector('[aria-label="通知模板"]');
-  assert.equal(section.querySelectorAll('.compact-card').length, 6);
+  assert.equal(section.querySelectorAll('.compact-card').length, 9);
   assert.equal(button('配置 通用 Webhook'), undefined);
   assert.ok(button('编辑 Saved one'));
   assert.ok(button('编辑 Saved two'));
@@ -332,4 +342,72 @@ test('configured channel replaces its placeholder and keeps multiple saved templ
     await tick();
   });
   assert.equal(document.querySelector('#notification-name').value, 'Saved one');
+});
+
+test('inbox reuses record pagination, marks opened messages read and supports shared batch deletion', async (t) => {
+  let read = false,
+    removed = false;
+  const calls = [];
+  const message = {
+    id: 'message',
+    name: 'Maintenance',
+    content: 'Safe <script>text</script>\nFailed',
+    createdAt: new Date().toISOString(),
+    readAt: null,
+    templateName: 'App',
+    status: 'success',
+  };
+  const f = fixture(t, async (route, method, body) => {
+    calls.push({ route, method, body });
+    if (route === '/notifications/inbox/unread') return { count: read || removed ? 0 : 1 };
+    if (route.startsWith('/notifications/inbox?'))
+      return {
+        items: removed ? [] : [{ ...message, readAt: read ? new Date().toISOString() : null }],
+        total: removed ? 0 : 1,
+      };
+    if (route === '/notifications/inbox/read') {
+      read = true;
+      return { success: true };
+    }
+    if (route.includes('/storage/cleanup/records/deliveries/delete')) {
+      removed = true;
+      return { success: true };
+    }
+    return [];
+  });
+  await f.open();
+  await act(async () => {
+    button('应用内消息，1 条未读').click();
+    await tick();
+  });
+  assert.ok(document.querySelector('[aria-label="应用内消息分页"]'));
+  await act(async () => {
+    button('Maintenance').click();
+    await tick();
+  });
+  assert.ok(
+    document.querySelector('.history-run-output').textContent.includes('<script>text</script>'),
+  );
+  assert.equal(document.querySelector('script'), null);
+  assert.equal(read, true);
+  await act(async () => {
+    button('返回消息').click();
+    await tick();
+  });
+  await act(() =>
+    Simulate.change(document.querySelector('tbody input[type=checkbox]'), {
+      target: { checked: true },
+    }),
+  );
+  await act(async () => {
+    button('批量删除消息').click();
+    await tick();
+  });
+  assert.ok(
+    calls.some(
+      (c) =>
+        c.route.includes('/storage/cleanup/records/deliveries/delete') &&
+        c.body.ids[0] === 'message',
+    ),
+  );
 });

@@ -85,7 +85,7 @@ for (const source of ['fresh', 'schema13']) {
     }
     let db = new DatabaseService(dir);
     try {
-      assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+      assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
       assert.equal(
         db.connection.prepare('SELECT COUNT(*) n FROM schema_migrations WHERE version=14').get().n,
         1,

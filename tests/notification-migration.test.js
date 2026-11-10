@@ -63,7 +63,7 @@ test('schema14 upgrade preserves task history and creates empty notification que
     );
     raw.close();
     db = new DatabaseService(dir);
-    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('pragma user_version').get().user_version, 33);
     assert.equal(
       db.connection.prepare('select pending_reason from tasks where id=?').get('keep')
         .pending_reason,

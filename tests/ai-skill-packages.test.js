@@ -22,7 +22,7 @@ test('package schema preserves document skills and rejects invalid owner/file re
     });
     assert.equal(item.kind, 'document');
     assert.equal(item.revision, 1);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
     assert.throws(() =>
       db.connection
         .prepare(

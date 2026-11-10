@@ -159,3 +159,49 @@ test('reminder endpoints validate, isolate owners and manage notes without sendi
     await f.close();
   }
 });
+
+test('inbox routes validate and isolate reads while enforcing CSRF', async () => {
+  const f = await appFixture();
+  try {
+    const service = f.app.get(NotificationService);
+    await service.close();
+    const repo = service.repository;
+    const template = repo.createTemplate('1000', {
+      channel: 'inapp',
+      name: 'App',
+      enabled: true,
+      url: '',
+      token: '',
+      condition: 'all',
+      scanFailures: true,
+    });
+    const item = repo.enqueueTest('1000', template.id),
+      job = repo.claim();
+    repo.finish(job, 204, false);
+    const call = (path, method = 'GET', body, extra = {}) =>
+      fetch(f.base + '/notifications/inbox' + path, {
+        method,
+        headers: { ...f.headers, ...extra },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    assert.equal((await call('?page=0')).status, 400);
+    assert.equal((await call('?filter=invalid')).status, 400);
+    assert.equal((await (await call('/unread')).json()).count, 1);
+    assert.equal(
+      (await (await call('/unread', 'GET', undefined, { 'x-trim-userid': '1001' })).json()).count,
+      0,
+    );
+    assert.equal(
+      (await call('/read', 'POST', { ids: [item.id] }, { 'x-deskicons-token': 'wrong' })).status,
+      403,
+    );
+    assert.equal(
+      (await call('/read', 'POST', { ids: [item.id] }, { 'x-trim-userid': '1001' })).status,
+      409,
+    );
+    assert.equal((await call('/read', 'POST', { ids: [item.id] })).status, 200);
+    assert.equal((await (await call('/unread')).json()).count, 0);
+  } finally {
+    await f.close();
+  }
+});

@@ -201,13 +201,29 @@ export function prepareNotification(job: NotificationRequestInput, now = Date.no
   let url = job.url;
   let body: unknown;
   const headers: Record<string, string> = { ...options.headers };
+  const title = [...`NAS 管家 · ${variables.name}`.replace(/[\r\n]/g, ' ')].slice(0, 100).join('');
   switch (options.channel) {
+    case 'inapp':
+      body = { title, text };
+      break;
     case 'email':
       body = {
         title: render(options.smtpSubject || 'NAS 管家 · {{name}}').replace(/[\r\n]/g, ' '),
         text,
       };
       break;
+    case 'bark':
+      body = { device_key: job.token, title, body: text };
+      break;
+    case 'serverchan': {
+      const key = job.token ?? '',
+        uid = /^sctp(\d+)t/.exec(key)?.[1];
+      url = uid
+        ? `https://${uid}.push.ft07.com/send/${encodeURIComponent(key)}.send`
+        : `https://sctapi.ftqq.com/${encodeURIComponent(key)}.send`;
+      body = { title: [...title].slice(0, 32).join(''), desp: text };
+      break;
+    }
     case 'webhook':
       body = options.template ? templateTree(JSON.parse(options.template), render) : event;
       if (job.token && !headers.authorization) headers.authorization = `Bearer ${job.token}`;
@@ -281,6 +297,20 @@ export function notificationAcknowledgement(
       code = body.code ?? body.StatusCode;
       success = code === 0;
       break;
+    case 'bark':
+      code = body.code;
+      success = code === 200;
+      break;
+    case 'serverchan': {
+      code = body.code;
+      success = code === 0;
+      const data = body.data;
+      if (data && typeof data === 'object' && 'errno' in data && data.errno !== 0) {
+        success = false;
+        code = data.errno;
+      }
+      break;
+    }
     default:
       code = body.errcode;
       success = code === 0;

@@ -1,3 +1,4 @@
+import { NotificationInbox } from './notification-inbox.js';
 import { CompactCard, CompactCardStrip } from './ui/compact-card-strip.js';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
 import { MobileMoreButton } from './mobile-more-button.js';
@@ -129,6 +130,7 @@ function NotificationTemplatesPanel({
       <header className="toolbar task-toolbar">
         <h2 className="workspace-section-title">通知模板</h2>
         <div className="toolbar-actions">
+          <NotificationInbox api={api} toast={toast} active={active} />
           <button
             type="button"
             className="icon-button toolbar-refresh"

@@ -119,7 +119,7 @@ test('VNC preferences migrate version 19, survive reopening and enforce SQLite c
     );
     db.close();
     db = new DatabaseService(dir);
-    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 32);
+    assert.equal(db.connection.prepare('PRAGMA user_version').get().user_version, 33);
     assert.equal(
       db.connection.prepare('SELECT version FROM schema_migrations WHERE version=20').get().version,
       20,

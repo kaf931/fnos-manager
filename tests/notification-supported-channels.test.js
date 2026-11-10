@@ -3,13 +3,20 @@ import assert from 'node:assert/strict';
 import { NOTIFICATION_CHANNELS, notificationReady } from '../server/domain/notifications.js';
 import { validateNotificationOptions } from '../server/notifications/channels.js';
 
-test('only five common notification channels are supported; removed providers cannot send', () => {
-  assert.deepEqual(NOTIFICATION_CHANNELS, ['webhook', 'wecom', 'dingtalk', 'feishu', 'email']);
+test('eight selected notification channels are supported; other providers cannot send', () => {
+  assert.deepEqual(NOTIFICATION_CHANNELS, [
+    'webhook',
+    'wecom',
+    'dingtalk',
+    'feishu',
+    'email',
+    'serverchan',
+    'bark',
+    'inapp',
+  ]);
   for (const channel of [
     'telegram',
-    'bark',
     'pushplus',
-    'serverchan',
     'wxpusher',
     'ntfy',
     'gotify',

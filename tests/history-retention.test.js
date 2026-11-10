@@ -109,7 +109,7 @@ test('v20 migration preserves configuration and creates one empty retention tabl
   db.close();
   const migrated = new DatabaseService(dir);
   t.after(() => migrated.close());
-  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 32);
+  assert.equal(migrated.connection.prepare('PRAGMA user_version').get().user_version, 33);
   assert.equal(migrated.connection.prepare('SELECT name FROM icons').get().name, 'keep');
   assert.equal(
     migrated.connection.prepare('SELECT count(*) n FROM schema_migrations WHERE version=21').get()
