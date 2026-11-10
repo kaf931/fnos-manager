@@ -8,6 +8,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DEFAULT_NOTIFICATION_OPTIONS } from '../server/domain/notifications.js';
 const stubs = {
+  dropdown: `import React from 'react';const Dropdown=({children,render})=>React.createElement('div',null,children,render);Dropdown.Menu=({children})=>React.createElement('div',null,children);Dropdown.Item=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export default Dropdown;`,
   'native-select.js': `import React from 'react';export function NativeSelect({optionList,onChange,...props}){return React.createElement('select',{...props,onChange:e=>onChange(e.target.value)},optionList.map(o=>React.createElement('option',{key:o.value,value:o.value},o.label)))}`,
   'pull-refresh.js': `export const PullRefresh=({children})=>children;`,
   'switch-control.js': `import React from 'react';export function SwitchControl({onChange,loading,...p}){return React.createElement('input',{...p,type:'checkbox',onChange})}`,
@@ -29,6 +30,10 @@ const built = await build({
         b.onResolve({ filter: /^react(?:-dom)?(?:\/.*)?$/ }, (a) => ({
           path: a.path,
           external: true,
+        }));
+        b.onResolve({ filter: /@douyinfe\/semi-ui\/lib\/es\/dropdown$/ }, () => ({
+          path: 'dropdown',
+          namespace: 'stub',
         }));
         b.onResolve({ filter: /\.js$/ }, (a) => {
           const name = a.path.split('/').at(-1);
@@ -97,13 +102,10 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   const calls = [];
   const f = fixture(t, async (route, method, body) => {
     calls.push({ route, method, body });
-    return route.endsWith('/templates') && (!method || method === 'GET')
-      ? []
-      : { ...body, id: 'new' };
+    return !method || method === 'GET' ? [] : { ...body, id: 'new' };
   });
   await f.open();
   await act(async () => {
-    button('打开通知模板').click();
     await tick();
   });
   assert.ok(document.querySelector('.terminal-list-view .task-toolbar'));
@@ -134,6 +136,10 @@ test('notification menu uses list toolbar and empty state; editing uses the shar
   const saved = calls.find((x) => x.method === 'POST');
   assert.equal(saved.body.channel, 'email');
   assert.equal(saved.body.name, 'Mail');
+  assert.ok(
+    calls.filter((c) => c.route === '/notifications/reminders' && !c.method).length >= 2,
+    'saving a template refreshes reminder choices',
+  );
   assert.deepEqual(saved.body.headers, {});
   assert.equal(document.querySelector('dialog'), null);
 });
@@ -152,14 +158,13 @@ test('templates list toggles through scoped endpoint and testing uses only the s
   const calls = [];
   const f = fixture(t, async (route, method, body) => {
     calls.push({ route, method, body });
-    return route.endsWith('/templates') ? [row] : row;
+    return route.endsWith('/reminders') ? [] : route.endsWith('/templates') ? [row] : row;
   });
   await f.open();
   await act(async () => {
-    button('打开通知模板').click();
     await tick();
   });
-  const toggle = document.querySelector('input[type=checkbox]');
+  const toggle = document.querySelector('[aria-label="启用 Webhook"]');
   await act(async () => {
     Simulate.change(toggle);
     await tick();
@@ -198,7 +203,6 @@ test('notification center reminders use shared cards and dialog and submit a not
   });
   await f.open();
   await act(async () => {
-    button('打开提醒事项').click();
     await tick();
   });
   assert.ok(document.querySelector('[aria-label="提醒事项"] .task-toolbar'));
@@ -224,32 +228,24 @@ test('notification center reminders use shared cards and dialog and submit a not
   });
 });
 
-test('notification home uses two shared entry cards, removes tabs, and returns without losing list state', async (t) => {
-  const calls = [];
-  const f = fixture(t, async (route) => {
-    calls.push(route);
-    return [];
-  });
+test('notification overview shows templates above reminders and editing preserves reminder search', async (t) => {
+  const f = fixture(t, async () => []);
   await f.open();
-  assert.equal(document.querySelector('[role=tablist]'), null);
-  const home = document.querySelector('#notification-entry');
-  assert.ok(home);
-  assert.equal(home.hidden, false);
-  assert.equal(home.querySelectorAll('.storage-entry-card').length, 2);
-  assert.equal(calls.length, 0);
-  await act(async () => {
-    button('打开提醒事项').click();
-    await tick();
-  });
-  assert.equal(home.hidden, true);
+  assert.equal(document.querySelector('[role="tablist"]'), null);
+  assert.equal(document.querySelector('#notification-entry'), null);
+  const templates = document.querySelector('[aria-label="通知模板"]');
+  const reminders = document.querySelector('[aria-label="提醒事项"]');
+  assert.ok(templates && reminders);
+  assert.equal(templates.hidden, false);
+  assert.equal(reminders.hidden, false);
+  assert.ok(templates.compareDocumentPosition(reminders) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(templates.querySelector('.compact-card-strip'));
+  assert.equal(templates.querySelector('.empty-onboarding'), null);
   const search = document.querySelector('input[aria-label="搜索提醒事项"]');
   await act(() => Simulate.change(search, { target: { value: 'Keep query' } }));
-  await act(() => button('返回通知中心').click());
-  assert.equal(home.hidden, false);
-  await act(async () => {
-    button('打开提醒事项').click();
-    await tick();
-  });
+  await act(() => button('新增模板').click());
+  assert.ok(document.querySelector('#notification-name'));
+  await act(() => button('取消').click());
   assert.equal(document.querySelector('input[aria-label="搜索提醒事项"]'), search);
   assert.equal(search.value, 'Keep query');
 });

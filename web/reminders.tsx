@@ -27,10 +27,12 @@ export function RemindersPanel({
   api,
   toast,
   active,
+  templateRevision = 0,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
+  templateRevision?: number;
 }) {
   const [rows, setRows] = useState<Reminder[]>([]),
     [templates, setTemplates] = useState<NotificationTemplateSummary[]>([]),
@@ -59,7 +61,7 @@ export function RemindersPanel({
       setLoading(false);
       setEditor(null);
     }
-  }, [active, api]);
+  }, [active, api, templateRevision]);
   async function load() {
     if (!activeRef.current) return;
     const ticket = ++epoch.current;

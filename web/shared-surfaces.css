@@ -636,3 +636,81 @@ p.help:empty {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/* Shared compact collections sit above the main workspace without taking its scroll area. */
+.compact-card-section {
+  flex: 0 0 auto;
+  min-width: 0;
+  margin-bottom: 16px;
+}
+.compact-card-section > .toolbar {
+  margin-bottom: 12px;
+}
+.workspace-section-title,
+.section-label.workspace-section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.compact-card-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  min-width: 0;
+  padding: 0 0 4px;
+}
+.compact-card-strip > .help {
+  margin: 0;
+  padding: 12px 0;
+}
+.compact-card.card {
+  flex: 0 0 264px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+}
+.compact-card-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+}
+.compact-card-open .terminal-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+}
+.compact-card-open .terminal-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.compact-card-open .card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.compact-card-open strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 550;
+}
+.compact-card-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.compact-card-controls .mobile-more-button {
+  display: flex;
+}

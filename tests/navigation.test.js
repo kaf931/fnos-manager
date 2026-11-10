@@ -77,7 +77,8 @@ async function fixture(t, search = '', fetcher) {
         ok: true,
         status: 200,
         json: async () =>
-          String(url).includes('/notifications/templates')
+          String(url).includes('/notifications/templates') ||
+          String(url).includes('/notifications/reminders')
             ? []
             : {
                 native: true,
@@ -124,7 +125,7 @@ test('React App navigation shows exactly one page and retains mounted session st
     assert.equal(document.title, title);
     assert.deepEqual(last, { page, title });
     assert.equal(document.documentElement.style.getPropertyValue('--nav-index'), String(index));
-    assert.equal(document.querySelectorAll('main section:not([hidden])').length, 1);
+    assert.equal(document.querySelectorAll('main > section:not([hidden])').length, 1);
     assert.equal(document.querySelector(`#${page}-page`).hidden, false);
     assert.equal(
       document.querySelector(`button[data-page="${page}"]`).getAttribute('aria-current'),
