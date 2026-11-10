@@ -20,11 +20,15 @@ export function NotificationInbox({
   toast,
   active,
   menu = false,
+  openRequest = 0,
+  hideTrigger = false,
 }: {
   api: ApiClient;
   toast: Toast;
   active: boolean;
   menu?: boolean;
+  openRequest?: number;
+  hideTrigger?: boolean;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [menuSpacing, setMenuSpacing] = useState({ x: 8, y: 4 });
@@ -53,6 +57,12 @@ export function NotificationInbox({
     };
   }, [active, menuOpen, api]);
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (active && openRequest > 0) {
+      setInitialMessage(null);
+      setOpen(true);
+    }
+  }, [active, openRequest]);
   const [markingAll, setMarkingAll] = useState(false);
   const markLock = useRef(false);
   const count = useNotificationUnread(api, active);
@@ -105,7 +115,7 @@ export function NotificationInbox({
   );
   return (
     <>
-      {menu ? (
+      {hideTrigger ? null : menu ? (
         <Dropdown
           trigger="click"
           position="rightBottom"

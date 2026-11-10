@@ -11,6 +11,8 @@ const stubs = {
   dnd: `import React from 'react';export const dndBridge={props:null,items:new Map()};export function DragDropProvider(props){dndBridge.props=props;return props.children;}`,
   'dnd-sortable': `import {dndBridge} from '@dnd-kit/react';export function useSortable(input){dndBridge.items.set(input.id,input);return{ref:()=>{},handleRef:()=>{},isDragging:false};}export const isSortable=source=>source?.sortable===true;`,
   'dnd-dom': `class Constraint{constructor(options){this.options=options;}}class Sensor{static configure(options){return{sensor:this,options};}}export const PointerActivationConstraints={Delay:Constraint,Distance:Constraint};export class PointerSensor extends Sensor{}export class KeyboardSensor extends Sensor{}export class Feedback extends Sensor{}`,
+  space: `export default function Space({children}){return children;}`,
+  badge: `import React from 'react';export default function Badge({children}){return React.createElement('span',{'data-unread-badge':true},children);}`,
   pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
   checkbox: `import React from 'react';export default function Checkbox({children,onChange,...props}){return React.createElement('label',null,React.createElement('input',{...props,type:'checkbox',onChange}),children);}`,
 
@@ -24,7 +26,7 @@ const stubs = {
 const built = await build({
   stdin: {
     contents:
-      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {dndBridge} from '@dnd-kit/react';",
+      "export {NotificationSettingsPage} from './web/notifications.tsx'; export {NotificationInbox} from './web/notification-inbox.tsx'; export {dndBridge} from '@dnd-kit/react'; export {MobileMore} from './web/mobile-navigation-more.tsx';",
     resolveDir: process.cwd(),
     loader: 'tsx',
   },
@@ -54,10 +56,13 @@ const built = await build({
           path: 'dropdown',
           namespace: 'stub',
         }));
-        b.onResolve({ filter: /@douyinfe\/semi-ui\/lib\/es\/(pagination|checkbox)$/ }, (a) => ({
-          path: a.path.split('/').at(-1),
-          namespace: 'stub',
-        }));
+        b.onResolve(
+          { filter: /@douyinfe\/semi-ui\/lib\/es\/(pagination|checkbox|space|badge)$/ },
+          (a) => ({
+            path: a.path.split('/').at(-1),
+            namespace: 'stub',
+          }),
+        );
         b.onResolve({ filter: /\.js$/ }, (a) => {
           const name = a.path.split('/').at(-1);
           if (stubs[name]) return { path: name, namespace: 'stub' };
@@ -76,7 +81,7 @@ new Function('require', 'module', 'exports', built.outputFiles[0].text)(
   module,
   module.exports,
 );
-const { NotificationSettingsPage, NotificationInbox, dndBridge } = module.exports;
+const { NotificationSettingsPage, NotificationInbox, dndBridge, MobileMore } = module.exports;
 const tick = () => new Promise((r) => setTimeout(r, 5));
 function fixture(t, api, mobile = false) {
   const dom = new JSDOM('<main/>', { pretendToBeVisual: true });
@@ -613,12 +618,12 @@ test('closing template overview ignores a pending template editor response', asy
   assert.equal(!!document.querySelector('dialog'), false);
 });
 
-test('mobile template and message actions share the reminder add toolbar without duplicate entries', async (t) => {
+test('mobile reminder toolbar keeps template actions without a duplicate inbox entry', async (t) => {
   const f = fixture(t, async () => [], true);
   await f.open();
   const toolbar = document.querySelector('[aria-label="提醒事项"] .toolbar-actions');
   assert.ok(toolbar.querySelector('[aria-label="全部模板"]'));
-  assert.ok(toolbar.querySelector('[aria-label="应用内消息"]'));
+  assert.equal(!!toolbar.querySelector('[aria-label="应用内消息"]'), false);
   assert.ok(toolbar.querySelector('[aria-label="新增事项"]'));
   assert.equal(document.querySelectorAll('[aria-label="全部模板"]').length, 1);
   assert.ok(
@@ -1193,4 +1198,49 @@ test('template switches keep shared controlled behavior and explain disabled or 
   assert.equal(unconfigured.checked, false);
   assert.equal(unconfigured.disabled, true);
   assert.equal(unconfigured.title, '请先配置通知模板');
+});
+
+test('navigation can open the shared inbox without a duplicate toolbar trigger and reopen after closing', async (t) => {
+  const f = fixture(
+    t,
+    async (path) => (path.includes('/unread') ? { count: 0 } : { items: [], total: 0 }),
+    true,
+  );
+  await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 0 });
+  assert.equal(!!document.querySelector('dialog'), false);
+  assert.equal(!!document.querySelector('[aria-label="应用内消息"]'), false);
+  await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 1 });
+  assert.ok(document.querySelector('dialog'));
+  await act(() => button('关闭').click());
+  assert.equal(!!document.querySelector('dialog'), false);
+  await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 2 });
+  assert.ok(document.querySelector('dialog'));
+});
+
+test('mobile More places application messages below settings and closes the menu when opening messages', async (t) => {
+  const f = fixture(t, async () => [], true);
+  let requests = 0;
+  const openStates = [];
+  await f.open(MobileMore, {
+    page: 'icons',
+    unreadMessages: 2,
+    updateAvailable: true,
+    onUpdate() {},
+    onChange() {},
+    onMessages() {
+      requests++;
+    },
+    onOpenChange(value) {
+      openStates.push(value);
+    },
+  });
+  const labels = [...document.querySelectorAll('button')].map((row) => row.textContent);
+  assert.equal(labels.indexOf('应用消息'), labels.indexOf('系统设置') + 1);
+  assert.equal(labels.indexOf('应用更新'), labels.indexOf('应用消息') + 1);
+  assert.ok(button('应用消息').querySelector('[data-unread-badge]'));
+  await act(() => button('更多，有未读消息，有可用更新').click());
+  assert.equal(openStates.at(-1), true);
+  await act(() => button('应用消息').click());
+  assert.equal(requests, 1);
+  assert.equal(openStates.at(-1), false);
 });

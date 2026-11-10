@@ -1,5 +1,5 @@
 import { useNotificationUnread } from './notification-unread.js';
-import { DesktopNotificationInbox } from './notification-inbox.js';
+import { DesktopNotificationInbox, NotificationInbox } from './notification-inbox.js';
 import { useUpdateCheck, useUpdateActivity } from './update-check.js';
 import {
   Component,
@@ -66,7 +66,8 @@ export function App() {
     [moreOpen, setMoreOpen] = useState(false),
     [storageWorkspace, setStorageWorkspace] = useState(false),
     [revision, setRevision] = useState(0),
-    [updateRequest, setUpdateRequest] = useState(0);
+    [updateRequest, setUpdateRequest] = useState(0),
+    [messageRequest, setMessageRequest] = useState(0);
   const userNavigated = useRef(false);
   const token = useRef(''),
     timer = useRef<ReturnType<typeof setTimeout>>();
@@ -197,6 +198,7 @@ export function App() {
                 onChange={change}
                 onOpenChange={setMoreOpen}
                 unreadMessages={unreadMessages}
+                onMessages={() => setMessageRequest((value) => value + 1)}
                 updateAvailable={!!release?.hasUpdate}
                 onUpdate={() => {
                   change('settings');
@@ -255,6 +257,13 @@ export function App() {
             </div>
           </div>
         </aside>
+        <NotificationInbox
+          api={api}
+          toast={toast}
+          active={ready}
+          hideTrigger
+          openRequest={messageRequest}
+        />
         <main>
           {!ready &&
             (bootstrapError ? (

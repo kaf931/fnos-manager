@@ -1,7 +1,6 @@
 import { SortableCards, moveCard } from './ui/sortable-cards.js';
 import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import { ReactDialog } from './ui/react-dialog.js';
-import { NotificationInbox } from './notification-inbox.js';
 import { CompactCard, CompactCardStrip } from './ui/compact-card-strip.js';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
 import { MobileMoreButton } from './mobile-more-button.js';
@@ -38,13 +37,6 @@ function NotificationTemplatesPanel({
     templateDialogOpen: boolean,
   ) => React.ReactNode;
 }) {
-  const [mobile, setMobile] = useState(() => matchMedia('(max-width:620px)').matches);
-  useEffect(() => {
-    const media = matchMedia('(max-width:620px)');
-    const sync = () => setMobile(media.matches);
-    media.addEventListener?.('change', sync);
-    return () => media.removeEventListener?.('change', sync);
-  }, []);
   const [order, setOrder] = useState<string[]>([]),
     [sorting, setSorting] = useState(false);
   const sortLock = useRef(false);
@@ -302,7 +294,6 @@ function NotificationTemplatesPanel({
     );
   const actions = (
     <>
-      {mobile && <NotificationInbox api={api} toast={toast} active={active} />}
       <button type="button" aria-label="全部模板" title="全部模板" onClick={() => setAllOpen(true)}>
         <AppIcon name="grid" />
         <span className="toolbar-action-label">全部模板</span>

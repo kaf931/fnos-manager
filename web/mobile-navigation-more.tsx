@@ -11,11 +11,13 @@ export function MobileMore({
   updateAvailable = false,
   unreadMessages = 0,
   onUpdate,
+  onMessages,
 }: {
   page: PageId;
   updateAvailable?: boolean;
   unreadMessages?: number;
   onUpdate?: () => void;
+  onMessages: () => void;
   onChange: (page: PageId) => void;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -50,16 +52,23 @@ export function MobileMore({
                   name={key === 'wake' ? 'power' : key === 'notifications' ? 'bell' : 'settings'}
                 />
               </span>
-              {key === 'notifications' && unreadMessages > 0 ? (
-                <Space spacing="tight" align="center">
-                  <span>{menuTitles[key]}</span>
-                  <Badge dot type="danger" />
-                </Space>
-              ) : (
-                menuTitles[key]
-              )}
+              {menuTitles[key]}
             </Dropdown.Item>
           ))}
+          <Dropdown.Item
+            onClick={() => {
+              setOpen(false);
+              onMessages();
+            }}
+          >
+            <span className="mobile-navigation-menu-icon">
+              <AppIcon name="bell" />
+            </span>
+            <Space spacing="tight" align="center">
+              <span>应用消息</span>
+              {unreadMessages > 0 && <Badge dot type="danger" />}
+            </Space>
+          </Dropdown.Item>
           {updateAvailable && onUpdate && (
             <Dropdown.Item
               onClick={() => {
