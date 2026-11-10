@@ -1,3 +1,4 @@
+import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import { ReactDialog } from './ui/react-dialog.js';
 import { NotificationInbox } from './notification-inbox.js';
 import { CompactCard, CompactCardStrip } from './ui/compact-card-strip.js';
@@ -43,6 +44,8 @@ function NotificationTemplatesPanel({
     media.addEventListener?.('change', sync);
     return () => media.removeEventListener?.('change', sync);
   }, []);
+  const [loaded, setLoaded] = useState(false);
+  const [recordsTemplate, setRecordsTemplate] = useState<string | null>(null);
   const [rows, setRows] = useState<NotificationTemplateSummary[]>([]),
     [allOpen, setAllOpen] = useState(false),
     [error, setError] = useState(''),
@@ -75,6 +78,7 @@ function NotificationTemplatesPanel({
       setLoading(false);
       setEditor(null);
       setAllOpen(false);
+      setRecordsTemplate(null);
     }
   }, [active, api]);
   async function load() {
@@ -85,6 +89,7 @@ function NotificationTemplatesPanel({
       const values = await api<NotificationTemplateSummary[]>('/notifications/templates');
       if (alive.current && activeRef.current && ticket === generation.current) {
         setRows(values);
+        setLoaded(true);
         setError('');
       }
     } catch (e) {
@@ -94,11 +99,20 @@ function NotificationTemplatesPanel({
       if (alive.current && activeRef.current && ticket === generation.current) setLoading(false);
     }
   }
+  function showRecords(id: string) {
+    ++editorRequest.current;
+    setEditor(null);
+    setRecordsTemplate(id);
+  }
   async function act(action: string, row: NotificationTemplateSummary) {
     if (locks.current.has(row.id)) return;
     locks.current.add(row.id);
     setBusy(new Set(locks.current));
     try {
+      if (action === 'records') {
+        showRecords(row.id);
+        return;
+      }
       if (action === 'edit') {
         const request = ++editorRequest.current;
         const value = await api<NotificationTemplate>('/notifications/templates/' + row.id);
@@ -123,7 +137,10 @@ function NotificationTemplatesPanel({
         });
       else {
         await api('/notifications/templates/' + row.id + '/test', 'POST', {});
-        if (alive.current) toast('测试已提交，可在应用清理查看投递记录');
+        if (alive.current) {
+          toast('测试已提交');
+          if (activeRef.current) showRecords(row.id);
+        }
         return;
       }
       if (alive.current && activeRef.current) {
@@ -185,6 +202,7 @@ function NotificationTemplatesPanel({
                 <Dropdown.Item disabled={busy.has(row.id)} onClick={() => void act('edit', row)}>
                   编辑模板
                 </Dropdown.Item>
+                <Dropdown.Item onClick={() => void act('records', row)}>投递记录</Dropdown.Item>
                 <Dropdown.Item
                   type="danger"
                   disabled={busy.has(row.id)}
@@ -210,7 +228,7 @@ function NotificationTemplatesPanel({
         description="未配置"
         icon={<AppIcon name="bell" />}
         openLabel={'配置 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
-        disabled={loading || !!error}
+        disabled={(!loaded && loading) || !!error}
         onOpen={() => setEditor({ row: null, channel })}
         control={
           <SwitchControl
@@ -254,9 +272,17 @@ function NotificationTemplatesPanel({
         </>,
         load,
         () => setAllOpen(true),
-        allOpen || !!editor,
+        allOpen || !!editor || !!recordsTemplate,
       )}
-      {active && allOpen && !editor && (
+      {active && recordsTemplate && (
+        <NotificationDeliveryDialog
+          api={api}
+          toast={toast}
+          templateId={recordsTemplate}
+          onClose={() => setRecordsTemplate(null)}
+        />
+      )}
+      {active && allOpen && !editor && !recordsTemplate && (
         <ReactDialog
           open
           title="全部模板"

@@ -1,6 +1,5 @@
-import { InboxPageDto, ReadInboxDto } from './inbox.dto.js';
-import { ReminderDto, ReminderCompleteDto } from './reminder.dto.js';
-import { PageDto } from '../common/page.dto.js';
+import { InboxPageDto, ReadInboxDto, DeliveryPageDto } from './inbox.dto.js';
+import { ReminderDto, ReminderCompleteDto, ReminderBatchDto } from './reminder.dto.js';
 import {
   Body,
   Param,
@@ -25,7 +24,13 @@ import { SettingsDto, TemplateDto, TemplateEnabledDto } from './dto.js';
 export class NotificationsController {
   constructor(@Inject(NotificationService) private readonly service: NotificationService) {}
   @Get('inbox') inbox(@Req() req: ApiRequest, @Query() query: InboxPageDto) {
-    return this.service.listInbox(req.terminalOwner, query.page, query.pageSize, query.filter);
+    return this.service.listInbox(
+      req.terminalOwner,
+      query.page,
+      query.pageSize,
+      query.filter,
+      query.q,
+    );
   }
   @Get('inbox/unread') inboxUnread(@Req() req: ApiRequest) {
     return this.service.inboxUnread(req.terminalOwner);
@@ -47,6 +52,12 @@ export class NotificationsController {
     @Body() input: ReminderDto,
   ) {
     return this.service.createReminder(req.terminalOwner, input);
+  }
+  @Post('reminders/batch') @HttpCode(200) batchReminders(
+    @Req() req: ApiRequest,
+    @Body() input: ReminderBatchDto,
+  ) {
+    return this.service.batchReminders(req.terminalOwner, input.ids, input.action);
   }
   @Put('reminders/:id') updateReminder(
     @Req() req: ApiRequest,
@@ -115,7 +126,7 @@ export class NotificationsController {
   @Post('test') @HttpCode(200) test(@Req() req: ApiRequest) {
     return this.service.enqueueTest(req.terminalOwner);
   }
-  @Get('deliveries') deliveries(@Req() req: ApiRequest, @Query() query: PageDto) {
-    return this.service.deliveries(req.terminalOwner, query.page, query.pageSize);
+  @Get('deliveries') deliveries(@Req() req: ApiRequest, @Query() query: DeliveryPageDto) {
+    return this.service.deliveries(req.terminalOwner, query.page, query.pageSize, query);
   }
 }

@@ -167,6 +167,7 @@ test('templates list toggles through scoped endpoint and testing uses only the s
   const calls = [];
   const f = fixture(t, async (route, method, body) => {
     calls.push({ route, method, body });
+    if (route.startsWith('/notifications/deliveries?')) return { items: [], total: 0 };
     return route.endsWith('/reminders') ? [] : route.endsWith('/templates') ? [row] : row;
   });
   await f.open();
@@ -189,6 +190,13 @@ test('templates list toggles through scoped endpoint and testing uses only the s
   assert.ok(
     calls.some((x) => x.route === '/notifications/templates/one/test' && x.method === 'POST'),
   );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.route.includes('/notifications/deliveries?') && call.route.includes('templateId=one'),
+    ),
+  );
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   await act(async () => {
     button('编辑模板').click();
     await tick();
@@ -811,4 +819,79 @@ test('message entry points share one unread polling subscription per API', async
   }
   await f.open(Pair);
   assert.equal(reads, 1);
+});
+
+test('reopening notification center keeps loaded template titles enabled during refresh', async (t) => {
+  let delay = false,
+    resolve;
+  const pending = new Promise((r) => {
+    resolve = r;
+  });
+  const f = fixture(t, async (route) =>
+    delay && route === '/notifications/templates' ? pending : [],
+  );
+  await f.open();
+  assert.equal(button('配置 通用 Webhook').disabled, false);
+  await f.open(NotificationSettingsPage, { active: false });
+  delay = true;
+  await f.open(NotificationSettingsPage, { active: true });
+  assert.equal(button('配置 通用 Webhook').disabled, false);
+  assert.ok(document.querySelector('.empty-onboarding'));
+  await act(async () => {
+    resolve([]);
+    await tick();
+  });
+});
+test('reminder batch menu uses selected ids with the shared batch endpoint', async (t) => {
+  const calls = [],
+    row = {
+      id: 'batch-one',
+      name: 'Batch one',
+      content: '',
+      status: 'open',
+      enabled: false,
+      repeat: 'none',
+      dueAt: '2030-11-10T00:00:00Z',
+      nextAt: null,
+      templateIds: [],
+    };
+  const f = fixture(t, async (route, method, body) => {
+    calls.push({ route, method, body });
+    return route === '/notifications/reminders' ? [row] : [];
+  });
+  await f.open();
+  await act(() => button('批量管理提醒').click());
+  await act(() => document.querySelector('[aria-label="选择 Batch one"]').click());
+  await act(async () => {
+    button('执行').click();
+    await tick();
+  });
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.route === '/notifications/reminders/batch' &&
+        call.body.action === 'complete' &&
+        call.body.ids[0] === 'batch-one',
+    ),
+  );
+});
+
+test('inbox search submits a scoped encoded query', async (t) => {
+  const calls = [];
+  const f = fixture(t, async (route) => {
+    calls.push(route);
+    return route.endsWith('/unread') ? { count: 0 } : { items: [], total: 0 };
+  });
+  await f.open(NotificationInbox, { active: true });
+  await act(async () => {
+    button('应用内消息').click();
+    await tick();
+  });
+  await act(async () => {
+    Simulate.change(document.querySelector('[aria-label="搜索消息"]'), {
+      target: { value: '测试 100%' },
+    });
+    await tick();
+  });
+  assert.ok(calls.some((route) => route.includes('&q=' + encodeURIComponent('测试 100%'))));
 });

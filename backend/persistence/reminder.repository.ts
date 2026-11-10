@@ -206,6 +206,26 @@ export class ReminderRepository {
       return this.get(owner, id);
     });
   }
+  batch(owner: string, ids: string[], action: 'complete' | 'pause' | 'delete', now = Date.now()) {
+    if (
+      !Array.isArray(ids) ||
+      !ids.length ||
+      ids.length > 200 ||
+      new Set(ids).size !== ids.length ||
+      ids.some((id) => typeof id !== 'string' || !id || id.length > 80) ||
+      !['complete', 'pause', 'delete'].includes(action)
+    )
+      throw new DomainError('批量操作参数无效');
+    return this.database.transaction(() => {
+      for (const id of ids) this.get(owner, id);
+      for (const id of ids) {
+        if (action === 'delete') this.remove(owner, id, now);
+        else if (action === 'complete') this.complete(owner, id, true, now);
+        else this.setEnabled(owner, id, false, now);
+      }
+      return { success: true, count: ids.length };
+    });
+  }
   remove(owner: string, id: string, now = Date.now()): void {
     this.database.transaction(() => {
       this.get(owner, id);

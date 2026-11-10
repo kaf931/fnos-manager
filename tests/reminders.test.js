@@ -216,3 +216,22 @@ test('pausing a legacy reminder never requires its deleted template or missing s
   assert.throws(() => repo.setEnabled('b', 'legacy', false, now));
   assert.throws(() => repo.setEnabled('a', 'legacy', true, now));
 });
+
+test('bulk reminders are owner scoped and atomic, and cancel pending deliveries', (t) => {
+  const { repo, notifications, template } = fixture(t);
+  const a = repo.create('a', input(template.id), now),
+    b = repo.create('a', input(template.id, { name: 'Second' }), now);
+  assert.throws(() => repo.batch('a', [a.id, 'missing'], 'delete', now));
+  assert.equal(repo.list('a').length, 2);
+  assert.throws(() => repo.batch('b', [a.id], 'complete', now));
+  assert.throws(() => repo.batch('a', [a.id, a.id], 'pause', now));
+  repo.dispatchDue(now + 60001);
+  assert.equal(notifications.deliveries('a', 1, 10, { reminderId: a.id }).total, 1);
+  assert.equal(repo.batch('a', [a.id, b.id], 'pause', now + 60002).count, 2);
+  assert.ok(repo.list('a').every((row) => !row.enabled && row.nextAt === null));
+  assert.ok(notifications.deliveries('a').items.every((row) => row.status === 'cancelled'));
+  repo.batch('a', [a.id, b.id], 'complete', now + 60003);
+  assert.ok(repo.list('a').every((row) => row.status === 'completed'));
+  repo.batch('a', [a.id, b.id], 'delete', now + 60004);
+  assert.equal(repo.list('a').length, 0);
+});

@@ -30,3 +30,14 @@ export class ReminderDto implements ReminderInput {
 export class ReminderCompleteDto {
   @IsBoolean() completed!: boolean;
 }
+
+export class ReminderBatchDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(200)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  ids!: string[];
+  @IsIn(['complete', 'pause', 'delete']) action!: 'complete' | 'pause' | 'delete';
+}

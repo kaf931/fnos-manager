@@ -203,6 +203,7 @@ function InboxDialog({
   useEffect(() => {
     if (initialMessage && !initialMessage.readAt) void read([initialMessage.id]);
   }, [initialMessage]);
+  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'),
     [menuOpen, setMenuOpen] = useState(false),
     [busy, setBusy] = useState(false),
@@ -226,14 +227,14 @@ function InboxDialog({
     path: '/notifications/inbox',
     active: true,
     revision: 0,
-    filters: '&filter=' + filter,
+    filters: '&filter=' + filter + '&q=' + encodeURIComponent(search.trim()),
   });
   const selection = useRecordBatch({
     api,
     kind: 'deliveries',
     items: model.items,
     active: true,
-    scope: filter + '|' + model.page + '|' + model.pageSize,
+    scope: search.trim() + '|' + filter + '|' + model.page + '|' + model.pageSize,
     control,
     refresh: () => {
       model.refresh();
@@ -291,6 +292,17 @@ function InboxDialog({
           <>
             <header className="toolbar task-toolbar">
               <div className="task-toolbar-filters">
+                <div className="search">
+                  <AppIcon name="search" />
+                  <input
+                    type="search"
+                    aria-label="搜索消息"
+                    placeholder="搜索标题或内容"
+                    maxLength={200}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
                 <div className="task-status-field">
                   <span id="inbox-filter-label">状态</span>
                   <div className="toolbar-select">

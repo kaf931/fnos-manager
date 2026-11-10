@@ -102,8 +102,8 @@ export interface ClaimedDelivery {
 }
 export class NotificationRepository {
   constructor(private readonly database: DatabaseService) {}
-  inbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all') {
-    return new NotificationInboxRepository(this.database).list(owner, page, pageSize, filter);
+  inbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all', q = '') {
+    return new NotificationInboxRepository(this.database).list(owner, page, pageSize, filter, q);
   }
   inboxUnread(owner: string) {
     return new NotificationInboxRepository(this.database).unread(owner);
@@ -274,7 +274,12 @@ export class NotificationRepository {
       error: row.error == null ? null : String(row.error),
     };
   }
-  deliveries(owner: string, page = 1, pageSize = 10): NotificationDeliveryPage {
+  deliveries(
+    owner: string,
+    page = 1,
+    pageSize = 10,
+    filters: { templateId?: string; reminderId?: string } = {},
+  ): NotificationDeliveryPage {
     if (
       !Number.isSafeInteger(page) ||
       page < 1 ||
@@ -285,16 +290,26 @@ export class NotificationRepository {
     )
       invalid('分页参数无效');
     const db = this.database.connection;
+    const where =
+      'owner_uid=?' +
+      (filters.templateId ? ' AND template_id=?' : '') +
+      (filters.reminderId
+        ? " AND event_type='reminder.due' AND json_extract(payload,'$.reminderId')=?"
+        : '');
+    const args = [
+      owner,
+      ...(filters.templateId ? [filters.templateId] : []),
+      ...(filters.reminderId ? [filters.reminderId] : []),
+    ];
     return {
       items: db
         .prepare(
-          'SELECT * FROM notification_deliveries WHERE owner_uid=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?',
+          `SELECT * FROM notification_deliveries WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
         )
-        .all(owner, pageSize, (page - 1) * pageSize)
+        .all(...args, pageSize, (page - 1) * pageSize)
         .map((r) => this.decode(r)),
       total: Number(
-        db.prepare('SELECT count(*) n FROM notification_deliveries WHERE owner_uid=?').get(owner)
-          ?.n,
+        db.prepare(`SELECT count(*) n FROM notification_deliveries WHERE ${where}`).get(...args)?.n,
       ),
       page,
       pageSize,

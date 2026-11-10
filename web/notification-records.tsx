@@ -43,17 +43,20 @@ export function NotificationRecords({
   active,
   revision,
   batch,
+  filters = '',
 }: {
   api: ApiClient;
   active: boolean;
   revision: number;
   batch: RecordBatchControl;
+  filters?: string;
 }) {
   const model = useRecordPage<NotificationDelivery>({
     api,
     path: '/notifications/deliveries',
     active,
     revision,
+    filters,
   });
   const selection = useRecordBatch({
     api,

@@ -216,3 +216,61 @@ test('inbox routes validate and isolate reads while enforcing CSRF', async () =>
     await f.close();
   }
 });
+
+test('reminder batch API validates selection, CSRF and owner isolation', async () => {
+  const f = await appFixture();
+  try {
+    const service = f.app.get(NotificationService);
+    await service.close();
+    const template = service.repository.createTemplate('1000', {
+      channel: 'inapp',
+      name: 'Batch',
+      enabled: true,
+      url: '',
+      token: '',
+      condition: 'all',
+      scanFailures: true,
+    });
+    const reminder = service.createReminder('1000', {
+      name: 'Batch',
+      content: '',
+      dueAt: new Date(Date.now() + 3600000).toISOString(),
+      repeat: 'none',
+      templateIds: [template.id],
+      enabled: true,
+    });
+    const call = (body, extra = {}) =>
+      fetch(f.base + '/notifications/reminders/batch', {
+        method: 'POST',
+        headers: { ...f.headers, ...extra },
+        body: JSON.stringify(body),
+      });
+    assert.equal(
+      (await call({ ids: [reminder.id], action: 'pause' }, { 'x-deskicons-token': 'bad' })).status,
+      403,
+    );
+    assert.equal((await call({ ids: [], action: 'pause' })).status, 400);
+    assert.equal((await call({ ids: [reminder.id], action: 'other' })).status, 400);
+    assert.equal(
+      (await call({ ids: [reminder.id], action: 'pause' }, { 'x-trim-userid': '1001' })).status,
+      404,
+    );
+    assert.equal((await call({ ids: [reminder.id], action: 'pause' })).status, 200);
+    assert.equal(service.listReminders('1000')[0].enabled, false);
+    assert.equal(
+      (await fetch(f.base + '/notifications/inbox?q=' + 'x'.repeat(201), { headers: f.headers }))
+        .status,
+      400,
+    );
+    assert.equal(
+      (
+        await fetch(f.base + '/notifications/deliveries?reminderId=' + reminder.id, {
+          headers: f.headers,
+        })
+      ).status,
+      200,
+    );
+  } finally {
+    await f.close();
+  }
+});

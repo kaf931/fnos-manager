@@ -86,14 +86,17 @@ export class NotificationService {
     if (!this.reminders) throw Object.assign(new Error('提醒服务不可用'), { status: 503 });
     return this.reminders;
   }
-  listInbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all') {
-    return this.repository.inbox(owner, page, pageSize, filter);
+  listInbox(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all', q = '') {
+    return this.repository.inbox(owner, page, pageSize, filter, q);
   }
   inboxUnread(owner: string) {
     return { count: this.repository.inboxUnread(owner) };
   }
   readInbox(owner: string, ids?: string[]) {
     return this.repository.readInbox(owner, ids);
+  }
+  batchReminders(owner: string, ids: string[], action: 'complete' | 'pause' | 'delete') {
+    return this.reminderRepository().batch(owner, ids, action);
   }
   listReminders(owner: string) {
     return this.reminderRepository().list(owner);
@@ -143,8 +146,13 @@ export class NotificationService {
   enqueueTest(owner: string) {
     return this.repository.enqueueTest(owner);
   }
-  deliveries(owner: string, page: number, pageSize: number) {
-    return this.repository.deliveries(owner, page, pageSize);
+  deliveries(
+    owner: string,
+    page: number,
+    pageSize: number,
+    filters: { templateId?: string; reminderId?: string } = {},
+  ) {
+    return this.repository.deliveries(owner, page, pageSize, filters);
   }
   start(): void {
     if (this.timer || this.stopped) return;

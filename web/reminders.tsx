@@ -1,3 +1,5 @@
+import { ReminderBatch } from './reminder-batch.js';
+import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import React, { useEffect, useRef, useState } from 'react';
 import type { Reminder } from '../backend/domain/reminders.js';
 import { REMINDER_REPEAT_LABELS } from '../backend/domain/reminders.js';
@@ -44,6 +46,9 @@ export function RemindersPanel({
   onConfigureTemplates?: () => void;
   templateDialogOpen?: boolean;
 }) {
+  const [loaded, setLoaded] = useState(false),
+    [batchOpen, setBatchOpen] = useState(false),
+    [recordsReminder, setRecordsReminder] = useState<string | null>(null);
   const [rows, setRows] = useState<Reminder[]>([]),
     [templates, setTemplates] = useState<NotificationTemplateSummary[]>([]),
     [search, setSearch] = useState(''),
@@ -72,10 +77,12 @@ export function RemindersPanel({
       setLoading(false);
       foregroundLoading.current = false;
       setEditor(null);
+      setBatchOpen(false);
+      setRecordsReminder(null);
     }
   }, [active, api, templateRevision]);
   useEffect(() => {
-    if (!active || editor) return;
+    if (!active || editor || batchOpen) return;
     const sync = () => {
       if (document.visibilityState !== 'hidden' && !locks.current.size) void load(true);
     };
@@ -85,7 +92,7 @@ export function RemindersPanel({
       clearInterval(timer);
       document.removeEventListener('visibilitychange', sync);
     };
-  }, [active, api, editor]);
+  }, [active, api, editor, batchOpen]);
   async function load(background = false) {
     if (!activeRef.current || (background && foregroundLoading.current)) return;
     if (!background) foregroundLoading.current = true;
@@ -98,6 +105,7 @@ export function RemindersPanel({
       ]);
       if (alive.current && activeRef.current && ticket === epoch.current) {
         setRows(values);
+        setLoaded(true);
         setTemplates(channels);
         setError('');
       }
@@ -116,6 +124,10 @@ export function RemindersPanel({
   }
   async function act(action: string, row: Reminder) {
     if (locks.current.has(row.id)) return;
+    if (action === 'records') {
+      setRecordsReminder(row.id);
+      return;
+    }
     if (action === 'edit') {
       setEditor({ row });
       return;
@@ -211,6 +223,16 @@ export function RemindersPanel({
               {actions}
               <button
                 type="button"
+                className="toolbar-manage"
+                aria-label="批量管理提醒"
+                title="批量管理"
+                onClick={() => setBatchOpen(true)}
+              >
+                <AppIcon name="grid" />
+                <span className="toolbar-action-label">批量管理</span>
+              </button>
+              <button
+                type="button"
                 className="primary"
                 aria-label="新增事项"
                 title="新增事项"
@@ -285,10 +307,11 @@ export function RemindersPanel({
                 busyLabel: '处理中…',
                 editLabel: '编辑事项',
                 deleteLabel: '删除事项',
+                extraActions: () => [['records', '投递记录', 'clock']],
               }}
             />
           </div>
-          {!loading && !error && !shown.length && (
+          {(!loading || loaded) && !error && !shown.length && (
             <EmptyState
               subject="提醒事项"
               total={rows.length}
@@ -300,6 +323,26 @@ export function RemindersPanel({
           )}
         </div>
       </PullRefresh>
+      {active && batchOpen && (
+        <ReminderBatch
+          rows={shown}
+          api={api}
+          toast={toast}
+          onClose={() => setBatchOpen(false)}
+          onSaved={() => {
+            setBatchOpen(false);
+            void load();
+          }}
+        />
+      )}
+      {active && recordsReminder && (
+        <NotificationDeliveryDialog
+          api={api}
+          toast={toast}
+          reminderId={recordsReminder}
+          onClose={() => setRecordsReminder(null)}
+        />
+      )}
       {active && editor && (
         <ReminderEditor
           initial={editor.row}

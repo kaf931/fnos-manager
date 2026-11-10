@@ -13,7 +13,13 @@ export class NotificationInboxRepository {
         .get(owner)?.n,
     );
   }
-  list(owner: string, page = 1, pageSize = 10, filter: 'all' | 'unread' = 'all'): InboxPage {
+  list(
+    owner: string,
+    page = 1,
+    pageSize = 10,
+    filter: 'all' | 'unread' = 'all',
+    q = '',
+  ): InboxPage {
     if (
       !Number.isSafeInteger(page) ||
       page < 1 ||
@@ -24,19 +30,26 @@ export class NotificationInboxRepository {
       !['all', 'unread'].includes(filter)
     )
       throw new DomainError('分页参数无效');
-    const where = scope + (filter === 'unread' ? ' AND read_at IS NULL' : '');
+    if (typeof q !== 'string' || q.length > 200) throw new DomainError('搜索内容过长');
+    const where =
+      scope +
+      (filter === 'unread' ? ' AND read_at IS NULL' : '') +
+      (q.trim()
+        ? " AND (instr(lower(name),lower(?))>0 OR instr(lower(COALESCE(json_extract(payload,'$.message'),'')),lower(?))>0)"
+        : '');
+    const args = q.trim() ? [owner, q.trim(), q.trim()] : [owner];
     const c = this.database.connection;
     return {
       page,
       pageSize,
       total: Number(
-        c.prepare(`SELECT count(*) n FROM notification_deliveries WHERE ${where}`).get(owner)?.n,
+        c.prepare(`SELECT count(*) n FROM notification_deliveries WHERE ${where}`).get(...args)?.n,
       ),
       items: c
         .prepare(
           `SELECT id,name,payload,template_name,created_at,read_at FROM notification_deliveries WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
         )
-        .all(owner, pageSize, (page - 1) * pageSize)
+        .all(...args, pageSize, (page - 1) * pageSize)
         .map((row) => ({
           id: String(row.id),
           name: String(row.name),

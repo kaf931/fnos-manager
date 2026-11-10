@@ -115,3 +115,34 @@ test('schema32 upgrades once without changing existing templates or delivery met
     1,
   );
 });
+
+test('inbox search matches title and content literally and delivery filters remain owner scoped', (t) => {
+  const dir = mkdtempSync(tmpdir() + '/inbox-search-'),
+    db = new DatabaseService(dir),
+    repo = new NotificationRepository(db);
+  t.after(() => {
+    db.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+  const template = repo.createTemplate('a', {
+    channel: 'inapp',
+    name: 'Search',
+    enabled: true,
+    url: '',
+    token: '',
+    condition: 'all',
+    scanFailures: true,
+    template: 'Unique body 100%',
+  });
+  const first = repo.enqueueTest('a', template.id);
+  const job = repo.claim();
+  repo.finish(job, 204, false);
+  assert.equal(repo.inbox('a', 1, 10, 'all', 'Unique body').total, 1);
+  assert.equal(repo.inbox('a', 1, 10, 'all', '100%').total, 1);
+  assert.equal(repo.inbox('a', 1, 10, 'all', 'absent').total, 0);
+  assert.equal(repo.inbox('b', 1, 10, 'all', 'Unique').total, 0);
+  assert.throws(() => repo.inbox('a', 1, 10, 'all', 'x'.repeat(201)));
+  assert.equal(repo.deliveries('a', 1, 10, { templateId: template.id }).items[0].id, first.id);
+  assert.equal(repo.deliveries('b', 1, 10, { templateId: template.id }).total, 0);
+  assert.equal(repo.deliveries('a', 1, 10, { reminderId: 'missing' }).total, 0);
+});
