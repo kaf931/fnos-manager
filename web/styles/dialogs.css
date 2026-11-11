@@ -327,7 +327,6 @@ button.danger:active {
   height: 44px;
 }
 .history-sheet-table .text-button {
-  padding: 0;
   min-height: 24px;
   font-size: 12px;
 }

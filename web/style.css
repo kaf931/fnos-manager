@@ -436,7 +436,7 @@ dialog::backdrop {
 .text-button {
   border: 0;
   background: none;
-  padding: 0;
+  padding: 4px 8px;
   color: var(--blue);
   font-size: 12px;
 }
