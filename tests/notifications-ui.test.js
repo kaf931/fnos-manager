@@ -430,7 +430,9 @@ test('inbox shows inline details, marks messages read and supports shared batch 
     button('标为已读 Maintenance').click();
     await tick();
   });
-  assert.ok(document.querySelector('.record-text').textContent.includes('<script>text</script>'));
+  assert.ok(
+    document.querySelector('.record-preview').textContent.includes('<script>text</script>'),
+  );
   assert.equal(document.querySelector('script'), null);
   assert.equal(read, true);
   assert.deepEqual(
@@ -438,6 +440,8 @@ test('inbox shows inline details, marks messages read and supports shared batch 
     ['', '消息', '详情', '状态', '时间'],
   );
   assert.equal(button('Maintenance'), undefined);
+  assert.equal(document.querySelector('.record-preview').title, message.content);
+  assert.equal(document.querySelector('.record-text-scroll'), null);
   await act(() =>
     Simulate.change(document.querySelector('tbody input[type=checkbox]'), {
       target: { checked: true },
@@ -1110,7 +1114,9 @@ test('opening multiple messages queues and deduplicates read requests while the 
   await act(() => button('标为已读 Message b').click());
   await act(() => button('标为已读 Message b').click());
   assert.ok(
-    [...document.querySelectorAll('.record-text')].some((e) => e.textContent.includes('Content b')),
+    [...document.querySelectorAll('.record-preview')].some((e) =>
+      e.textContent.includes('Content b'),
+    ),
   );
   await act(async () => {
     release();

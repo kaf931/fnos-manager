@@ -586,10 +586,11 @@ html.standalone-entry:not(.terminal-focused):not(.storage-focused) .layout main 
   overflow-wrap: anywhere;
   user-select: text;
 }
-.record-text-scroll {
-  max-height: 160px;
-  overflow: auto;
-  overscroll-behavior: contain;
+.record-preview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .record-card-list {
   display: flex;

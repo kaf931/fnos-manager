@@ -149,3 +149,43 @@ test('inbox search matches title and content literally and delivery filters rema
   assert.equal(repo.deliveries('b', 1, 10, { templateId: template.id }).total, 0);
   assert.equal(repo.deliveries('a', 1, 10, { reminderId: 'missing' }).total, 0);
 });
+
+test('reminder inbox details expose only the saved note and search the same text', (t) => {
+  const dir = mkdtempSync(tmpdir() + '/inbox-note-'),
+    db = new DatabaseService(dir),
+    repo = new NotificationRepository(db);
+  t.after(() => {
+    db.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+  const template = repo.createTemplate('a', {
+    channel: 'inapp',
+    name: 'Note',
+    enabled: true,
+    url: '',
+    token: '',
+    condition: 'all',
+    scanFailures: true,
+    template: '装饰前缀 {{name}} {{content}}',
+  });
+  for (const [id, content] of [
+    ['with-note', '仅记事内容\n第二行'],
+    ['empty-note', ''],
+  ]) {
+    repo.enqueueReminder('a', template.id, {
+      id,
+      revision: 1,
+      name: id,
+      content,
+      dueAt: new Date().toISOString(),
+    });
+    db.connection
+      .prepare("UPDATE notification_deliveries SET status='success' WHERE name=?")
+      .run(id);
+  }
+  const page = repo.inbox('a');
+  assert.equal(page.items.find((r) => r.name === 'with-note').content, '仅记事内容\n第二行');
+  assert.equal(page.items.find((r) => r.name === 'empty-note').content, '');
+  assert.equal(repo.inbox('a', 1, 10, 'all', '装饰前缀').total, 0);
+  assert.equal(repo.inbox('a', 1, 10, 'all', '仅记事内容').total, 1);
+});

@@ -473,9 +473,10 @@ export function InboxDialog({
                     <td>{row.name}</td>
                     <td>
                       <div
-                        className="record-text record-text-scroll"
+                        className="record-preview"
                         tabIndex={0}
                         aria-label={row.name + '的详情'}
+                        title={row.content || '暂无内容'}
                       >
                         {row.content || '暂无内容'}
                       </div>

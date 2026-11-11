@@ -2,6 +2,9 @@ import type { InboxPage } from '../domain/notifications.js';
 import { DomainError } from '../errors.js';
 import type { DatabaseService } from './database.service.js';
 const scope = "owner_uid=? AND channel='inapp' AND status='success'";
+// Reminder details are the saved note, not the formatted delivery envelope.
+const content =
+  "CASE WHEN event_type='reminder.due' THEN COALESCE(json_extract(payload,'$.content'),'') ELSE COALESCE(json_extract(payload,'$.message'),'') END";
 export class NotificationInboxRepository {
   constructor(private readonly database: DatabaseService) {}
   unread(owner: string): number {
@@ -35,7 +38,7 @@ export class NotificationInboxRepository {
       scope +
       (filter === 'unread' ? ' AND read_at IS NULL' : '') +
       (q.trim()
-        ? " AND (instr(lower(name),lower(?))>0 OR instr(lower(COALESCE(json_extract(payload,'$.message'),'')),lower(?))>0)"
+        ? ` AND (instr(lower(name),lower(?))>0 OR instr(lower(${content}),lower(?))>0)`
         : '');
     const args = q.trim() ? [owner, q.trim(), q.trim()] : [owner];
     const c = this.database.connection;
@@ -47,13 +50,13 @@ export class NotificationInboxRepository {
       ),
       items: c
         .prepare(
-          `SELECT id,name,payload,template_name,created_at,read_at FROM notification_deliveries WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
+          `SELECT id,name,${content} AS content,template_name,created_at,read_at FROM notification_deliveries WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?`,
         )
         .all(...args, pageSize, (page - 1) * pageSize)
         .map((row) => ({
           id: String(row.id),
           name: String(row.name),
-          content: String(JSON.parse(String(row.payload)).message ?? ''),
+          content: String(row.content),
           templateName: String(row.template_name),
           createdAt: new Date(Number(row.created_at)).toISOString(),
           readAt: row.read_at == null ? null : new Date(Number(row.read_at)).toISOString(),
