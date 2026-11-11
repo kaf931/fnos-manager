@@ -134,51 +134,55 @@ export function NotificationInbox({
             setMenuOpen(visible);
           }}
           render={
-            <Dropdown.Menu>
-              {previewLoading ? (
-                <Dropdown.Item disabled>正在读取消息…</Dropdown.Item>
-              ) : previewError ? (
-                <Dropdown.Item disabled>{previewError}</Dropdown.Item>
-              ) : preview.length ? (
-                preview.map((message) => (
-                  <Dropdown.Item
-                    key={message.id}
-                    onClick={() => {
-                      setMenuOpen(false);
-                      setInitialMessage(message);
-                      setOpen(true);
-                    }}
-                  >
-                    <div className="record-content">
-                      <AutoScrollName title={message.name}>
-                        {message.readAt ? '' : '• '}
-                        {message.name}
-                      </AutoScrollName>
-                      <div className="card-url">
-                        <AutoScrollName title={message.content}>
-                          {message.content.replace(/\s+/g, ' ').trim()}
+            <>
+              <Dropdown.Menu>
+                {previewLoading ? (
+                  <Dropdown.Item disabled>正在读取消息…</Dropdown.Item>
+                ) : previewError ? (
+                  <Dropdown.Item disabled>{previewError}</Dropdown.Item>
+                ) : preview.length ? (
+                  preview.map((message) => (
+                    <Dropdown.Item
+                      key={message.id}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setInitialMessage(message);
+                        setOpen(true);
+                      }}
+                    >
+                      <div className="record-content">
+                        <AutoScrollName title={message.name}>
+                          {message.readAt ? '' : '• '}
+                          {message.name}
                         </AutoScrollName>
+                        <div className="card-url">
+                          <AutoScrollName title={message.content}>
+                            {message.content.replace(/\s+/g, ' ').trim()}
+                          </AutoScrollName>
+                        </div>
+                        <div className="card-url">{compactRecordDate(message.createdAt)}</div>
                       </div>
-                      <div className="card-url">{compactRecordDate(message.createdAt)}</div>
-                    </div>
-                  </Dropdown.Item>
-                ))
-              ) : (
-                <Dropdown.Item disabled>暂无消息</Dropdown.Item>
-              )}
-              <Dropdown.Item disabled={markingAll || !count} onClick={() => void markAllRead()}>
-                {markingAll ? '正在标记…' : '全部已读'}
-              </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => {
-                  setMenuOpen(false);
-                  setInitialMessage(null);
-                  setOpen(true);
-                }}
-              >
-                查看全部消息
-              </Dropdown.Item>
-            </Dropdown.Menu>
+                    </Dropdown.Item>
+                  ))
+                ) : (
+                  <Dropdown.Item disabled>暂无消息</Dropdown.Item>
+                )}
+              </Dropdown.Menu>
+              <Dropdown.Menu className="toolbar-actions" aria-orientation="horizontal">
+                <Dropdown.Item disabled={markingAll || !count} onClick={() => void markAllRead()}>
+                  {markingAll ? '正在标记…' : '全部已读'}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setInitialMessage(null);
+                    setOpen(true);
+                  }}
+                >
+                  全部消息
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </>
           }
         >
           {trigger}
