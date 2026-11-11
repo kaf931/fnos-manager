@@ -40,7 +40,8 @@ test('appearance controls use public settings rows, save independent preferences
   assert.equal(lastSection.lastElementChild.querySelector('h3').textContent, '支持作者');
   assert.ok(lastSection.querySelector('img[alt="微信赞赏码"]'));
   assert.match(lastSection.textContent, /优先评估/);
-  assert.ok(lastSection.querySelector('button.text-button'));
+  assert.equal(lastSection.querySelector('button.text-button'), null);
+  assert.match(lastSection.textContent, /点击图片可放大查看赞赏码/);
   ui.click('[aria-label="放大查看赞赏码"]');
   assert.equal(ui.get('dialog').dataset.dialogSize, 'medium');
   assert.equal(ui.get('dialog').dataset.dialogLayout, 'fixed');

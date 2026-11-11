@@ -238,9 +238,7 @@ export function SettingsPage({
           <h3>支持作者</h3>
           <p>如果 NAS 管家对您有帮助，欢迎微信扫码赞赏支持。</p>
           <p>您也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
-          <button type="button" className="text-button" onClick={() => setPanel('support')}>
-            放大查看
-          </button>
+          <p>点击图片可放大查看赞赏码。</p>
         </div>
       </div>,
     ]),
