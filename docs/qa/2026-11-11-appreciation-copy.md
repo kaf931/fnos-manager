@@ -5,3 +5,10 @@
 - 设置 UI 测试、构建、单文件 ESLint、diff --check 通过。本次仅修改文字，未重复运行全量测试。
 - 已通过 SSH 停止、备份、替换运行文件并启动 NAS，保留数据；实际运行版本 0.4.2，应用中心登记版本不变。数据库 schema 36，integrity ok、外键错误 0；原模板与投递数据一致，提醒事项 1 条，关键接口及生产资源检查通过。
 - 数据库备份 `/tmp/notification-center-pre-1794380017735.sqlite`；最终运行文件备份 `/tmp/adb-runtime-backup.BP6Z7l`。
+
+## 统一敬称
+
+- 首句补齐为“如果 NAS 管家对您有帮助，欢迎微信扫码赞赏支持。”，下句仍使用“您也可以”。
+- 设置 UI 回归、构建、单文件 ESLint、diff --check 通过。
+- 已按 SSH 保留数据流程更新 NAS，运行版本 0.4.2、schema 36；数据库完整、外键错误 0，原通知数据一致，关键接口和生产资源检查通过。未修改应用中心登记版本。
+- 本次数据库备份 `/tmp/notification-center-pre-1794380241122.sqlite`，运行备份 `/tmp/adb-runtime-backup.NCZDWK`。
