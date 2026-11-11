@@ -43,6 +43,8 @@ test('appearance controls use public settings rows, save independent preferences
   assert.ok(lastSection.querySelector('button.text-button'));
   ui.click('[aria-label="放大查看赞赏码"]');
   assert.equal(ui.get('dialog').dataset.dialogSize, 'medium');
+  assert.equal(ui.get('dialog').dataset.dialogLayout, 'fixed');
+  assert.ok(ui.get('dialog .dialog-media-body'));
   assert.ok(ui.get('dialog img[alt="微信赞赏码"]'));
   ui.click('dialog .dialog-close');
   assert.equal(ui.get('dialog'), null);

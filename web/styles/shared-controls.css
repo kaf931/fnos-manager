@@ -444,3 +444,14 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
     max-width: 200px;
   }
 }
+
+/* Fit the complete image inside the dialog's remaining content area. */
+.task-form-body.dialog-media-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+.dialog-media-body > .dialog-media {
+  height: 100%;
+  min-height: 0;
+}

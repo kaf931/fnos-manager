@@ -254,9 +254,10 @@ export function SettingsPage({
         open={active && panel === 'support'}
         title="赞赏码"
         size="medium"
+        layout="fixed"
         onClose={() => setPanel(null)}
       >
-        <div className="task-form-body">
+        <div className="task-form-body dialog-media-body">
           <img
             className="dialog-media"
             src={appreciationCode}
