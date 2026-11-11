@@ -302,29 +302,20 @@ export function InboxDialog({
       className="list-management-dialog dialog-scroll-surface"
       open
       title={detail ? '消息详情' : '应用内消息'}
-      onClose={onClose}
+      onClose={() => {
+        if (detail) setDetail(null);
+        else onClose();
+      }}
       size="large"
       layout="workspace"
-      busy={busy || selection.busy}
+      busy={(!detail && busy) || selection.busy}
     >
       <div
         ref={container}
         className="task-form-body tool-page terminal-list-view record-content storage-history-inline"
       >
         {detail ? (
-          <>
-            <header className="toolbar">
-              <button type="button" onClick={() => setDetail(null)}>
-                <AppIcon name="back" />
-                返回消息
-              </button>
-            </header>
-            <RecordDetail
-              title={detail.name}
-              content={detail.content}
-              createdAt={detail.createdAt}
-            />
-          </>
+          <RecordDetail title={detail.name} content={detail.content} createdAt={detail.createdAt} />
         ) : (
           <>
             <header className="toolbar task-toolbar">

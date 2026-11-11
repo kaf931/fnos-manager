@@ -436,7 +436,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   assert.equal(document.querySelector('script'), null);
   assert.equal(read, true);
   await act(async () => {
-    button('返回消息').click();
+    document.querySelector('dialog [aria-label="关闭"]').click();
     await tick();
   });
   await act(() =>
@@ -1108,9 +1108,9 @@ test('opening multiple messages queues and deduplicates read requests while the 
     await tick();
   });
   await act(() => button('Message a').click());
-  await act(() => button('返回消息').click());
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   await act(() => button('Message b').click());
-  await act(() => button('返回消息').click());
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   await act(() => button('Message b').click());
   assert.match(document.querySelector('.record-detail-body').textContent, /Content b/);
   await act(async () => {
@@ -1181,7 +1181,7 @@ test('a failed mark-read request does not discard the next opened message', asyn
     await tick();
   });
   await act(() => button('Read a').click());
-  await act(() => button('返回消息').click());
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   await act(() => button('Read b').click());
   await act(async () => {
     rejectFirst(Error('读取失败'));
@@ -1334,12 +1334,15 @@ test('mobile app messages reuse compact inline records and retain navigation bet
   assert.ok(document.querySelector('dialog').textContent.includes('消息详情'));
   assert.equal(document.querySelector('dialog').className, dialogClasses);
   assert.equal(document.querySelector('.record-detail-body').textContent, row.content);
+  assert.equal(button('返回消息'), undefined);
   assert.ok(
     calls.some((call) => call.path === '/notifications/inbox/read' && call.method === 'POST'),
   );
-  await act(() => button('返回消息').click());
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   assert.ok(document.querySelector('.history-compact-list'));
   assert.equal(document.querySelector('dialog').className, dialogClasses);
+  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
+  assert.equal(document.querySelector('dialog'), null);
 });
 
 test('mobile delivery records share storage management layout and scoped selection', async (t) => {
