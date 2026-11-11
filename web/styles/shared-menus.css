@@ -24,6 +24,24 @@ body {
 }
 .content-surface-menu {
   width: min(360px, calc(100vw - 32px));
+  height: 480px;
+}
+.content-surface-menu > .semi-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.content-surface-menu .semi-dropdown-menu:first-child {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.content-surface-menu .toolbar-actions {
+  flex-shrink: 0;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
 }
 .content-surface-menu .semi-dropdown-item {
   max-width: none;

@@ -123,6 +123,7 @@ export function NotificationInbox({
           position="rightBottom"
           spacing={menuSpacing}
           contentClassName="content-surface-menu"
+          style={{ overflowY: 'hidden' }}
           visible={menuOpen}
           onVisibleChange={(visible) => {
             if (visible) {
@@ -173,6 +174,7 @@ export function NotificationInbox({
                   {markingAll ? '正在标记…' : '全部已读'}
                 </Dropdown.Item>
                 <Dropdown.Item
+                  type="primary"
                   onClick={() => {
                     setMenuOpen(false);
                     setInitialMessage(null);

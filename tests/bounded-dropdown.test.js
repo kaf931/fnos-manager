@@ -197,3 +197,14 @@ test('side menu height respects the public outer-surface viewport inset after re
   await act(() => window.dispatchEvent(new window.Event('resize')));
   assert.equal(selectBridge.props.style.maxHeight, 388);
 });
+
+test('content menus can keep the surface fixed while scrolling their inner list', async (t) => {
+  await fixture(
+    t,
+    { top: 410, bottom: 442 },
+    { top: 80, bottom: 565 },
+    { style: { overflowY: 'hidden' } },
+  );
+  assert.equal(selectBridge.props.style.overflowY, 'hidden');
+  assert.equal(selectBridge.props.style.maxHeight, 115);
+});

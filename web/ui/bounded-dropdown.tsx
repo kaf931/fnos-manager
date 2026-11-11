@@ -53,7 +53,7 @@ export function BoundedDropdown({
       autoAdjustOverflow={false}
       getPopupContainer={popupContainer}
       rePosKey={String(props.rePosKey ?? '') + '|' + maxHeight}
-      style={{ ...style, maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }}
+      style={{ overflowY: 'auto', overscrollBehavior: 'contain', ...style, maxHeight }}
       onEscKeyDown={(event) => {
         // Semi closes the menu; suppress the browser's additional dialog dismissal.
         if (visible) event.preventDefault();
