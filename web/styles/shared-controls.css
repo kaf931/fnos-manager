@@ -398,3 +398,11 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
   display: inline-flex;
   padding: 0;
 }
+
+/* Preserve the proportions of images displayed inside public dialogs. */
+.dialog-media {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}

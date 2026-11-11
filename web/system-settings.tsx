@@ -1,3 +1,5 @@
+import appreciationCode from './assets/brand/appreciation-code.jpg';
+import { ReactDialog } from './ui/react-dialog.js';
 import { UpdateMode } from './update-mode.js';
 import { AppUpdate } from './app-update.js';
 import type { ApiClient, Toast, AppState } from './contracts/shared.js';
@@ -35,7 +37,9 @@ export function SettingsPage({
   onRestored: () => Promise<void>;
   updateRequest?: number;
 }) {
-  const [panel, setPanel] = React.useState<'skills' | 'ai' | 'export' | 'restore' | null>(null);
+  const [panel, setPanel] = React.useState<
+    'skills' | 'ai' | 'export' | 'restore' | 'support' | null
+  >(null);
   const restored = async () => {
     await Promise.all([loadPreferences(api), loadCommandCatalog(api, true)]);
     window.dispatchEvent(new Event('deskicons:configrestored'));
@@ -203,6 +207,19 @@ export function SettingsPage({
         ),
       ),
       row(
+        'support',
+        '支持作者',
+        h(
+          'button',
+          {
+            type: 'button',
+            'aria-labelledby': 'setting-support',
+            onClick: () => setPanel('support'),
+          },
+          '赞赏',
+        ),
+      ),
+      row(
         'forum',
         '应用论坛',
         h(
@@ -222,6 +239,24 @@ export function SettingsPage({
       <div id="system-settings-root" data-scroll-inset className="system-settings-content">
         {content}
       </div>
+      <ReactDialog
+        open={active && panel === 'support'}
+        title="支持作者"
+        size="small"
+        onClose={() => setPanel(null)}
+      >
+        <div className="task-form-body">
+          <img
+            className="dialog-media"
+            src={appreciationCode}
+            alt="微信赞赏码"
+            width={1152}
+            height={1152}
+          />
+          <p>如果 NAS 管家对你有帮助，欢迎赞赏支持。</p>
+          <p>你也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
+        </div>
+      </ReactDialog>
       {panel === 'skills' && <AiSkills api={api} toast={toast} onClose={() => setPanel(null)} />}{' '}
       {panel === 'ai' && (
         <AiSettings

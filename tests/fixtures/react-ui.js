@@ -34,6 +34,7 @@ export async function mountUi(t, entry, name, props, stubs = {}) {
   };
   const result = await build({
     entryPoints: [fileURLToPath(new URL('../../web/' + entry + '.tsx', import.meta.url))],
+    loader: { '.jpg': 'dataurl' },
     bundle: true,
     write: false,
     format: 'esm',
