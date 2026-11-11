@@ -175,6 +175,55 @@ export function RecordFooter({
     </div>
   );
 }
+/** Full-text cards for records that should be read without opening another view. */
+export function RecordCards({
+  entries,
+  selection,
+  loading,
+  empty,
+}: {
+  entries: {
+    id: string;
+    title: string;
+    content: string;
+    meta: string;
+    status: string;
+    statusLabel: string;
+    action?: React.ReactNode;
+  }[];
+  selection?: RecordSelection;
+  loading: boolean;
+  empty: string;
+}) {
+  return (
+    <div className="record-card-list">
+      {selection && (
+        <label className="checkbox-label">
+          <RecordSelectAll selection={selection} />
+          <span className="muted">全选</span>
+        </label>
+      )}
+      {entries.map((row) => (
+        <article key={row.id} className="card record-card">
+          <div className="record-card-heading">
+            {selection && <RecordSelect selection={selection} id={row.id} name={row.title} />}
+            <div className="card-info">
+              <h3>{row.title}</h3>
+              <div className="card-url">{row.meta}</div>
+            </div>
+          </div>
+          <div className="record-text">{row.content || '暂无内容'}</div>
+          <div className="card-actions">
+            <span className={'state-badge ' + row.status}>{row.statusLabel}</span>
+            {row.action}
+          </div>
+        </article>
+      ))}
+      {!entries.length && !loading && <p className="help">{empty}</p>}
+    </div>
+  );
+}
+
 export function RecordList({
   entries,
   loading,

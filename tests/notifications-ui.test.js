@@ -385,7 +385,7 @@ test('configured channel replaces its placeholder and keeps multiple saved templ
   assert.equal(document.querySelector('#notification-name').value, 'Saved one');
 });
 
-test('inbox reuses record pagination, marks opened messages read and supports shared batch deletion', async (t) => {
+test('inbox shows inline details, marks messages read and supports shared batch deletion', async (t) => {
   let read = false,
     removed = false;
   const calls = [];
@@ -427,18 +427,17 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
   });
   assert.ok(document.querySelector('[aria-label="应用内消息分页"]'));
   await act(async () => {
-    button('Maintenance').click();
+    button('标为已读 Maintenance').click();
     await tick();
   });
-  assert.ok(
-    document.querySelector('.record-detail-body').textContent.includes('<script>text</script>'),
-  );
+  assert.ok(document.querySelector('.record-text').textContent.includes('<script>text</script>'));
   assert.equal(document.querySelector('script'), null);
   assert.equal(read, true);
-  await act(async () => {
-    document.querySelector('dialog [aria-label="关闭"]').click();
-    await tick();
-  });
+  assert.deepEqual(
+    [...document.querySelectorAll('thead th')].map((e) => e.textContent),
+    ['', '消息', '详情', '状态', '时间'],
+  );
+  assert.equal(button('Maintenance'), undefined);
   await act(() =>
     Simulate.change(document.querySelector('tbody input[type=checkbox]'), {
       target: { checked: true },
@@ -1107,12 +1106,12 @@ test('opening multiple messages queues and deduplicates read requests while the 
     button('应用内消息，2 条未读').click();
     await tick();
   });
-  await act(() => button('Message a').click());
-  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
-  await act(() => button('Message b').click());
-  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
-  await act(() => button('Message b').click());
-  assert.match(document.querySelector('.record-detail-body').textContent, /Content b/);
+  await act(() => button('标为已读 Message a').click());
+  await act(() => button('标为已读 Message b').click());
+  await act(() => button('标为已读 Message b').click());
+  assert.ok(
+    [...document.querySelectorAll('.record-text')].some((e) => e.textContent.includes('Content b')),
+  );
   await act(async () => {
     release();
     await tick();
@@ -1180,9 +1179,8 @@ test('a failed mark-read request does not discard the next opened message', asyn
     button('应用内消息，2 条未读').click();
     await tick();
   });
-  await act(() => button('Read a').click());
-  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
-  await act(() => button('Read b').click());
+  await act(() => button('标为已读 Read a').click());
+  await act(() => button('标为已读 Read b').click());
   await act(async () => {
     rejectFirst(Error('读取失败'));
     await tick();
@@ -1297,7 +1295,7 @@ test('mobile reminder batch reuses inline record layout and has a distinct check
   assert.ok(document.querySelector('.dialog-footer').textContent.includes('已选择 1 项'));
 });
 
-test('mobile app messages reuse compact inline records and retain navigation between list and details', async (t) => {
+test('mobile app messages show full text cards without a detail navigation', async (t) => {
   const row = {
     id: 'mobile-message',
     name: '移动端消息',
@@ -1318,29 +1316,20 @@ test('mobile app messages reuse compact inline records and retain navigation bet
   );
   await f.open(NotificationInbox, { active: true, hideTrigger: true, openRequest: 1 });
   const body = document.querySelector('dialog .task-form-body');
-  const dialogClasses = body.closest('dialog').className;
   assert.ok(body.closest('dialog').classList.contains('list-management-dialog'));
-  assert.ok(body.classList.contains('storage-history-inline'));
-  assert.ok(body.classList.contains('terminal-list-view'));
-  assert.equal(!!body.querySelector('.history-mobile-list'), false);
-  assert.equal(!!body.querySelector('table'), false);
-  assert.ok(body.querySelector('.history-compact-list'));
+  assert.equal(body.querySelector('table'), null);
+  assert.ok(body.querySelector('article.card'));
+  assert.equal(body.querySelector('.record-text').textContent, row.content);
+  assert.equal(button('移动端消息'), undefined);
+  assert.equal(button('返回消息'), undefined);
   await act(() => body.querySelector('[aria-label="选择 移动端消息"]').click());
   assert.equal(button('批量删除消息').disabled, false);
   await act(async () => {
-    button('移动端消息').click();
+    button('标为已读 移动端消息').click();
     await tick();
   });
-  assert.ok(document.querySelector('dialog').textContent.includes('消息详情'));
-  assert.equal(document.querySelector('dialog').className, dialogClasses);
-  assert.equal(document.querySelector('.record-detail-body').textContent, row.content);
-  assert.equal(button('返回消息'), undefined);
-  assert.ok(
-    calls.some((call) => call.path === '/notifications/inbox/read' && call.method === 'POST'),
-  );
-  await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
-  assert.ok(document.querySelector('.history-compact-list'));
-  assert.equal(document.querySelector('dialog').className, dialogClasses);
+  assert.equal(document.querySelector('dialog h2').textContent, '应用内消息');
+  assert.ok(calls.some((c) => c.path === '/notifications/inbox/read' && c.method === 'POST'));
   await act(() => document.querySelector('dialog [aria-label="关闭"]').click());
   assert.equal(document.querySelector('dialog'), null);
 });

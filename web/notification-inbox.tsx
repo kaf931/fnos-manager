@@ -1,5 +1,4 @@
 import { BoundedDropdown } from './ui/bounded-dropdown.js';
-import { RecordDetail } from './record-detail.js';
 import { useNotificationUnread, refreshNotificationUnread } from './notification-unread.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
@@ -15,7 +14,7 @@ import {
   RecordSelect,
   RecordSelectAll,
 } from './record-batch.js';
-import { useRecordPage, RecordFooter, RecordList } from './record-list.js';
+import { useRecordPage, RecordFooter, RecordCards } from './record-list.js';
 import { compactRecordDate } from './record-date.js';
 export function NotificationInbox({
   api,
@@ -215,11 +214,10 @@ export function InboxDialog({
   useEffect(() => {
     if (initialMessage && !initialMessage.readAt) void read([initialMessage.id]);
   }, [initialMessage]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialMessage?.name || '');
   const [filter, setFilter] = useState('all'),
     [menuOpen, setMenuOpen] = useState(false),
     [busy, setBusy] = useState(false),
-    [detail, setDetail] = useState<InboxMessage | null>(initialMessage),
     [, rerender] = useState(0);
   const container = useRef<HTMLDivElement>(null);
   const alive = useRef(true);
@@ -293,209 +291,224 @@ export function InboxDialog({
       if (alive.current) setBusy(false);
     }
   }
-  function show(row: InboxMessage) {
-    setDetail(row);
-    if (!row.readAt) void read([row.id]);
-  }
   return (
     <ReactDialog
       className="list-management-dialog dialog-scroll-surface"
       open
-      title={detail ? '消息详情' : '应用内消息'}
-      onClose={() => {
-        if (detail) setDetail(null);
-        else onClose();
-      }}
+      title="应用内消息"
+      onClose={onClose}
       size="large"
       layout="workspace"
-      busy={(!detail && busy) || selection.busy}
+      busy={selection.busy}
     >
       <div
         ref={container}
         className="task-form-body tool-page terminal-list-view record-content storage-history-inline"
       >
-        {detail ? (
-          <RecordDetail title={detail.name} content={detail.content} createdAt={detail.createdAt} />
-        ) : (
-          <>
-            <header className="toolbar task-toolbar">
-              <div className="task-toolbar-filters">
-                <div className="search">
-                  <AppIcon name="search" />
-                  <input
-                    type="search"
-                    aria-label="搜索消息"
-                    placeholder="搜索标题或内容"
-                    maxLength={200}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+        <header className="toolbar task-toolbar">
+          <div className="task-toolbar-filters">
+            <div className="search">
+              <AppIcon name="search" />
+              <input
+                type="search"
+                aria-label="搜索消息"
+                placeholder="搜索标题或内容"
+                maxLength={200}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="task-status-field">
+              <span id="inbox-filter-label">状态</span>
+              <div className="toolbar-select">
+                <div className="desktop-toolbar-filter">
+                  <NativeSelect
+                    aria-label="消息状态"
+                    value={filter}
+                    optionList={[
+                      { value: 'all', label: '全部消息' },
+                      { value: 'unread', label: '未读消息' },
+                    ]}
+                    onChange={setFilter}
                   />
                 </div>
-                <div className="task-status-field">
-                  <span id="inbox-filter-label">状态</span>
-                  <div className="toolbar-select">
-                    <div className="desktop-toolbar-filter">
-                      <NativeSelect
-                        aria-label="消息状态"
-                        value={filter}
-                        optionList={[
-                          { value: 'all', label: '全部消息' },
-                          { value: 'unread', label: '未读消息' },
-                        ]}
-                        onChange={setFilter}
-                      />
-                    </div>
-                    <div
-                      className="mobile-toolbar-filter"
-                      role="group"
-                      aria-labelledby="inbox-filter-label"
+                <div
+                  className="mobile-toolbar-filter"
+                  role="group"
+                  aria-labelledby="inbox-filter-label"
+                >
+                  {[
+                    { value: 'all', label: '全部' },
+                    { value: 'unread', label: '未读' },
+                  ].map((item) => (
+                    <button
+                      type="button"
+                      key={item.value}
+                      aria-pressed={filter === item.value}
+                      onClick={() => setFilter(item.value)}
                     >
-                      {[
-                        { value: 'all', label: '全部' },
-                        { value: 'unread', label: '未读' },
-                      ].map((item) => (
-                        <button
-                          type="button"
-                          key={item.value}
-                          aria-pressed={filter === item.value}
-                          onClick={() => setFilter(item.value)}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                      {item.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="toolbar-actions">
-                <button
-                  type="button"
-                  className="toolbar-manage"
-                  title="批量删除"
-                  aria-label="批量删除消息"
-                  disabled={busy || selection.busy || !selection.selected.size}
-                  onClick={() => void control.manage().catch((e) => toast(errorMessage(e)))}
-                >
-                  <AppIcon name="trash" />
-                  <span className="toolbar-action-label">批量删除</span>
-                </button>
-                <button
-                  type="button"
-                  className="icon-button toolbar-refresh"
-                  title="刷新消息"
-                  aria-label="刷新消息"
-                  disabled={busy || model.loading}
-                  onClick={() => {
-                    model.refresh();
-                    onChanged();
-                  }}
-                >
-                  <AppIcon name="refresh" />
-                </button>
-                <BoundedDropdown
-                  trigger="click"
-                  visible={menuOpen}
-                  onVisibleChange={setMenuOpen}
-                  clickTriggerToHide
-                  position="bottomRight"
-                  getPopupContainer={() => container.current?.closest('dialog') || document.body}
-                  render={
-                    <Dropdown.Menu>
-                      <Dropdown.Item
-                        disabled={busy || selection.busy}
-                        onClick={() => {
-                          setMenuOpen(false);
-                          void read();
-                        }}
-                      >
-                        全部已读
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        disabled={busy || selection.busy || !selection.selected.size}
-                        onClick={() => {
-                          setMenuOpen(false);
-                          void read([...selection.selected]);
-                        }}
-                      >
-                        所选标为已读
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  }
-                >
-                  <MobileMoreButton aria-label="消息操作" title="消息操作" />
-                </BoundedDropdown>
-              </div>
-            </header>
-            {model.error && (
-              <p className="notice error" role="alert">
-                {model.error}
-              </p>
-            )}
-            <div className="table-wrap storage-history-list" aria-busy={model.loading}>
-              {model.mobile ? (
-                <RecordList
-                  entries={model.items.map((row) => ({
-                    id: row.id,
-                    title: row.name,
-                    status: row.readAt ? 'success' : 'pending',
-                    statusLabel: row.readAt ? '已读' : '未读',
-                    meta: compactRecordDate(row.createdAt),
-                    detail: row.content,
-                    onOpen: () => show(row),
-                  }))}
-                  selection={selection}
-                  loading={model.loading}
-                  empty="暂无应用内消息"
-                />
-              ) : (
-                <table className="task-table storage-table record-table record-table-compact">
-                  <colgroup>
-                    <col className="col-selection" />
-                    <col />
-                    <col style={{ width: 80 }} />
-                    <col style={{ width: 160 }} />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th>
-                        <RecordSelectAll selection={selection} />
-                      </th>
-                      <th>消息</th>
-                      <th>状态</th>
-                      <th>时间</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {model.items.map((row) => (
-                      <tr key={row.id}>
-                        <td>
-                          <RecordSelect selection={selection} id={row.id} name={row.name} />
-                        </td>
-                        <td>
-                          <button type="button" className="text-button" onClick={() => show(row)}>
-                            {row.name}
-                          </button>
-                        </td>
-                        <td>
-                          <span className={'state-badge ' + (row.readAt ? 'success' : 'pending')}>
-                            {row.readAt ? '已读' : '未读'}
-                          </span>
-                        </td>
-                        <td>{compactRecordDate(row.createdAt)}</td>
-                      </tr>
-                    ))}
-                    {!model.loading && !model.items.length && (
-                      <tr>
-                        <td colSpan={4}>暂无应用内消息</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              )}
             </div>
-            <RecordFooter model={model} label="应用内消息分页" />
-          </>
+          </div>
+          <div className="toolbar-actions">
+            <button
+              type="button"
+              className="toolbar-manage"
+              title="批量删除"
+              aria-label="批量删除消息"
+              disabled={busy || selection.busy || !selection.selected.size}
+              onClick={() => void control.manage().catch((e) => toast(errorMessage(e)))}
+            >
+              <AppIcon name="trash" />
+              <span className="toolbar-action-label">批量删除</span>
+            </button>
+            <button
+              type="button"
+              className="icon-button toolbar-refresh"
+              title="刷新消息"
+              aria-label="刷新消息"
+              disabled={busy || model.loading}
+              onClick={() => {
+                model.refresh();
+                onChanged();
+              }}
+            >
+              <AppIcon name="refresh" />
+            </button>
+            <BoundedDropdown
+              trigger="click"
+              visible={menuOpen}
+              onVisibleChange={setMenuOpen}
+              clickTriggerToHide
+              position="bottomRight"
+              getPopupContainer={() => container.current?.closest('dialog') || document.body}
+              render={
+                <Dropdown.Menu>
+                  <Dropdown.Item
+                    disabled={busy || selection.busy}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void read();
+                    }}
+                  >
+                    全部已读
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    disabled={busy || selection.busy || !selection.selected.size}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void read([...selection.selected]);
+                    }}
+                  >
+                    所选标为已读
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              }
+            >
+              <MobileMoreButton aria-label="消息操作" title="消息操作" />
+            </BoundedDropdown>
+          </div>
+        </header>
+        {model.error && (
+          <p className="notice error" role="alert">
+            {model.error}
+          </p>
         )}
+        <div className="table-wrap storage-history-list" aria-busy={model.loading}>
+          {model.mobile ? (
+            <RecordCards
+              entries={model.items.map((row) => ({
+                id: row.id,
+                title: row.name,
+                status: row.readAt ? 'success' : 'pending',
+                statusLabel: row.readAt ? '已读' : '未读',
+                meta: compactRecordDate(row.createdAt),
+                content: row.content,
+                action: !row.readAt ? (
+                  <button
+                    type="button"
+                    className="apply"
+                    aria-label={'标为已读 ' + row.name}
+                    disabled={selection.busy}
+                    onClick={() => void read([row.id])}
+                  >
+                    标为已读
+                  </button>
+                ) : undefined,
+              }))}
+              selection={selection}
+              loading={model.loading}
+              empty="暂无应用内消息"
+            />
+          ) : (
+            <table className="task-table storage-table record-table record-table-compact">
+              <colgroup>
+                <col className="col-selection" />
+                <col style={{ width: 180 }} />
+                <col />
+                <col style={{ width: 100 }} />
+                <col style={{ width: 160 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>
+                    <RecordSelectAll selection={selection} />
+                  </th>
+                  <th>消息</th>
+                  <th>详情</th>
+                  <th>状态</th>
+                  <th>时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {model.items.map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      <RecordSelect selection={selection} id={row.id} name={row.name} />
+                    </td>
+                    <td>{row.name}</td>
+                    <td>
+                      <div
+                        className="record-text record-text-scroll"
+                        tabIndex={0}
+                        aria-label={row.name + '的详情'}
+                      >
+                        {row.content || '暂无内容'}
+                      </div>
+                    </td>
+                    <td>
+                      {row.readAt ? (
+                        <span className="state-badge success">已读</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="text-button"
+                          aria-label={'标为已读 ' + row.name}
+                          title="标为已读"
+                          disabled={selection.busy}
+                          onClick={() => void read([row.id])}
+                        >
+                          未读
+                        </button>
+                      )}
+                    </td>
+                    <td>{compactRecordDate(row.createdAt)}</td>
+                  </tr>
+                ))}
+                {!model.loading && !model.items.length && (
+                  <tr>
+                    <td colSpan={5}>暂无应用内消息</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <RecordFooter model={model} label="应用内消息分页" />
       </div>
     </ReactDialog>
   );

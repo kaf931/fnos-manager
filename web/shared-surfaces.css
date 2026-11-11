@@ -579,26 +579,39 @@ html.standalone-entry:not(.terminal-focused):not(.storage-focused) .layout main 
 .record-content > :is(h2, h3) {
   overflow-wrap: anywhere;
 }
-.record-detail {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  overflow-wrap: anywhere;
-  user-select: text;
-}
-.record-detail > h3 {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.5;
-}
-.record-detail-body {
-  margin-top: 16px;
+.record-text {
   font-size: 14px;
   line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  user-select: text;
+}
+.record-text-scroll {
+  max-height: 160px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.record-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.record-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.record-card-heading .card-info > h3 {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-height: none;
+}
+.record-card > .record-text {
+  margin: 12px 0 16px;
+}
+.record-card .card-actions {
+  align-items: center;
+  justify-content: space-between;
 }
 .record-toolbar {
   margin-bottom: 16px;
