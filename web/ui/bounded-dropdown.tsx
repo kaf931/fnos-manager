@@ -9,10 +9,13 @@ export function BoundedDropdown({
   position = 'bottomRight',
   visible: controlledVisible,
   onVisibleChange,
+  onEscKeyDown,
   getPopupContainer,
   style = {},
   ...props
-}: Omit<DropdownProps, 'children'> & { children: React.ReactElement<{ id?: string }> }) {
+}: Omit<DropdownProps, 'children'> & {
+  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
+}) {
   const generatedId = useId();
   const id = children.props.id || 'operation-menu-' + generatedId;
   const [open, setOpen] = useState(false);
@@ -49,12 +52,25 @@ export function BoundedDropdown({
       getPopupContainer={popupContainer}
       rePosKey={String(props.rePosKey ?? '') + '|' + maxHeight}
       style={{ ...style, maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }}
+      onEscKeyDown={(event) => {
+        // Semi closes the menu; suppress the browser's additional dialog dismissal.
+        if (visible) event.preventDefault();
+        onEscKeyDown?.(event);
+      }}
       onVisibleChange={(next) => {
         if (next && !measurePopup()) return;
         changeVisible(next);
       }}
     >
-      {React.cloneElement(children, { id })}
+      {React.cloneElement(children, {
+        id,
+        onKeyDownCapture: (event) => {
+          children.props.onKeyDownCapture?.(event);
+          // Semi consumes Escape on its trigger even while closed. Leave the native
+          // dialog default action available once there is no menu left to dismiss.
+          if (!visible && event.key === 'Escape') event.stopPropagation();
+        },
+      })}
     </Dropdown>
   );
 }

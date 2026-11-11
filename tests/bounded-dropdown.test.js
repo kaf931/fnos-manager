@@ -118,3 +118,50 @@ test('controlled menu reports dismissal when the anchor becomes clipped', async 
   await act(() => window.dispatchEvent(new window.Event('scroll')));
   assert.equal(changes.at(-1), false);
 });
+
+test('Escape dismisses the operation menu without invoking the native dialog cancel action', async (t) => {
+  let forwarded = null;
+  const props = await fixture(
+    t,
+    { top: 410, bottom: 442 },
+    { top: 80, bottom: 565 },
+    {
+      onEscKeyDown: (event) => {
+        forwarded = event;
+      },
+    },
+  );
+  const event = new window.KeyboardEvent('keydown', {
+    key: 'Escape',
+    bubbles: true,
+    cancelable: true,
+  });
+  props.onEscKeyDown(event);
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(forwarded, event);
+});
+
+test('Escape is not consumed after the operation menu has closed', async (t) => {
+  await fixture(t, { top: 410, bottom: 442 }, { top: 80, bottom: 565 });
+  await act(() => selectBridge.props.onVisibleChange(false));
+  const event = new window.KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+  selectBridge.props.onEscKeyDown(event);
+  assert.equal(event.defaultPrevented, false);
+});
+
+test('a closed trigger lets Escape reach the browser without Semi intercepting it', async (t) => {
+  await fixture(t, { top: 410, bottom: 442 }, { top: 80, bottom: 565 });
+  await act(() => selectBridge.props.onVisibleChange(false));
+  let bubbled = false;
+  document.querySelector('main').addEventListener('keydown', () => {
+    bubbled = true;
+  });
+  const event = new window.KeyboardEvent('keydown', {
+    key: 'Escape',
+    bubbles: true,
+    cancelable: true,
+  });
+  await act(() => document.querySelector('#repeat').dispatchEvent(event));
+  assert.equal(bubbled, false);
+  assert.equal(event.defaultPrevented, false);
+});
