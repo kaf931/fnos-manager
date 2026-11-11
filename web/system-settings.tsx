@@ -253,6 +253,11 @@ export function SettingsPage({
         title="赞赏码"
         size="medium"
         layout="fixed"
+        footer={
+          <a className="text-button" href={appreciationCode} download="NAS管家-微信赞赏码.jpg">
+            保存图片
+          </a>
+        }
         onClose={() => setPanel(null)}
       >
         <div className="task-form-body dialog-media-body">

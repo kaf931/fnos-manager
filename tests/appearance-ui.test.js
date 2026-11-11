@@ -47,6 +47,11 @@ test('appearance controls use public settings rows, save independent preferences
   assert.equal(ui.get('dialog').dataset.dialogLayout, 'fixed');
   assert.ok(ui.get('dialog .dialog-media-body'));
   assert.ok(ui.get('dialog img[alt="微信赞赏码"]'));
+  const saveImage = ui.get('dialog .dialog-footer a.text-button');
+  assert.ok(saveImage, '使用公共文字按钮保存图片');
+  assert.equal(saveImage.textContent, '保存图片');
+  assert.equal(saveImage.getAttribute('download'), 'NAS管家-微信赞赏码.jpg');
+  assert.equal(saveImage.getAttribute('href'), ui.get('dialog img').getAttribute('src'));
   ui.click('dialog .dialog-close');
   assert.equal(ui.get('dialog'), null);
   assert.ok(lastSection.querySelector('img'));
