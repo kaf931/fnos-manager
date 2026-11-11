@@ -12,3 +12,11 @@
 - 设置 UI 回归、构建、单文件 ESLint、diff --check 通过。
 - 已按 SSH 保留数据流程更新 NAS，运行版本 0.4.2、schema 36；数据库完整、外键错误 0，原通知数据一致，关键接口和生产资源检查通过。未修改应用中心登记版本。
 - 本次数据库备份 `/tmp/notification-center-pre-1794380241122.sqlite`，运行备份 `/tmp/adb-runtime-backup.NCZDWK`。
+
+## 感谢与推荐说明
+
+- 在赞赏说明末尾增加：“非常感谢您使用 NAS 管家，希望它能为您的日常管理带来便利。也欢迎您将 NAS 管家推荐给身边有需要的朋友。”
+- 继续复用普通说明段落，不增加按钮与独立样式。
+- 设置 UI 回归、构建、ESLint、Prettier、diff --check 通过，本次未重复运行全量测试。
+- 已按保留数据的 SSH 停止、备份、替换、启动流程更新 NAS；运行版本 0.4.2，应用中心登记版本不变。数据库 schema 36、完整性正常、外键错误 0，原通知数据一致，关键接口及资源检查通过。
+- 数据库备份 `/tmp/notification-center-pre-1794381909022.sqlite`；最终运行文件备份 `/tmp/adb-runtime-backup.V19cka`。
