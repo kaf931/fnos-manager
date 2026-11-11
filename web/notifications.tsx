@@ -5,6 +5,7 @@ import { NotificationDeliveryDialog } from './notification-delivery-dialog.js';
 import { ReactDialog } from './ui/react-dialog.js';
 import { CompactCard, CompactCardStrip } from './ui/compact-card-strip.js';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
+import { BoundedDropdown } from './ui/bounded-dropdown.js';
 import { MobileMoreButton } from './mobile-more-button.js';
 import { RemindersPanel } from './reminders.js';
 import React, { useEffect, useRef, useState } from 'react';
@@ -233,7 +234,7 @@ function NotificationTemplatesPanel({
           />
         }
         actions={
-          <Dropdown
+          <BoundedDropdown
             trigger="click"
             position="bottomRight"
             getPopupContainer={() =>
@@ -273,7 +274,7 @@ function NotificationTemplatesPanel({
               title="更多操作"
               disabled={busy.has(row.id) || sorting}
             />
-          </Dropdown>
+          </BoundedDropdown>
         }
       />
     ) : (

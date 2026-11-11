@@ -1,0 +1,60 @@
+import React, { useCallback, useId, useState } from 'react';
+import Dropdown, { type DropdownProps } from '@douyinfe/semi-ui/lib/es/dropdown';
+import { resolvePopupContainer } from './popup-container.js';
+import { useBoundedPopup } from './use-bounded-popup.js';
+
+/** Operation menus share the same clipping and lifecycle rules as form selects. */
+export function BoundedDropdown({
+  children,
+  position = 'bottomRight',
+  visible: controlledVisible,
+  onVisibleChange,
+  getPopupContainer,
+  style = {},
+  ...props
+}: Omit<DropdownProps, 'children'> & { children: React.ReactElement<{ id?: string }> }) {
+  const generatedId = useId();
+  const id = children.props.id || 'operation-menu-' + generatedId;
+  const [open, setOpen] = useState(false);
+  const visible = controlledVisible ?? open;
+  const changeVisible = useCallback(
+    (next: boolean) => {
+      setOpen(next);
+      onVisibleChange?.(next);
+    },
+    [onVisibleChange],
+  );
+  const onInvalid = useCallback(() => changeVisible(false), [changeVisible]);
+  const popupContainer = useCallback(
+    () => getPopupContainer?.() || resolvePopupContainer(document.getElementById(id)),
+    [getPopupContainer, id],
+  );
+  const gap = (typeof props.spacing === 'number' ? props.spacing : (props.spacing?.y ?? 4)) + 4;
+  const limit = Math.min(480, typeof style.maxHeight === 'number' ? style.maxHeight : 480);
+  const { maxHeight, measurePopup } = useBoundedPopup({
+    id,
+    position,
+    limit,
+    gap,
+    popupContainer,
+    visible,
+    onInvalid,
+  });
+  return (
+    <Dropdown
+      {...props}
+      position={position}
+      visible={visible}
+      autoAdjustOverflow={false}
+      getPopupContainer={popupContainer}
+      rePosKey={String(props.rePosKey ?? '') + '|' + maxHeight}
+      style={{ ...style, maxHeight, overflowY: 'auto', overscrollBehavior: 'contain' }}
+      onVisibleChange={(next) => {
+        if (next && !measurePopup()) return;
+        changeVisible(next);
+      }}
+    >
+      {React.cloneElement(children, { id })}
+    </Dropdown>
+  );
+}

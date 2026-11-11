@@ -1,3 +1,4 @@
+import { BoundedDropdown } from './ui/bounded-dropdown.js';
 import { useNotificationUnread, refreshNotificationUnread } from './notification-unread.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
@@ -397,7 +398,7 @@ export function InboxDialog({
                 >
                   <AppIcon name="refresh" />
                 </button>
-                <Dropdown
+                <BoundedDropdown
                   trigger="click"
                   visible={menuOpen}
                   onVisibleChange={setMenuOpen}
@@ -428,7 +429,7 @@ export function InboxDialog({
                   }
                 >
                   <MobileMoreButton aria-label="消息操作" title="消息操作" />
-                </Dropdown>
+                </BoundedDropdown>
               </div>
             </header>
             {model.error && (
