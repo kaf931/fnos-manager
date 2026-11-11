@@ -1,7 +1,7 @@
 /* One surface for Select (including Pagination) and Dropdown operation menus. */
 body {
   --menu-surface-radius: var(--app-content-radius, 12px);
-  --menu-surface-shadow: var(--semi-shadow-2);
+  --menu-surface-shadow: var(--semi-shadow-dropdown);
 }
 .semi-dropdown-wrapper,
 .semi-popover-wrapper:has(.semi-select-option-list) {
