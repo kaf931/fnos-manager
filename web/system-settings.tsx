@@ -207,19 +207,6 @@ export function SettingsPage({
         ),
       ),
       row(
-        'support',
-        '支持作者',
-        h(
-          'button',
-          {
-            type: 'button',
-            'aria-labelledby': 'setting-support',
-            onClick: () => setPanel('support'),
-          },
-          '赞赏',
-        ),
-      ),
-      row(
         'forum',
         '应用论坛',
         h(
@@ -233,6 +220,26 @@ export function SettingsPage({
         ),
       ),
     ]),
+    section('支持作者', [
+      <React.Fragment key="appreciation">
+        <button
+          type="button"
+          className="media-preview-button"
+          aria-label="放大查看赞赏码"
+          onClick={() => setPanel('support')}
+        >
+          <img
+            className="dialog-media"
+            src={appreciationCode}
+            alt="微信赞赏码"
+            width={1152}
+            height={1152}
+          />
+        </button>
+        <p>如果 NAS 管家对你有帮助，欢迎赞赏支持。</p>
+        <p>你也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
+      </React.Fragment>,
+    ]),
   );
   return (
     <section id="settings-page" className="tool-page" hidden={!active} aria-label="系统设置">
@@ -241,8 +248,8 @@ export function SettingsPage({
       </div>
       <ReactDialog
         open={active && panel === 'support'}
-        title="支持作者"
-        size="small"
+        title="赞赏码"
+        size="medium"
         onClose={() => setPanel(null)}
       >
         <div className="task-form-body">
@@ -253,8 +260,6 @@ export function SettingsPage({
             width={1152}
             height={1152}
           />
-          <p>如果 NAS 管家对你有帮助，欢迎赞赏支持。</p>
-          <p>你也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
         </div>
       </ReactDialog>
       {panel === 'skills' && <AiSkills api={api} toast={toast} onClose={() => setPanel(null)} />}{' '}

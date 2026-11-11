@@ -35,14 +35,16 @@ test('appearance controls use public settings rows, save independent preferences
       'switch-control': `import React from 'react'; export function SwitchControl(p){return React.createElement('input',{type:'checkbox',checked:p.checked,onChange:e=>p.onChange(e.target.checked)})}`,
     },
   );
-  const support = ui.get('[aria-labelledby="setting-support"]');
-  assert.ok(support, '关于应用提供支持作者入口');
-  ui.click('[aria-labelledby="setting-support"]');
-  assert.equal(ui.get('dialog').dataset.dialogSize, 'small');
+  const lastSection = [...document.querySelectorAll('.system-settings-section')].at(-1);
+  assert.equal(lastSection.querySelector('h2').textContent, '支持作者');
+  assert.ok(lastSection.querySelector('img[alt="微信赞赏码"]'));
+  assert.match(lastSection.textContent, /优先评估/);
+  ui.click('[aria-label="放大查看赞赏码"]');
+  assert.equal(ui.get('dialog').dataset.dialogSize, 'medium');
   assert.ok(ui.get('dialog img[alt="微信赞赏码"]'));
-  assert.match(ui.get('dialog').textContent, /优先评估/);
   ui.click('dialog .dialog-close');
   assert.equal(ui.get('dialog'), null);
+  assert.ok(lastSection.querySelector('img'));
   const palette = ui.get('[aria-labelledby="setting-palette"]');
   assert.equal(
     palette.closest('.system-settings-row').querySelector('label').textContent,

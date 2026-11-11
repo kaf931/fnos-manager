@@ -406,3 +406,14 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
   height: auto;
   object-fit: contain;
 }
+
+/* Image previews remain visible in the page and open the full image on activation. */
+.media-preview-button {
+  display: block;
+  width: min(100%, 280px);
+  padding: 0;
+  margin: 16px auto;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
