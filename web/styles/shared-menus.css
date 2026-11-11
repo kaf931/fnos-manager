@@ -26,6 +26,13 @@ body {
   width: min(360px, calc(100vw - 32px));
   height: 480px;
 }
+/* This sidebar preview aligns with the adjacent application content card. */
+.semi-dropdown-wrapper.notification-preview-menu {
+  border-radius: var(--app-content-radius, 12px);
+}
+.notification-preview-menu .content-surface-menu {
+  height: 320px;
+}
 .content-surface-menu > .semi-dropdown-content {
   display: flex;
   flex-direction: column;

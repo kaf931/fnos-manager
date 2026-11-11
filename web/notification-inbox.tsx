@@ -122,6 +122,7 @@ export function NotificationInbox({
           trigger="click"
           position="rightBottom"
           spacing={menuSpacing}
+          className="notification-preview-menu"
           contentClassName="content-surface-menu"
           style={{ overflowY: 'hidden' }}
           visible={menuOpen}

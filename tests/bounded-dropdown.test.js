@@ -62,15 +62,15 @@ async function fixture(t, { top, bottom }, bounds, props = {}) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
       else delete globalThis[key];
   });
-  await act(() =>
+  selectBridge.rerender = (next = {}) =>
     root.render(
       React.createElement(
         BoundedDropdown,
-        { position: 'bottomRight', ...props },
+        { position: 'bottomRight', ...next },
         React.createElement('button', { id: 'repeat' }, '更多'),
       ),
-    ),
-  );
+    );
+  await act(() => selectBridge.rerender(props));
   document.querySelector('#repeat').getBoundingClientRect = () => ({
     top,
     bottom,
@@ -207,4 +207,16 @@ test('content menus can keep the surface fixed while scrolling their inner list'
   );
   assert.equal(selectBridge.props.style.overflowY, 'hidden');
   assert.equal(selectBridge.props.style.maxHeight, 115);
+});
+
+test('changing popup spacing requests a fresh framework placement even when height is unchanged', async (t) => {
+  await fixture(
+    t,
+    { top: 410, bottom: 442 },
+    { top: 80, bottom: 565 },
+    { spacing: { x: 8, y: 0 } },
+  );
+  const first = selectBridge.props.rePosKey;
+  await act(() => selectBridge.rerender({ spacing: { x: 28, y: 0 } }));
+  assert.notEqual(selectBridge.props.rePosKey, first);
 });
