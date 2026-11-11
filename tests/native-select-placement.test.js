@@ -27,7 +27,7 @@ const out = await build({
           namespace: 'stub',
         }));
         b.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({
-          contents: `import React from 'react';export const selectBridge={};export default function Select(props){selectBridge.props=props;return <button id={props.id} onClick={()=>props.onDropdownVisibleChange?.(true)}>选择</button>;}`,
+          contents: `import React from 'react';export const selectBridge={};export default React.forwardRef(function Select(props,ref){selectBridge.props=props;React.useImperativeHandle(ref,()=>({close(){selectBridge.closed=(selectBridge.closed||0)+1;props.onDropdownVisibleChange?.(false);}}));return <button id={props.id} onClick={()=>props.onDropdownVisibleChange?.(true)}>选择</button>;})`,
           loader: 'jsx',
         }));
       },
@@ -53,6 +53,7 @@ async function fixture(t, { top, bottom }, bounds, props = {}) {
     Object.defineProperty(globalThis, key, { value, writable: true, configurable: true });
   }
   Object.defineProperty(dom.window, 'innerHeight', { value: 720, configurable: true });
+  selectBridge.closed = 0;
   const root = createRoot(document.querySelector('main'));
   t.after(async () => {
     await act(() => root.unmount());
@@ -102,4 +103,75 @@ test('short dialog bounds cap popup height without changing its downward directi
   assert.equal(p.position, 'bottomLeft');
   assert.ok(p.dropdownStyle.maxHeight <= 100);
   assert.ok(p.dropdownStyle.maxHeight > 0);
+});
+
+test('open select recalculates on resize and scrolling without changing direction', async (t) => {
+  await fixture(t, { top: 410, bottom: 442 }, { top: 80, bottom: 640 });
+  document.querySelector('#repeat').getBoundingClientRect = () => ({
+    top: 250,
+    bottom: 282,
+    left: 100,
+    right: 300,
+    width: 200,
+    height: 32,
+  });
+  document.querySelector('dialog').getBoundingClientRect = () => ({
+    top: 80,
+    bottom: 440,
+    left: 50,
+    right: 650,
+    width: 600,
+    height: 360,
+  });
+  Object.defineProperty(window, 'innerHeight', { value: 520, configurable: true });
+  await act(() => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(selectBridge.props.dropdownStyle.maxHeight, 150);
+  assert.equal(selectBridge.props.position, 'bottomLeft');
+  document.querySelector('#repeat').getBoundingClientRect = () => ({
+    top: 180,
+    bottom: 212,
+    left: 100,
+    right: 300,
+    width: 200,
+    height: 32,
+  });
+  await act(() =>
+    document.querySelector('main').dispatchEvent(new window.Event('scroll', { bubbles: false })),
+  );
+  assert.equal(selectBridge.props.dropdownStyle.maxHeight, 220);
+});
+test('visual viewport changes limit the open menu and closing releases viewport listeners', async (t) => {
+  const viewport = new EventTarget();
+  viewport.height = 500;
+  viewport.offsetTop = 0;
+  await fixture(t, { top: 350, bottom: 382 }, { top: 80, bottom: 640 });
+  Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true });
+  // Close then reopen so the listener observes the new viewport object.
+  await act(() => selectBridge.props.onDropdownVisibleChange(false));
+  await act(() => selectBridge.props.onDropdownVisibleChange(true));
+  assert.equal(selectBridge.props.dropdownStyle.maxHeight, 110);
+  viewport.height = 450;
+  await act(() => viewport.dispatchEvent(new Event('resize')));
+  assert.equal(selectBridge.props.dropdownStyle.maxHeight, 60);
+  await act(() => selectBridge.props.onDropdownVisibleChange(false));
+  viewport.height = 420;
+  await act(() => viewport.dispatchEvent(new Event('resize')));
+  assert.equal(selectBridge.props.dropdownStyle.maxHeight, 60);
+});
+
+test('a select scrolled out of its clipping form closes rather than leaving a tiny popup', async (t) => {
+  await fixture(t, { top: 410, bottom: 442 }, { top: 80, bottom: 640 });
+  document.querySelector('main').style.overflowY = 'auto';
+  document.querySelector('main').getBoundingClientRect = () => ({
+    top: 150,
+    bottom: 300,
+    left: 50,
+    right: 650,
+    width: 600,
+    height: 150,
+  });
+  await act(() => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(selectBridge.closed, 1);
+  await act(() => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(selectBridge.closed, 1);
 });

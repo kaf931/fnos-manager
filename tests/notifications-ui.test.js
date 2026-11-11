@@ -11,6 +11,7 @@ const stubs = {
   dnd: `import React from 'react';export const dndBridge={props:null,items:new Map()};export function DragDropProvider(props){dndBridge.props=props;return props.children;}`,
   'dnd-sortable': `import {dndBridge} from '@dnd-kit/react';export function useSortable(input){dndBridge.items.set(input.id,input);return{ref:()=>{},handleRef:()=>{},isDragging:false};}export const isSortable=source=>source?.sortable===true;`,
   'dnd-dom': `class Constraint{constructor(options){this.options=options;}}class Sensor{static configure(options){return{sensor:this,options};}}export const PointerActivationConstraints={Delay:Constraint,Distance:Constraint};export class PointerSensor extends Sensor{}export class KeyboardSensor extends Sensor{}export class Feedback extends Sensor{}`,
+  configProvider: `export default function ConfigProvider({children}){return children;}`,
   space: `export default function Space({children}){return children;}`,
   badge: `import React from 'react';export default function Badge({children}){return React.createElement('span',{'data-unread-badge':true},children);}`,
   pagination: `import React from 'react';export default function Pagination(){return React.createElement('span',null,'pagination');}`,
@@ -58,7 +59,10 @@ const built = await build({
           namespace: 'stub',
         }));
         b.onResolve(
-          { filter: /@douyinfe\/semi-ui\/lib\/es\/(pagination|checkbox|space|badge)$/ },
+          {
+            filter:
+              /@douyinfe\/semi-ui\/lib\/es\/(pagination|checkbox|space|badge|configProvider)$/,
+          },
           (a) => ({
             path: a.path.split('/').at(-1),
             namespace: 'stub',
