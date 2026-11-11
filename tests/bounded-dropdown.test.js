@@ -165,3 +165,35 @@ test('a closed trigger lets Escape reach the browser without Semi intercepting i
   assert.equal(bubbled, false);
   assert.equal(event.defaultPrevented, false);
 });
+
+test('side-aligned menus fit above their bottom anchor, including the configured vertical offset', async (t) => {
+  await fixture(
+    t,
+    { top: 300, bottom: 332 },
+    { top: 80, bottom: 640 },
+    { position: 'rightBottom', spacing: { x: 20, y: 20 } },
+  );
+  assert.equal(selectBridge.props.style.maxHeight, 268);
+});
+
+test('a side menu closes when its offset alignment edge leaves the visible bounds', async (t) => {
+  await fixture(
+    t,
+    { top: 580, bottom: 612 },
+    { top: 80, bottom: 640 },
+    { position: 'rightBottom', spacing: { x: 20, y: 50 } },
+  );
+  assert.equal(selectBridge.props.visible, false);
+});
+
+test('side menu height respects the public outer-surface viewport inset after resize', async (t) => {
+  await fixture(
+    t,
+    { top: 380, bottom: 408 },
+    { top: 0, bottom: 640 },
+    { position: 'rightBottom', spacing: { x: 8, y: 4 } },
+  );
+  Object.defineProperty(window, 'innerHeight', { value: 420, configurable: true });
+  await act(() => window.dispatchEvent(new window.Event('resize')));
+  assert.equal(selectBridge.props.style.maxHeight, 388);
+});

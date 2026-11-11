@@ -1,4 +1,5 @@
 import { BoundedDropdown } from './ui/bounded-dropdown.js';
+import { AutoScrollName } from './auto-scroll-name.js';
 import { useNotificationUnread, refreshNotificationUnread } from './notification-unread.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
@@ -32,7 +33,7 @@ export function NotificationInbox({
   hideTrigger?: boolean;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [menuSpacing, setMenuSpacing] = useState({ x: 8, y: 4 });
+  const [menuSpacing, setMenuSpacing] = useState({ x: 8, y: 0 });
   const [menuOpen, setMenuOpen] = useState(false);
   const [preview, setPreview] = useState<InboxMessage[]>([]);
   const [previewError, setPreviewError] = useState('');
@@ -117,7 +118,7 @@ export function NotificationInbox({
   return (
     <>
       {hideTrigger ? null : menu ? (
-        <Dropdown
+        <BoundedDropdown
           trigger="click"
           position="rightBottom"
           spacing={menuSpacing}
@@ -129,7 +130,7 @@ export function NotificationInbox({
               const trigger = triggerRef.current?.getBoundingClientRect();
               if (card && trigger)
                 setMenuSpacing({ x: card.left - trigger.right, y: card.bottom - trigger.bottom });
-            }
+            } else setMenuSpacing({ x: 8, y: 0 });
             setMenuOpen(visible);
           }}
           render={
@@ -148,16 +149,15 @@ export function NotificationInbox({
                       setOpen(true);
                     }}
                   >
-                    <div>
-                      <div title={message.name}>
+                    <div className="record-content">
+                      <AutoScrollName title={message.name}>
                         {message.readAt ? '' : '• '}
                         {message.name}
-                      </div>
-                      <div className="card-url" title={message.content}>
-                        {Array.from(message.content.replace(/\s+/g, ' ').trim())
-                          .slice(0, 36)
-                          .join('')}
-                        {Array.from(message.content.trim()).length > 36 ? '…' : ''}
+                      </AutoScrollName>
+                      <div className="card-url">
+                        <AutoScrollName title={message.content}>
+                          {message.content.replace(/\s+/g, ' ').trim()}
+                        </AutoScrollName>
                       </div>
                       <div className="card-url">{compactRecordDate(message.createdAt)}</div>
                     </div>
@@ -182,7 +182,7 @@ export function NotificationInbox({
           }
         >
           {trigger}
-        </Dropdown>
+        </BoundedDropdown>
       ) : (
         trigger
       )}

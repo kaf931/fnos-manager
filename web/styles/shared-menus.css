@@ -22,6 +22,16 @@ body {
 .semi-dropdown-menu {
   padding: 4px;
 }
+.content-surface-menu {
+  width: min(360px, calc(100vw - 32px));
+}
+.content-surface-menu .semi-dropdown-item {
+  max-width: none;
+}
+.semi-dropdown-item > .record-content {
+  width: 100%;
+  min-width: 0;
+}
 .semi-select-option,
 .semi-dropdown-item {
   min-height: 32px;

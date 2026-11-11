@@ -658,7 +658,7 @@ test('desktop inbox trigger opens a recent-message menu before opening message d
   const item = {
     id: 'm1',
     name: 'Desktop message',
-    content: 'Body',
+    content: 'Body ' + '完整正文'.repeat(40),
     createdAt: new Date().toISOString(),
     readAt: null,
   };
@@ -687,6 +687,8 @@ test('desktop inbox trigger opens a recent-message menu before opening message d
   const menu = document.querySelector('[data-dropdown-position="rightBottom"]');
   assert.ok(menu);
   assert.deepEqual(JSON.parse(menu.dataset.dropdownSpacing), { x: 20, y: 20 });
+  assert.ok(menu.querySelector('.history-compact-name-content'));
+  assert.ok(menu.textContent.includes(item.content));
   assert.ok(
     [...document.querySelectorAll('button')].some(
       (e) => e.textContent.includes('• Desktop message') && e.textContent.includes('Body'),

@@ -42,6 +42,8 @@ export function BoundedDropdown({
     popupContainer,
     visible,
     onInvalid,
+    offsetY: typeof props.spacing === 'object' ? (props.spacing.y ?? 0) : 0,
+    viewportInset: 32,
   });
   return (
     <Dropdown

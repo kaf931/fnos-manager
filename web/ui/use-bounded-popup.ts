@@ -8,6 +8,8 @@ export function useBoundedPopup({
   popupContainer,
   visible,
   onInvalid,
+  offsetY = 0,
+  viewportInset = 0,
 }: {
   id: string;
   position: string;
@@ -16,6 +18,8 @@ export function useBoundedPopup({
   popupContainer: () => HTMLElement;
   visible: boolean;
   onInvalid: () => void;
+  offsetY?: number;
+  viewportInset?: number;
 }) {
   const [popup, setPopup] = useState({ position, maxHeight: limit });
   const measurePopup = useCallback(() => {
@@ -33,7 +37,27 @@ export function useBoundedPopup({
       below = Math.max(0, bottom - rect.bottom - gap);
     // Keep the requested direction; only the bounded scroll area changes.
     const vertical = position.startsWith('top') || position.startsWith('bottom');
-    const available = vertical ? (position.startsWith('top') ? above : below) : bottom - top - gap;
+    const alignedOutside =
+      !vertical &&
+      ((position.endsWith('Bottom') && rect.bottom + offsetY > bottom) ||
+        (position.endsWith('Top') && rect.top + offsetY < top));
+    const available = vertical
+      ? position.startsWith('top')
+        ? above
+        : below
+      : position.endsWith('Bottom')
+        ? Math.max(0, Math.min(bottom, rect.bottom + offsetY) - top - 4)
+        : position.endsWith('Top')
+          ? Math.max(0, bottom - Math.max(top, rect.top + offsetY) - 4)
+          : Math.max(
+              0,
+              2 *
+                Math.min(
+                  (rect.top + rect.bottom) / 2 + offsetY - top,
+                  bottom - (rect.top + rect.bottom) / 2 - offsetY,
+                ) -
+                8,
+            );
     let anchorTop = top,
       anchorBottom = bottom;
     for (
@@ -49,18 +73,22 @@ export function useBoundedPopup({
       }
     }
     // A popup cannot remain usable when its anchor is outside a clipped form.
-    if (available < 32 || rect.top < anchorTop || rect.bottom > anchorBottom) {
+    if (alignedOutside || available < 32 || rect.top < anchorTop || rect.bottom > anchorBottom) {
       onInvalid();
       return false;
     }
-    const maxHeight = Math.min(limit, available);
+    const maxHeight = Math.min(
+      limit,
+      available,
+      Math.max(0, viewportBottom - viewportTop - viewportInset),
+    );
     setPopup((previous) =>
       previous.position === position && previous.maxHeight === maxHeight
         ? previous
         : { position, maxHeight },
     );
     return true;
-  }, [gap, id, limit, onInvalid, popupContainer, position]);
+  }, [gap, id, limit, offsetY, onInvalid, popupContainer, position, viewportInset]);
   useEffect(() => {
     if (!visible) return;
     measurePopup();
