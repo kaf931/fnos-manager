@@ -219,9 +219,7 @@ export function SettingsPage({
           '查看',
         ),
       ),
-    ]),
-    section('支持作者', [
-      <React.Fragment key="appreciation">
+      <div className="system-settings-row media-preview-layout" key="appreciation">
         <button
           type="button"
           className="media-preview-button"
@@ -236,9 +234,15 @@ export function SettingsPage({
             height={1152}
           />
         </button>
-        <p>如果 NAS 管家对你有帮助，欢迎赞赏支持。</p>
-        <p>你也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
-      </React.Fragment>,
+        <div className="media-preview-copy">
+          <h3>支持作者</h3>
+          <p>如果 NAS 管家对你有帮助，欢迎赞赏支持。</p>
+          <p>你也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
+          <button type="button" className="text-button" onClick={() => setPanel('support')}>
+            放大查看
+          </button>
+        </div>
+      </div>,
     ]),
   );
   return (

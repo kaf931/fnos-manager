@@ -36,9 +36,11 @@ test('appearance controls use public settings rows, save independent preferences
     },
   );
   const lastSection = [...document.querySelectorAll('.system-settings-section')].at(-1);
-  assert.equal(lastSection.querySelector('h2').textContent, '支持作者');
+  assert.equal(lastSection.querySelector('h2').textContent, '关于应用');
+  assert.equal(lastSection.lastElementChild.querySelector('h3').textContent, '支持作者');
   assert.ok(lastSection.querySelector('img[alt="微信赞赏码"]'));
   assert.match(lastSection.textContent, /优先评估/);
+  assert.ok(lastSection.querySelector('button.text-button'));
   ui.click('[aria-label="放大查看赞赏码"]');
   assert.equal(ui.get('dialog').dataset.dialogSize, 'medium');
   assert.ok(ui.get('dialog img[alt="微信赞赏码"]'));

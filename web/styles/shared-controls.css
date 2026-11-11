@@ -410,10 +410,37 @@ th[aria-sort='descending'] .table-sort-header svg path:last-child {
 /* Image previews remain visible in the page and open the full image on activation. */
 .media-preview-button {
   display: block;
-  width: min(100%, 280px);
+  width: 100%;
   padding: 0;
-  margin: 16px auto;
+  margin: 0;
   border: 0;
   background: transparent;
   cursor: zoom-in;
+}
+
+.system-settings-row.media-preview-layout {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 24px;
+}
+.media-preview-copy h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+.media-preview-copy p {
+  margin: 8px 0;
+  line-height: 1.6;
+  color: var(--muted);
+}
+@media (max-width: 620px) {
+  .system-settings-row.media-preview-layout {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .media-preview-layout .media-preview-button {
+    max-width: 200px;
+  }
 }
