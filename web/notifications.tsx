@@ -111,6 +111,10 @@ function NotificationTemplatesPanel({
     setEditor(null);
     setRecordsTemplate(id);
   }
+  function showAllTemplates() {
+    ++editorRequest.current;
+    setAllOpen(true);
+  }
   async function act(action: string, row: NotificationTemplateSummary) {
     if (locks.current.has(row.id)) return;
     locks.current.add(row.id);
@@ -143,10 +147,11 @@ function NotificationTemplatesPanel({
           enabled: !row.enabled,
         });
       else {
+        const request = ++editorRequest.current;
         await api('/notifications/templates/' + row.id + '/test', 'POST', {});
         if (alive.current) {
           toast('测试已提交');
-          if (activeRef.current) showRecords(row.id);
+          if (activeRef.current && request === editorRequest.current) showRecords(row.id);
         }
         return;
       }
@@ -286,7 +291,10 @@ function NotificationTemplatesPanel({
         icon={<NotificationChannelIcon channel={channel} />}
         openLabel={'配置 ' + NOTIFICATION_CHANNEL_LABELS[channel]}
         disabled={sorting || (!loaded && loading) || !!error}
-        onOpen={() => setEditor({ row: null, channel })}
+        onOpen={() => {
+          ++editorRequest.current;
+          setEditor({ row: null, channel });
+        }}
         control={
           <SwitchControl
             checked={false}
@@ -299,7 +307,7 @@ function NotificationTemplatesPanel({
     );
   const actions = (
     <>
-      <button type="button" aria-label="全部模板" title="全部模板" onClick={() => setAllOpen(true)}>
+      <button type="button" aria-label="全部模板" title="全部模板" onClick={showAllTemplates}>
         <AppIcon name="grid" />
         <span className="toolbar-action-label">全部模板</span>
       </button>
@@ -330,7 +338,7 @@ function NotificationTemplatesPanel({
           <h2 className="section-label workspace-section-title desktop-only">提醒事项</h2>
         </>,
         load,
-        () => setAllOpen(true),
+        showAllTemplates,
         allOpen || !!editor || !!recordsTemplate,
       )}
       {active &&

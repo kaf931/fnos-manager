@@ -431,7 +431,7 @@ test('inbox reuses record pagination, marks opened messages read and supports sh
     await tick();
   });
   assert.ok(
-    document.querySelector('.history-run-output').textContent.includes('<script>text</script>'),
+    document.querySelector('.record-detail-body').textContent.includes('<script>text</script>'),
   );
   assert.equal(document.querySelector('script'), null);
   assert.equal(read, true);
@@ -1112,7 +1112,7 @@ test('opening multiple messages queues and deduplicates read requests while the 
   await act(() => button('Message b').click());
   await act(() => button('返回消息').click());
   await act(() => button('Message b').click());
-  assert.match(document.querySelector('.history-run-output').textContent, /Content b/);
+  assert.match(document.querySelector('.record-detail-body').textContent, /Content b/);
   await act(async () => {
     release();
     await tick();
@@ -1333,7 +1333,7 @@ test('mobile app messages reuse compact inline records and retain navigation bet
   });
   assert.ok(document.querySelector('dialog').textContent.includes('消息详情'));
   assert.equal(document.querySelector('dialog').className, dialogClasses);
-  assert.equal(document.querySelector('.history-run-output').textContent, row.content);
+  assert.equal(document.querySelector('.record-detail-body').textContent, row.content);
   assert.ok(
     calls.some((call) => call.path === '/notifications/inbox/read' && call.method === 'POST'),
   );
@@ -1613,4 +1613,74 @@ test('notification templates use local channel artwork and place more before the
     button('配置 邮箱（SMTP）').querySelector('svg').innerHTML,
     button('配置 通用 Webhook').querySelector('svg').innerHTML,
   );
+});
+
+for (const pendingAction of ['edit', 'test']) {
+  test(`late template ${pendingAction} response does not replace a newer template draft`, async (t) => {
+    let resolve;
+    const pending = new Promise((r) => {
+      resolve = r;
+    });
+    const row = {
+      ...DEFAULT_NOTIFICATION_OPTIONS,
+      id: 'slow',
+      name: 'Slow',
+      channel: 'webhook',
+      enabled: true,
+      ready: true,
+    };
+    const f = fixture(t, async (route) => {
+      if (route === '/notifications/templates') return [row];
+      if (route === `/notifications/templates/slow${pendingAction === 'test' ? '/test' : ''}`)
+        return pending;
+      if (route.startsWith('/notifications/deliveries?')) return { items: [], total: 0 };
+      return [];
+    });
+    await f.open();
+    await act(() => button(pendingAction === 'edit' ? '编辑 Slow' : '测试通知').click());
+    await act(() => button('配置 邮箱（SMTP）').click());
+    await act(() =>
+      Simulate.change(document.querySelector('#notification-name'), {
+        target: { value: 'Keep draft' },
+      }),
+    );
+    await act(async () => {
+      resolve(row);
+      await tick();
+    });
+    assert.ok(document.querySelector('#smtp-user'));
+    assert.equal(document.querySelector('#notification-name').value, 'Keep draft');
+    assert.equal(document.querySelectorAll('dialog').length, 1);
+  });
+}
+
+test('configuring templates from a reminder invalidates a previously pending editor request', async (t) => {
+  let resolve;
+  const pending = new Promise((r) => {
+    resolve = r;
+  });
+  const row = {
+    ...DEFAULT_NOTIFICATION_OPTIONS,
+    id: 'slow',
+    name: 'Slow',
+    enabled: false,
+    ready: true,
+  };
+  const f = fixture(t, async (route) =>
+    route === '/notifications/templates'
+      ? [row]
+      : route === '/notifications/templates/slow'
+        ? pending
+        : [],
+  );
+  await f.open();
+  await act(() => button('编辑 Slow').click());
+  await act(() => button('新增事项').click());
+  await act(() => button('配置通知模板').click());
+  await act(async () => {
+    resolve(row);
+    await tick();
+  });
+  assert.equal(document.querySelector('dialog h2').textContent, '全部模板');
+  assert.equal(document.querySelector('#notification-name'), null);
 });

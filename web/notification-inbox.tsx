@@ -1,4 +1,5 @@
 import { BoundedDropdown } from './ui/bounded-dropdown.js';
+import { RecordDetail } from './record-detail.js';
 import { useNotificationUnread, refreshNotificationUnread } from './notification-unread.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '@douyinfe/semi-ui/lib/es/dropdown';
@@ -318,9 +319,11 @@ export function InboxDialog({
                 返回消息
               </button>
             </header>
-            <h3>{detail.name}</h3>
-            <div className="history-run-output">{detail.content}</div>
-            <p className="help">{compactRecordDate(detail.createdAt)}</p>
+            <RecordDetail
+              title={detail.name}
+              content={detail.content}
+              createdAt={detail.createdAt}
+            />
           </>
         ) : (
           <>
