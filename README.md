@@ -22,12 +22,13 @@ NAS 管家是为飞牛 fnOS 开发的桌面和移动端工具。您可以在仪�
 
 ## 支持作者
 
-<p align="center">如果 NAS 管家对您有帮助，欢迎微信扫码赞赏支持。</p>
-
-<p align="center">
-  <a href="assets/wechat-appreciation.jpg"><img src="assets/wechat-appreciation.jpg" width="220" alt="微信赞赏码，点击查看原图"></a>
-</p>
-
-您可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。
-
-非常感谢您使用 NAS 管家，也欢迎您推荐给身边有需要的朋友。
+<table>
+  <tr>
+    <td align="center" valign="middle"><a href="assets/wechat-appreciation.jpg"><img src="assets/wechat-appreciation.jpg" width="180" alt="微信赞赏码，点击查看原图"></a></td>
+    <td valign="middle">
+      <p>如果 NAS 管家对您有帮助，欢迎微信扫码赞赏支持。</p>
+      <p>您可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。</p>
+      <p>非常感谢您使用 NAS 管家，也欢迎您推荐给身边有需要的朋友。</p>
+    </td>
+  </tr>
+</table>
