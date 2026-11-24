@@ -18,12 +18,16 @@ NAS 管家是为飞牛 fnOS 开发的桌面和移动端工具。您可以在仪�
 | 网络唤醒 | 唤醒局域网设备，也可关联 SSH 连接执行重启或关机。 |
 | 通知中心 | 创建提醒事项，通过应用内消息、邮件、企业微信、钉钉或飞书等渠道接收通知。 |
 
+开发者及发布者：[kaf](https://club.fnnas.com/home.php?mod=space&uid=91804)
+
 ## 支持作者
 
-如果 NAS 管家对您有帮助，欢迎使用微信扫描下方赞赏码。您也可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。
+<p align="center">如果 NAS 管家对您有帮助，欢迎微信扫码赞赏支持。</p>
 
-<a href="assets/wechat-appreciation.jpg"><img src="assets/wechat-appreciation.jpg" alt="微信赞赏码，点击查看原图" width="220"></a>
+<p align="center">
+  <a href="assets/wechat-appreciation.jpg"><img src="assets/wechat-appreciation.jpg" width="220" alt="微信赞赏码，点击查看原图"></a>
+</p>
+
+您可以在赞赏备注中留下新需求，我会优先评估，结合可行性安排开发。
 
 非常感谢您使用 NAS 管家，也欢迎您推荐给身边有需要的朋友。
-
-开发者及发布者：[kaf](https://club.fnnas.com/home.php?mod=space&uid=91804)
